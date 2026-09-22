@@ -1,7 +1,7 @@
 SHELL := /bin/zsh
 .DEFAULT_GOAL := run
 
-.PHONY: help setup install guard-key verify test check run dev chrome doctor clean
+.PHONY: help setup install guard-key verify test check run dev stop restart status chrome doctor clean
 
 help: ## 사용 가능한 명령을 표시합니다.
 	@awk 'BEGIN {FS = ":.*## "; print "JEV 북마크 분류기\n"} /^[a-zA-Z_-]+:.*## / {printf "  make %-10s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -42,6 +42,34 @@ run: install guard-key verify ## 모두 준비한 뒤 백엔드를 실행합니�
 dev: install guard-key ## 파일 변경 감시 모드로 백엔드를 실행합니다.
 	@set -a; source .env; set +a; exec npm run dev
 
+stop: ## 이 프로젝트가 8787 포트에서 실행 중이면 안전하게 종료합니다.
+	@pid=$$(lsof -tiTCP:8787 -sTCP:LISTEN 2>/dev/null | head -n 1); \
+	if [[ -z "$$pid" ]]; then \
+		echo "실행 중인 백엔드가 없습니다."; \
+	else \
+		server_cwd=$$(lsof -a -p "$$pid" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p'); \
+		server_cmd=$$(ps -p "$$pid" -o command=); \
+		if [[ "$$server_cwd" != "$(CURDIR)" || "$$server_cmd" != *"server/index.mjs"* ]]; then \
+			echo "오류: 8787 포트를 다른 프로세스가 사용 중이라 종료하지 않았습니다. (PID $$pid)"; \
+			exit 1; \
+		fi; \
+		kill "$$pid"; \
+		echo "기존 JEV 백엔드를 종료했습니다. (PID $$pid)"; \
+	fi
+
+restart: stop run ## 기존 백엔드를 종료하고 새 .env로 다시 실행합니다.
+
+status: ## 실행 중인 백엔드와 API 키 반영 상태를 확인합니다.
+	@response=$$(curl -fsS --max-time 2 http://127.0.0.1:8787/health 2>/dev/null || true); \
+	if [[ -z "$$response" ]]; then \
+		echo "백엔드가 실행 중이 아닙니다."; \
+	elif node -e 'const x=JSON.parse(process.argv[1]); process.exit(x.ok && x.configured ? 0 : 1)' "$$response"; then \
+		echo "백엔드 정상: API 키가 반영되어 있습니다."; \
+	else \
+		echo "오류: 실행 중인 백엔드에 API 키가 반영되지 않았습니다. make restart를 실행하세요."; \
+		exit 1; \
+	fi
+
 chrome: ## Chrome 확장 관리 화면과 로드할 폴더를 엽니다.
 	@if [[ "$$(uname -s)" == "Darwin" ]]; then \
 		open -a "Google Chrome" "chrome://extensions"; \
@@ -54,6 +82,8 @@ doctor: install ## Node, API 키, 프로젝트 상태를 빠르게 점검합니�
 	@node -e 'const major=Number(process.versions.node.split(".")[0]); console.log(`Node $${process.versions.node}`); if (major < 20) { console.error("Node 20 이상이 필요합니다."); process.exit(1) }'
 	@$(MAKE) --no-print-directory guard-key
 	@$(MAKE) --no-print-directory verify
+	@response=$$(curl -fsS --max-time 2 http://127.0.0.1:8787/health 2>/dev/null || true); \
+	if [[ -n "$$response" ]]; then $(MAKE) --no-print-directory status; fi
 	@echo "모든 점검을 통과했습니다."
 
 clean: ## 설치된 npm 의존성만 제거합니다. .env는 보존합니다.
