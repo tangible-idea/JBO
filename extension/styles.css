@@ -54,6 +54,13 @@ h2 { margin: 0; font-size: 15px; line-height: 1.35; }
 
 .field-label { display: block; margin: 17px 0 7px; color: #66666b; font-size: 11px; font-weight: 700; }
 select, input[type="url"], input[type="number"] { width: 100%; border: 1px solid #d8d8d2; border-radius: 11px; padding: 11px 12px; background: white; color: #1d1d21; }
+.new-folder { margin-top: 14px; padding: 16px; border: 1px solid #b9dc79; border-radius: 16px; background: #f0f9df; }
+.new-folder-heading { display: flex; align-items: center; gap: 10px; }
+.new-folder-icon { display: grid; flex: 0 0 32px; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: #caff75; font-size: 20px; font-weight: 700; }
+.new-folder-reason { margin: 10px 0 0; color: #52603d; font-size: 12px; line-height: 1.45; }
+.new-folder input[type="text"] { width: 100%; border: 1px solid #b9c99b; border-radius: 11px; padding: 11px 12px; background: white; color: #1d1d21; }
+.new-folder .field-label { margin-top: 12px; }
+.create-folder-button { width: 100%; margin-top: 11px; border: 0; border-radius: 11px; padding: 11px 12px; background: #1d1d21; color: white; font-weight: 750; }
 .status { min-height: 18px; margin: 10px 2px 0; color: #6c6c71; font-size: 12px; text-align: center; }
 .status.error { color: #b42318; }
 .status.success { color: #27704b; }
@@ -61,9 +68,33 @@ select, input[type="url"], input[type="number"] { width: 100%; border: 1px solid
 .options-shell { width: min(680px, calc(100% - 40px)); margin: 70px auto; }
 .options-shell header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
 .settings-card { padding: 24px; border: 1px solid #deded7; border-radius: 18px; background: white; }
+.settings-card + .settings-card { margin-top: 18px; }
+.settings-card > h2 { margin-bottom: 22px; }
 .settings-card label { display: block; margin: 0 0 18px; font-weight: 700; }
 .settings-card small { display: block; margin: 6px 0 0; color: #77777b; font-weight: 400; }
 .toggle-row { display: flex !important; align-items: center; gap: 10px; }
 .option-actions { display: flex; gap: 10px; }
 .option-actions button { border: 0; border-radius: 11px; padding: 11px 16px; font-weight: 700; }
 .secondary-button { background: #ecece6; }
+.batch-card { margin-bottom: 70px; }
+.batch-title-row { display: flex; align-items: start; justify-content: space-between; gap: 16px; }
+.batch-title-row button { flex: 0 0 auto; border: 0; border-radius: 11px; padding: 10px 12px; font-size: 12px; font-weight: 700; }
+.section-description { margin: 10px 0 22px; color: #6b6b70; font-size: 13px; line-height: 1.55; }
+.settings-card input[type="text"], .settings-card textarea { width: 100%; border: 1px solid #d8d8d2; border-radius: 11px; padding: 11px 12px; background: white; color: #1d1d21; resize: vertical; }
+.batch-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.batch-actions .save-button { margin: 0; }
+.progress-track { overflow: hidden; height: 5px; margin-top: 16px; border-radius: 999px; background: #ecece6; }
+.progress-track span { display: block; width: 0; height: 100%; background: #9ad544; transition: width .2s ease; }
+.batch-results { margin-top: 20px; border-top: 1px solid #e5e5df; padding-top: 16px; }
+.batch-result-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.compact-toggle { display: flex !important; align-items: center; gap: 6px; margin: 0 !important; font-size: 12px; }
+.batch-result-list { display: grid; gap: 7px; max-height: 520px; overflow: auto; padding-right: 3px; }
+.batch-result-item { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 11px; border: 1px solid #e3e3dc; border-radius: 11px; }
+.batch-result-item.needs-review { background: #faf7ef; }
+.batch-result-item input { margin: 0; }
+.batch-bookmark-copy { min-width: 0; }
+.batch-bookmark-title { overflow: hidden; margin: 0; font-size: 13px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.batch-bookmark-path { overflow: hidden; margin: 3px 0 0; color: #7a7a7f; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.batch-destination { max-width: 170px; text-align: right; }
+.batch-destination strong { display: block; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.batch-destination span { color: #7a7a7f; font-size: 10px; }

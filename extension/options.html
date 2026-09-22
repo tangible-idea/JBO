@@ -16,6 +16,7 @@
         </div>
       </header>
       <section class="settings-card">
+        <h2>기본 설정</h2>
         <label for="endpoint">
           백엔드 주소
           <input id="endpoint" type="url" spellcheck="false" />
@@ -26,15 +27,54 @@
           confidence가 충분하면 자동 저장
         </label>
         <label for="threshold">
-          자동 저장 기준 (0.50–1.00)
+          분류 confidence 기준 (0.50–1.00)
           <input id="threshold" type="number" min="0.5" max="1" step="0.01" />
-          <small>처음에는 0.78 이상을 권장합니다. 실제 결과를 보고 조정하세요.</small>
+          <small>기준 초과는 자동 저장 대상이고, 기준 이하는 새 폴더 만들기를 제안합니다.</small>
         </label>
         <div class="option-actions">
           <button id="save" class="save-button">설정 저장</button>
           <button id="test" class="secondary-button">서버 연결 확인</button>
         </div>
         <p id="status" class="status" role="status"></p>
+      </section>
+
+      <section class="settings-card batch-card">
+        <div class="batch-title-row">
+          <div>
+            <p class="eyebrow">BATCH ORGANIZER</p>
+            <h2>기존 북마크 전체 정리</h2>
+          </div>
+          <button id="undo-batch" class="secondary-button" disabled>마지막 정리 되돌리기</button>
+        </div>
+        <p class="section-description">
+          모든 URL 북마크를 JEV가 검토합니다. 먼저 이동 예정표를 만들며, 확인 전에는 아무것도 옮기지 않습니다.
+        </p>
+        <label for="batch-root-name">
+          새 정리 폴더 이름
+          <input id="batch-root-name" type="text" maxlength="120" />
+        </label>
+        <label for="batch-parent">
+          새 정리 폴더를 만들 위치
+          <select id="batch-parent"></select>
+        </label>
+        <label for="batch-categories">
+          정리할 카테고리 — 한 줄에 하나
+          <textarea id="batch-categories" rows="10"></textarea>
+          <small>JEV가 각 북마크를 아래 카테고리 중 하나로 분류합니다. 필요에 맞게 이름을 고쳐도 됩니다.</small>
+        </label>
+        <div class="batch-actions">
+          <button id="analyze-batch" class="primary-button">전체 북마크 분석</button>
+          <button id="apply-batch" class="save-button" disabled>선택 항목 일괄 정리</button>
+        </div>
+        <div class="progress-track" aria-hidden="true"><span id="batch-progress"></span></div>
+        <p id="batch-status" class="status" role="status" aria-live="polite"></p>
+        <div id="batch-results" class="batch-results" hidden>
+          <div class="batch-result-toolbar">
+            <strong id="batch-summary"></strong>
+            <label class="compact-toggle"><input id="toggle-all" type="checkbox" /> 모두 선택</label>
+          </div>
+          <div id="batch-result-list" class="batch-result-list"></div>
+        </div>
       </section>
     </main>
     <script type="module" src="options.js"></script>

@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { classifyBookmark, MAX_FOLDERS, normalizeRequest } from "./classifier.mjs";
+import {
+  classifyBookmark,
+  classifyBookmarksBatch,
+  MAX_BATCH_BOOKMARKS,
+  MAX_FOLDERS,
+  normalizeBatchRequest,
+  normalizeRequest,
+} from "./classifier.mjs";
 
 test("normalizeRequest removes invalid and duplicate folders", () => {
   const result = normalizeRequest({
@@ -80,4 +87,53 @@ test("classifyBookmark returns no recommendation for no_good_match", async () =>
   });
   assert.equal(result.recommendation, null);
   assert.equal(result.noGoodMatchProbability, 0.8);
+});
+
+test("normalizeBatchRequest deduplicates categories and caps bookmarks", () => {
+  const result = normalizeBatchRequest({
+    categories: ["개발", "개발", "디자인"],
+    bookmarks: Array.from({ length: MAX_BATCH_BOOKMARKS + 2 }, (_, index) => ({
+      id: String(index),
+      title: `Bookmark ${index}`,
+      url: `https://example.com/${index}`,
+    })),
+  });
+  assert.deepEqual(result.categories, ["개발", "디자인"]);
+  assert.equal(result.bookmarks.length, MAX_BATCH_BOOKMARKS);
+});
+
+test("classifyBookmarksBatch asks one independent Choice per bookmark", async () => {
+  const fakeClient = {
+    async systemOne(request) {
+      assert.equal(Object.keys(request.questions).length, 2);
+      assert.match(request.questions.bookmark_1.instructions, /bookmarks\[1\]/);
+      return {
+        model: "jev-test",
+        answers: {
+          bookmark_0: {
+            type: "choice",
+            choice: "category_0",
+            confidence: 0.91,
+            probabilities: { category_0: 0.9, category_1: 0.08, no_good_match: 0.02 },
+          },
+          bookmark_1: {
+            type: "choice",
+            choice: "no_good_match",
+            confidence: 0.65,
+            probabilities: { category_0: 0.1, category_1: 0.2, no_good_match: 0.7 },
+          },
+        },
+      };
+    },
+  };
+  const result = await classifyBookmarksBatch(fakeClient, {
+    categories: ["개발", "디자인"],
+    bookmarks: [
+      { id: "1", title: "TypeScript docs", url: "https://typescriptlang.org" },
+      { id: "2", title: "Unknown", url: "https://example.com" },
+    ],
+  });
+  assert.equal(result.results[0].category, "개발");
+  assert.equal(result.results[0].confidence, 0.91);
+  assert.equal(result.results[1].category, null);
 });

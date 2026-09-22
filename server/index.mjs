@@ -1,7 +1,12 @@
 import "node:process";
 import { createServer } from "node:http";
 import { TypeSafeClient } from "@typesafe-ai/sdk";
-import { classifyBookmark, normalizeRequest } from "./classifier.mjs";
+import {
+  classifyBookmark,
+  classifyBookmarksBatch,
+  normalizeBatchRequest,
+  normalizeRequest,
+} from "./classifier.mjs";
 
 const port = Number.parseInt(process.env.PORT || "8787", 10);
 const maxBodyBytes = 256 * 1024;
@@ -72,6 +77,27 @@ const server = createServer(async (request, response) => {
         error: isInputError || isTooLarge
           ? error.message
           : "JEV 분류 요청에 실패했습니다. 서버 로그와 API 키를 확인하세요.",
+      });
+    }
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/classify-batch") {
+    try {
+      const body = await readJson(request);
+      normalizeBatchRequest(body);
+      const result = await classifyBookmarksBatch(getClient(), body, {
+        model: process.env.TYPESAFE_MODEL?.trim() || undefined,
+      });
+      sendJson(response, 200, result);
+    } catch (error) {
+      const isInputError = error instanceof TypeError || error instanceof SyntaxError;
+      const isTooLarge = error instanceof RangeError;
+      if (!isInputError && !isTooLarge) console.error(error);
+      sendJson(response, isTooLarge ? 413 : isInputError ? 400 : 502, {
+        error: isInputError || isTooLarge
+          ? error.message
+          : "JEV 일괄 분류 요청에 실패했습니다. 서버 로그와 API 키를 확인하세요.",
       });
     }
     return;

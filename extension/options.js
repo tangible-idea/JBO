@@ -1,17 +1,82 @@
+import { chunkItems, isBatchMoveEligible, parseCategories } from "./options-utils.js";
+
+const DEFAULT_CATEGORIES = [
+  "개발 및 기술",
+  "AI 및 데이터",
+  "디자인",
+  "비즈니스 및 커리어",
+  "학습 및 참고",
+  "뉴스 및 읽을거리",
+  "쇼핑",
+  "엔터테인먼트",
+  "여행",
+  "금융",
+];
+
 const DEFAULT_SETTINGS = {
   endpoint: "http://127.0.0.1:8787",
   autoSave: false,
   confidenceThreshold: 0.78,
+  batchRootName: "JEV 정리함",
+  batchCategories: DEFAULT_CATEGORIES,
 };
 
 const endpoint = document.querySelector("#endpoint");
 const autoSave = document.querySelector("#auto-save");
 const threshold = document.querySelector("#threshold");
 const status = document.querySelector("#status");
+const batchRootName = document.querySelector("#batch-root-name");
+const batchParent = document.querySelector("#batch-parent");
+const batchCategories = document.querySelector("#batch-categories");
+const batchStatus = document.querySelector("#batch-status");
+const batchProgress = document.querySelector("#batch-progress");
+const batchResults = document.querySelector("#batch-results");
+const batchSummary = document.querySelector("#batch-summary");
+const batchResultList = document.querySelector("#batch-result-list");
+const analyzeBatchButton = document.querySelector("#analyze-batch");
+const applyBatchButton = document.querySelector("#apply-batch");
+const undoBatchButton = document.querySelector("#undo-batch");
+const toggleAll = document.querySelector("#toggle-all");
+
+let batchAnalysis = [];
+let folderIndex = [];
 
 function setStatus(message, kind = "") {
   status.textContent = message;
   status.className = `status ${kind}`.trim();
+}
+
+function setBatchStatus(message, kind = "") {
+  batchStatus.textContent = message;
+  batchStatus.className = `status ${kind}`.trim();
+}
+
+function flattenBookmarkTree(nodes, parentPath = "") {
+  const folders = [];
+  const bookmarks = [];
+  for (const node of nodes) {
+    const path = node.title ? (parentPath ? `${parentPath} / ${node.title}` : node.title) : parentPath;
+    if (node.children && node.title) folders.push({ id: node.id, path });
+    if (node.url) {
+      bookmarks.push({ id: node.id, title: node.title, url: node.url, currentPath: parentPath });
+    }
+    if (node.children) {
+      const nested = flattenBookmarkTree(node.children, path);
+      folders.push(...nested.folders);
+      bookmarks.push(...nested.bookmarks);
+    }
+  }
+  return { folders, bookmarks };
+}
+
+function renderParentFolders() {
+  batchParent.replaceChildren();
+  for (const folder of folderIndex) {
+    const option = document.createElement("option");
+    option.value = folder.id;
+    option.textContent = folder.path;
+    batchParent.append(option);
+  }
 }
 
 function normalizeEndpoint(value) {
@@ -42,12 +107,163 @@ async function saveSettings() {
       endpoint: endpointValue,
       autoSave: autoSave.checked,
       confidenceThreshold: thresholdValue,
+      batchRootName: batchRootName.value.trim() || DEFAULT_SETTINGS.batchRootName,
+      batchCategories: parseCategories(batchCategories.value),
     });
     endpoint.value = endpointValue;
     setStatus("설정을 저장했습니다.", "success");
   } catch (error) {
     setStatus(error.message, "error");
   }
+}
+
+function renderBatchResults(savedThreshold) {
+  batchResultList.replaceChildren();
+  const eligibleCount = batchAnalysis.filter((item) => isBatchMoveEligible(item, savedThreshold)).length;
+  batchSummary.textContent = `${batchAnalysis.length}개 분석 · ${eligibleCount}개 기본 선택`;
+  for (const item of batchAnalysis) {
+    const eligible = isBatchMoveEligible(item, savedThreshold);
+    const row = document.createElement("div");
+    row.className = `batch-result-item${eligible ? "" : " needs-review"}`;
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.dataset.bookmarkId = item.id;
+    checkbox.checked = eligible;
+    checkbox.disabled = !item.category;
+    checkbox.setAttribute("aria-label", `${item.title} 이동`);
+
+    const copy = document.createElement("div");
+    copy.className = "batch-bookmark-copy";
+    const title = document.createElement("p");
+    title.className = "batch-bookmark-title";
+    title.textContent = item.title || item.url;
+    const path = document.createElement("p");
+    path.className = "batch-bookmark-path";
+    path.textContent = item.currentPath || "현재 폴더 없음";
+    copy.append(title, path);
+
+    const destination = document.createElement("div");
+    destination.className = "batch-destination";
+    const category = document.createElement("strong");
+    category.textContent = item.category || "분류 보류";
+    const confidence = document.createElement("span");
+    confidence.textContent = `${Math.round(item.confidence * 100)}% confidence`;
+    destination.append(category, confidence);
+    row.append(checkbox, copy, destination);
+    batchResultList.append(row);
+  }
+  batchResults.hidden = false;
+  applyBatchButton.disabled = eligibleCount === 0;
+  toggleAll.checked = false;
+}
+
+async function analyzeAllBookmarks() {
+  analyzeBatchButton.disabled = true;
+  applyBatchButton.disabled = true;
+  batchResults.hidden = true;
+  batchProgress.style.width = "0%";
+  try {
+    const categories = parseCategories(batchCategories.value);
+    if (categories.length < 2) throw new Error("정리 카테고리를 두 개 이상 입력하세요.");
+    const endpointValue = normalizeEndpoint(endpoint.value.trim());
+    if (!(await ensureOriginPermission(endpointValue))) throw new Error("백엔드 접근 권한이 없습니다.");
+    const tree = await chrome.bookmarks.getTree();
+    const { bookmarks } = flattenBookmarkTree(tree);
+    if (bookmarks.length === 0) throw new Error("검토할 URL 북마크가 없습니다.");
+
+    batchAnalysis = [];
+    const batches = chunkItems(bookmarks, 20);
+    for (let index = 0; index < batches.length; index += 1) {
+      setBatchStatus(`${bookmarks.length}개 중 ${batchAnalysis.length}개 분석 완료…`);
+      const response = await fetch(`${endpointValue}/api/classify-batch`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookmarks: batches[index], categories }),
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error || `서버 오류 (${response.status})`);
+      batchAnalysis.push(...body.results);
+      batchProgress.style.width = `${Math.round(((index + 1) / batches.length) * 100)}%`;
+    }
+    const savedThreshold = Number(threshold.value);
+    renderBatchResults(savedThreshold);
+    setBatchStatus("분석이 끝났습니다. 이동 예정 항목을 확인한 뒤 적용하세요.", "success");
+  } catch (error) {
+    setBatchStatus(error.message || "전체 북마크 분석에 실패했습니다.", "error");
+  } finally {
+    analyzeBatchButton.disabled = false;
+  }
+}
+
+async function findOrCreateFolder(parentId, title) {
+  const children = await chrome.bookmarks.getChildren(parentId);
+  const existing = children.find(
+    (item) => !item.url && item.title.trim().toLocaleLowerCase() === title.toLocaleLowerCase(),
+  );
+  return existing || chrome.bookmarks.create({ parentId, title });
+}
+
+async function applyBatchOrganization() {
+  const selectedIds = new Set(
+    [...batchResultList.querySelectorAll('input[type="checkbox"]:checked')].map(
+      (input) => input.dataset.bookmarkId,
+    ),
+  );
+  const selected = batchAnalysis.filter((item) => selectedIds.has(item.id) && item.category);
+  if (selected.length === 0) return;
+  const rootTitle = batchRootName.value.trim();
+  if (!rootTitle) throw new Error("새 정리 폴더 이름을 입력하세요.");
+  if (!window.confirm(`${selected.length}개 북마크를 “${rootTitle}” 아래로 이동할까요?`)) return;
+
+  applyBatchButton.disabled = true;
+  const undoMoves = [];
+  try {
+    const rootFolder = await findOrCreateFolder(batchParent.value, rootTitle);
+    const categoryFolders = new Map();
+    for (const category of new Set(selected.map((item) => item.category))) {
+      categoryFolders.set(category, await findOrCreateFolder(rootFolder.id, category));
+    }
+
+    for (let index = 0; index < selected.length; index += 1) {
+      const item = selected[index];
+      const [current] = await chrome.bookmarks.get(item.id);
+      const destination = categoryFolders.get(item.category);
+      if (!current || current.parentId === destination.id) continue;
+      undoMoves.push({ id: item.id, parentId: current.parentId, index: current.index });
+      await chrome.bookmarks.move(item.id, { parentId: destination.id });
+      setBatchStatus(`${selected.length}개 중 ${index + 1}개 이동 중…`);
+    }
+    await chrome.storage.local.set({ lastBatchUndo: { moves: undoMoves, createdAt: Date.now() } });
+    undoBatchButton.disabled = undoMoves.length === 0;
+    setBatchStatus(`${undoMoves.length}개 북마크를 새 폴더 구조로 정리했습니다.`, "success");
+    applyBatchButton.disabled = true;
+  } catch (error) {
+    if (undoMoves.length > 0) {
+      await chrome.storage.local.set({ lastBatchUndo: { moves: undoMoves, createdAt: Date.now() } });
+      undoBatchButton.disabled = false;
+    }
+    applyBatchButton.disabled = false;
+    setBatchStatus(`${error.message || "일괄 정리에 실패했습니다."} 이동된 항목은 되돌릴 수 있습니다.`, "error");
+  }
+}
+
+async function undoLastBatch() {
+  const { lastBatchUndo } = await chrome.storage.local.get("lastBatchUndo");
+  const moves = lastBatchUndo?.moves || [];
+  if (moves.length === 0) return;
+  undoBatchButton.disabled = true;
+  let restored = 0;
+  for (const move of [...moves].reverse()) {
+    try {
+      await chrome.bookmarks.move(move.id, { parentId: move.parentId, index: move.index });
+      restored += 1;
+    } catch {
+      // Continue restoring the remaining bookmarks if one parent was deleted.
+    }
+  }
+  await chrome.storage.local.remove("lastBatchUndo");
+  setBatchStatus(`${restored}개 북마크를 이전 위치로 되돌렸습니다.`, restored === moves.length ? "success" : "error");
 }
 
 async function testConnection() {
@@ -72,8 +288,27 @@ async function initialize() {
   endpoint.value = settings.endpoint;
   autoSave.checked = settings.autoSave;
   threshold.value = settings.confidenceThreshold;
+  batchRootName.value = settings.batchRootName;
+  batchCategories.value = settings.batchCategories.join("\n");
+  const tree = await chrome.bookmarks.getTree();
+  folderIndex = flattenBookmarkTree(tree).folders;
+  renderParentFolders();
+  const { lastBatchUndo } = await chrome.storage.local.get("lastBatchUndo");
+  undoBatchButton.disabled = !lastBatchUndo?.moves?.length;
 }
 
 document.querySelector("#save").addEventListener("click", saveSettings);
 document.querySelector("#test").addEventListener("click", testConnection);
+analyzeBatchButton.addEventListener("click", analyzeAllBookmarks);
+applyBatchButton.addEventListener("click", () => applyBatchOrganization().catch((error) => setBatchStatus(error.message, "error")));
+undoBatchButton.addEventListener("click", undoLastBatch);
+toggleAll.addEventListener("change", () => {
+  batchResultList.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach((input) => {
+    input.checked = toggleAll.checked;
+  });
+  applyBatchButton.disabled = !batchResultList.querySelector('input[type="checkbox"]:checked');
+});
+batchResultList.addEventListener("change", () => {
+  applyBatchButton.disabled = !batchResultList.querySelector('input[type="checkbox"]:checked');
+});
 initialize();

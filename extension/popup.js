@@ -1,3 +1,5 @@
+import { shouldSuggestNewFolder, suggestFolderName } from "./popup-utils.js";
+
 const DEFAULT_SETTINGS = {
   endpoint: "http://127.0.0.1:8787",
   autoSave: false,
@@ -8,7 +10,12 @@ const elements = {
   classify: document.querySelector("#classify"),
   confidence: document.querySelector("#confidence"),
   candidates: document.querySelector("#candidates"),
+  createFolder: document.querySelector("#create-folder"),
   folderSelect: document.querySelector("#folder-select"),
+  newFolder: document.querySelector("#new-folder"),
+  newFolderName: document.querySelector("#new-folder-name"),
+  newFolderParent: document.querySelector("#new-folder-parent"),
+  newFolderReason: document.querySelector("#new-folder-reason"),
   openOptions: document.querySelector("#open-options"),
   pageHost: document.querySelector("#page-host"),
   pageTitle: document.querySelector("#page-title"),
@@ -41,11 +48,15 @@ function flattenFolders(nodes, parentPath = "") {
 
 function renderFolders() {
   elements.folderSelect.replaceChildren();
+  elements.newFolderParent.replaceChildren();
   for (const folder of folders) {
     const option = document.createElement("option");
     option.value = folder.id;
     option.textContent = folder.path;
     elements.folderSelect.append(option);
+
+    const parentOption = option.cloneNode(true);
+    elements.newFolderParent.append(parentOption);
   }
   elements.folderSelect.disabled = folders.length === 0;
   elements.save.disabled = folders.length === 0;
@@ -99,10 +110,33 @@ function renderResult(result) {
   }
 
   if (result.recommendation) selectFolder(result.recommendation.id);
+  const suggestNewFolder = shouldSuggestNewFolder(result, settings.confidenceThreshold);
+  elements.newFolder.hidden = !suggestNewFolder;
+  if (suggestNewFolder) {
+    const thresholdPercent = Math.round(settings.confidenceThreshold * 100);
+    const confidencePercent = Math.round(result.confidence * 100);
+    elements.newFolderReason.textContent = result.recommendation
+      ? `confidence ${confidencePercent}%가 저장한 기준 ${thresholdPercent}% 이하입니다.`
+      : "기존 폴더 중 적합한 항목이 없어 새 폴더를 제안합니다.";
+    elements.newFolderName.value = suggestFolderName(activeTab);
+    elements.newFolderParent.value = result.candidates[0]?.id || folders[0]?.id || "";
+  }
   if (result.truncatedFolderCount > 0) {
     setStatus(`폴더가 많아 처음 100개만 비교했습니다. (${result.truncatedFolderCount}개 제외)`);
   } else {
     setStatus(result.recommendation ? "추천을 확인하고 저장하세요." : "직접 폴더를 선택해 주세요.");
+  }
+}
+
+async function upsertBookmark(parentId) {
+  if (existingBookmark) {
+    await chrome.bookmarks.move(existingBookmark.id, { parentId });
+  } else {
+    existingBookmark = await chrome.bookmarks.create({
+      parentId,
+      title: activeTab.title || activeTab.url,
+      url: activeTab.url,
+    });
   }
 }
 
@@ -111,20 +145,46 @@ async function saveBookmark({ automatic = false } = {}) {
   if (!parentId || !activeTab?.url) return;
   elements.save.disabled = true;
   try {
-    if (existingBookmark) {
-      await chrome.bookmarks.move(existingBookmark.id, { parentId });
-    } else {
-      existingBookmark = await chrome.bookmarks.create({
-        parentId,
-        title: activeTab.title || activeTab.url,
-        url: activeTab.url,
-      });
-    }
+    await upsertBookmark(parentId);
     elements.save.textContent = "저장 완료 ✓";
     setStatus(automatic ? "높은 confidence로 자동 저장했습니다." : "북마크를 저장했습니다.", "success");
   } catch (error) {
     elements.save.disabled = false;
     setStatus(error.message || "북마크를 저장하지 못했습니다.", "error");
+  }
+}
+
+async function createFolderAndSave() {
+  const title = elements.newFolderName.value.trim();
+  const parentId = elements.newFolderParent.value;
+  if (!title) {
+    elements.newFolderName.focus();
+    setStatus("새 폴더 이름을 입력해 주세요.", "error");
+    return;
+  }
+  if (!parentId || !activeTab?.url) return;
+
+  elements.createFolder.disabled = true;
+  try {
+    const children = await chrome.bookmarks.getChildren(parentId);
+    let folder = children.find(
+      (item) => !item.url && item.title.trim().toLocaleLowerCase() === title.toLocaleLowerCase(),
+    );
+    if (!folder) folder = await chrome.bookmarks.create({ parentId, title });
+    await upsertBookmark(folder.id);
+
+    const parent = folders.find((item) => item.id === parentId);
+    const path = parent ? `${parent.path} / ${folder.title}` : folder.title;
+    if (!folders.some((item) => item.id === folder.id)) folders.push({ id: folder.id, path });
+    renderFolders();
+    elements.folderSelect.value = folder.id;
+    elements.newFolder.hidden = true;
+    elements.save.textContent = "저장 완료 ✓";
+    elements.save.disabled = true;
+    setStatus(`“${folder.title}” 폴더를 만들고 북마크를 저장했습니다.`, "success");
+  } catch (error) {
+    elements.createFolder.disabled = false;
+    setStatus(error.message || "새 폴더를 만들지 못했습니다.", "error");
   }
 }
 
@@ -152,7 +212,7 @@ async function classify() {
     if (
       settings.autoSave &&
       result.recommendation &&
-      result.confidence >= settings.confidenceThreshold
+      result.confidence > settings.confidenceThreshold
     ) {
       await saveBookmark({ automatic: true });
     }
@@ -195,6 +255,7 @@ async function initialize() {
 }
 
 elements.classify.addEventListener("click", classify);
+elements.createFolder.addEventListener("click", createFolderAndSave);
 elements.save.addEventListener("click", () => saveBookmark());
 elements.openOptions.addEventListener("click", () => chrome.runtime.openOptionsPage());
 initialize().catch((error) => setStatus(error.message, "error"));

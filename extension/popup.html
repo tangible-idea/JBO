@@ -41,6 +41,22 @@
         <div id="candidates" class="candidate-list"></div>
       </section>
 
+      <section id="new-folder" class="new-folder" hidden>
+        <div class="new-folder-heading">
+          <span class="new-folder-icon" aria-hidden="true">＋</span>
+          <div>
+            <p class="eyebrow">새 폴더 제안</p>
+            <h2>기존 폴더가 애매해요</h2>
+          </div>
+        </div>
+        <p id="new-folder-reason" class="new-folder-reason"></p>
+        <label class="field-label" for="new-folder-name">새 폴더 이름</label>
+        <input id="new-folder-name" type="text" maxlength="255" autocomplete="off" />
+        <label class="field-label" for="new-folder-parent">상위 폴더</label>
+        <select id="new-folder-parent"></select>
+        <button id="create-folder" class="create-folder-button">폴더 만들고 여기에 저장</button>
+      </section>
+
       <label class="field-label" for="folder-select">직접 폴더 선택</label>
       <select id="folder-select" disabled>
         <option>북마크 폴더를 불러오는 중…</option>
