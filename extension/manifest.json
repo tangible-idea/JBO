@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "JEV 북마크 분류기",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "현재 페이지를 JEV로 분류해 알맞은 Chrome 북마크 폴더에 저장합니다.",
   "permissions": ["activeTab", "bookmarks", "scripting", "storage"],
   "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"],

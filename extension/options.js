@@ -97,8 +97,12 @@ async function saveSettings() {
   try {
     const endpointValue = normalizeEndpoint(endpoint.value.trim());
     const thresholdValue = Number(threshold.value);
+    const categoryValues = parseCategories(batchCategories.value);
     if (thresholdValue < 0.5 || thresholdValue > 1) {
       throw new Error("confidence 기준은 0.50에서 1.00 사이여야 합니다.");
+    }
+    if (categoryValues.length < 2) {
+      throw new Error("일괄 정리 카테고리는 두 개 이상 입력하세요.");
     }
     if (!(await ensureOriginPermission(endpointValue))) {
       throw new Error("해당 백엔드 주소에 접근 권한이 필요합니다.");
@@ -108,7 +112,7 @@ async function saveSettings() {
       autoSave: autoSave.checked,
       confidenceThreshold: thresholdValue,
       batchRootName: batchRootName.value.trim() || DEFAULT_SETTINGS.batchRootName,
-      batchCategories: parseCategories(batchCategories.value),
+      batchCategories: categoryValues,
     });
     endpoint.value = endpointValue;
     setStatus("설정을 저장했습니다.", "success");
@@ -201,7 +205,8 @@ async function findOrCreateFolder(parentId, title) {
   const existing = children.find(
     (item) => !item.url && item.title.trim().toLocaleLowerCase() === title.toLocaleLowerCase(),
   );
-  return existing || chrome.bookmarks.create({ parentId, title });
+  if (existing) return { folder: existing, created: false };
+  return { folder: await chrome.bookmarks.create({ parentId, title }), created: true };
 }
 
 async function applyBatchOrganization() {
@@ -218,11 +223,16 @@ async function applyBatchOrganization() {
 
   applyBatchButton.disabled = true;
   const undoMoves = [];
+  const createdFolderIds = [];
   try {
-    const rootFolder = await findOrCreateFolder(batchParent.value, rootTitle);
+    const rootResult = await findOrCreateFolder(batchParent.value, rootTitle);
+    const rootFolder = rootResult.folder;
+    if (rootResult.created) createdFolderIds.push(rootFolder.id);
     const categoryFolders = new Map();
     for (const category of new Set(selected.map((item) => item.category))) {
-      categoryFolders.set(category, await findOrCreateFolder(rootFolder.id, category));
+      const categoryResult = await findOrCreateFolder(rootFolder.id, category);
+      categoryFolders.set(category, categoryResult.folder);
+      if (categoryResult.created) createdFolderIds.push(categoryResult.folder.id);
     }
 
     for (let index = 0; index < selected.length; index += 1) {
@@ -234,14 +244,18 @@ async function applyBatchOrganization() {
       await chrome.bookmarks.move(item.id, { parentId: destination.id });
       setBatchStatus(`${selected.length}개 중 ${index + 1}개 이동 중…`);
     }
-    await chrome.storage.local.set({ lastBatchUndo: { moves: undoMoves, createdAt: Date.now() } });
+    await chrome.storage.local.set({
+      lastBatchUndo: { moves: undoMoves, createdFolderIds, createdAt: Date.now() },
+    });
     undoBatchButton.disabled = undoMoves.length === 0;
     setBatchStatus(`${undoMoves.length}개 북마크를 새 폴더 구조로 정리했습니다.`, "success");
     applyBatchButton.disabled = true;
   } catch (error) {
-    if (undoMoves.length > 0) {
-      await chrome.storage.local.set({ lastBatchUndo: { moves: undoMoves, createdAt: Date.now() } });
-      undoBatchButton.disabled = false;
+    if (undoMoves.length > 0 || createdFolderIds.length > 0) {
+      await chrome.storage.local.set({
+        lastBatchUndo: { moves: undoMoves, createdFolderIds, createdAt: Date.now() },
+      });
+      undoBatchButton.disabled = undoMoves.length === 0;
     }
     applyBatchButton.disabled = false;
     setBatchStatus(`${error.message || "일괄 정리에 실패했습니다."} 이동된 항목은 되돌릴 수 있습니다.`, "error");
@@ -260,6 +274,14 @@ async function undoLastBatch() {
       restored += 1;
     } catch {
       // Continue restoring the remaining bookmarks if one parent was deleted.
+    }
+  }
+  for (const folderId of [...(lastBatchUndo.createdFolderIds || [])].reverse()) {
+    try {
+      const children = await chrome.bookmarks.getChildren(folderId);
+      if (children.length === 0) await chrome.bookmarks.remove(folderId);
+    } catch {
+      // The folder may already have been removed or may now contain user data.
     }
   }
   await chrome.storage.local.remove("lastBatchUndo");
@@ -288,8 +310,11 @@ async function initialize() {
   endpoint.value = settings.endpoint;
   autoSave.checked = settings.autoSave;
   threshold.value = settings.confidenceThreshold;
-  batchRootName.value = settings.batchRootName;
-  batchCategories.value = settings.batchCategories.join("\n");
+  batchRootName.value = settings.batchRootName || DEFAULT_SETTINGS.batchRootName;
+  const savedCategories = Array.isArray(settings.batchCategories)
+    ? settings.batchCategories
+    : parseCategories(settings.batchCategories);
+  batchCategories.value = (savedCategories.length >= 2 ? savedCategories : DEFAULT_CATEGORIES).join("\n");
   const tree = await chrome.bookmarks.getTree();
   folderIndex = flattenBookmarkTree(tree).folders;
   renderParentFolders();
