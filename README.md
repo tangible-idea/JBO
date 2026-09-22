@@ -2,25 +2,23 @@
 
 현재 Chrome 탭의 제목, URL, 설명을 TypeSafe JEV로 분류해 기존 북마크 폴더를 추천하는 Manifest V3 확장프로그램입니다. API 키가 노출되지 않도록 JEV 호출은 로컬 Node 백엔드에서만 수행합니다.
 
-## 실행
+## 한 번에 실행
 
 Node.js 20 이상이 필요합니다.
 
 ```bash
-npm install
-cp .env.example .env
+make setup
 ```
 
-`.env`에 `TYPESAFE_API_KEY`를 입력한 뒤 환경변수를 읽어 서버를 실행합니다.
+처음 실행했다면 `.env`의 `TYPESAFE_API_KEY`에 실제 키를 입력합니다. 이후에는 아래 명령 하나가 의존성 확인, 테스트, 문법 검사, API 키 확인을 거쳐 서버를 실행합니다.
 
 ```bash
-set -a
-source .env
-set +a
-npm start
+make
 ```
 
-Chrome에서 `chrome://extensions`를 열고 **개발자 모드 → 압축해제된 확장 프로그램을 로드합니다**를 선택한 다음 이 저장소의 `extension` 폴더를 지정합니다. 툴바의 확장 아이콘을 누르면 현재 페이지를 분류할 수 있습니다.
+다른 터미널에서 `make chrome`을 실행하면 Chrome 확장 관리 화면과 로드할 `extension` 폴더가 함께 열립니다. **개발자 모드 → 압축해제된 확장 프로그램을 로드합니다**를 한 번 선택하세요. Chrome 보안상 이 최초 설치 클릭은 자동화할 수 없습니다. 이후에는 툴바의 확장 아이콘을 누르면 현재 페이지를 분류할 수 있습니다.
+
+사용 가능한 자동화 명령은 `make help`에서 확인할 수 있습니다.
 
 기본 백엔드 주소는 `http://127.0.0.1:8787`입니다. 배포된 HTTPS 백엔드를 사용할 때는 확장의 설정 화면에서 주소를 바꾸고 접근 권한을 승인하세요.
 
@@ -35,8 +33,8 @@ Chrome에서 `chrome://extensions`를 열고 **개발자 모드 → 압축해제
 ## 검증
 
 ```bash
-npm test
-npm run check
+make verify
+make doctor
 ```
 
 `GET /health`는 서버와 API 키 설정 상태를, `POST /api/classify`는 실제 분류를 제공합니다.
