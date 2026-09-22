@@ -1,0 +1,19 @@
+{
+  "name": "jev-bookmark-sorter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A Chrome bookmark classifier powered by TypeSafe Jev.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node --watch server/index.mjs",
+    "start": "node server/index.mjs",
+    "test": "node --test",
+    "check": "node --check server/index.mjs && node --check server/classifier.mjs && node --check extension/popup.js && node --check extension/options.js"
+  },
+  "dependencies": {
+    "@typesafe-ai/sdk": "^0.6.0"
+  }
+}

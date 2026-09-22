@@ -1,0 +1,69 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #1d1d21;
+  background: #f7f7f3;
+}
+
+* { box-sizing: border-box; }
+
+body { margin: 0; }
+
+button, input, select { font: inherit; }
+
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.popup-shell {
+  width: 380px;
+  min-height: 500px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at top right, rgba(184, 255, 101, 0.2), transparent 34%),
+    #f7f7f3;
+}
+
+.brand-row { display: grid; grid-template-columns: 42px 1fr 36px; gap: 12px; align-items: center; }
+.logo { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: #1d1d21; color: #caff75; font-size: 22px; font-weight: 800; }
+.eyebrow { margin: 0 0 3px; color: #6b6b70; font-size: 10px; font-weight: 750; letter-spacing: 0.14em; }
+h1, h2, p { overflow-wrap: anywhere; }
+h1 { margin: 0; font-size: 19px; letter-spacing: -0.03em; }
+h2 { margin: 0; font-size: 15px; line-height: 1.35; }
+.icon-button { width: 36px; height: 36px; border: 1px solid #deded7; border-radius: 11px; background: rgba(255,255,255,.7); }
+
+.page-card { display: flex; gap: 12px; margin: 22px 0 14px; padding: 15px; border: 1px solid #deded7; border-radius: 16px; background: rgba(255,255,255,.82); box-shadow: 0 10px 30px rgba(20,20,20,.04); }
+.site-icon { display: grid; flex: 0 0 34px; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: #ecece6; font-weight: 700; }
+.page-copy { min-width: 0; }
+.page-copy h2 { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.page-copy p { margin: 4px 0 0; color: #77777b; font-size: 12px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+
+.primary-button, .save-button { width: 100%; border: 0; border-radius: 13px; padding: 13px 16px; font-weight: 750; }
+.primary-button { background: #1d1d21; color: white; }
+.spark { margin-right: 6px; color: #caff75; }
+.save-button { margin-top: 10px; background: #caff75; color: #17210c; }
+
+.result { margin-top: 18px; padding: 16px; border-radius: 16px; background: #202024; color: white; }
+.result-heading { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
+.result .eyebrow { color: #a7a7ab; }
+.confidence-badge { flex: 0 0 auto; padding: 5px 8px; border: 1px solid #46464b; border-radius: 999px; color: #caff75; font-size: 11px; font-weight: 700; }
+.candidate-list { display: grid; gap: 7px; margin-top: 13px; }
+.candidate { display: grid; grid-template-columns: 1fr auto; gap: 8px; width: 100%; padding: 10px 11px; border: 1px solid #3c3c41; border-radius: 10px; background: #2a2a2f; color: white; text-align: left; }
+.candidate:hover, .candidate.selected { border-color: #caff75; }
+.candidate span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.candidate span:last-child { color: #a7a7ab; font-size: 11px; }
+
+.field-label { display: block; margin: 17px 0 7px; color: #66666b; font-size: 11px; font-weight: 700; }
+select, input[type="url"], input[type="number"] { width: 100%; border: 1px solid #d8d8d2; border-radius: 11px; padding: 11px 12px; background: white; color: #1d1d21; }
+.status { min-height: 18px; margin: 10px 2px 0; color: #6c6c71; font-size: 12px; text-align: center; }
+.status.error { color: #b42318; }
+.status.success { color: #27704b; }
+
+.options-shell { width: min(680px, calc(100% - 40px)); margin: 70px auto; }
+.options-shell header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+.settings-card { padding: 24px; border: 1px solid #deded7; border-radius: 18px; background: white; }
+.settings-card label { display: block; margin: 0 0 18px; font-weight: 700; }
+.settings-card small { display: block; margin: 6px 0 0; color: #77777b; font-weight: 400; }
+.toggle-row { display: flex !important; align-items: center; gap: 10px; }
+.option-actions { display: flex; gap: 10px; }
+.option-actions button { border: 0; border-radius: 11px; padding: 11px 16px; font-weight: 700; }
+.secondary-button { background: #ecece6; }

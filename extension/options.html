@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JEV 북마크 분류기 설정</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="options-shell">
+      <header>
+        <div class="logo" aria-hidden="true">J</div>
+        <div>
+          <p class="eyebrow">JEV BOOKMARKS</p>
+          <h1>설정</h1>
+        </div>
+      </header>
+      <section class="settings-card">
+        <label for="endpoint">
+          백엔드 주소
+          <input id="endpoint" type="url" spellcheck="false" />
+          <small>API 키는 이 서버에만 저장하고 확장프로그램에는 넣지 않습니다.</small>
+        </label>
+        <label class="toggle-row" for="auto-save">
+          <input id="auto-save" type="checkbox" />
+          confidence가 충분하면 자동 저장
+        </label>
+        <label for="threshold">
+          자동 저장 기준 (0.50–1.00)
+          <input id="threshold" type="number" min="0.5" max="1" step="0.01" />
+          <small>처음에는 0.78 이상을 권장합니다. 실제 결과를 보고 조정하세요.</small>
+        </label>
+        <div class="option-actions">
+          <button id="save" class="save-button">설정 저장</button>
+          <button id="test" class="secondary-button">서버 연결 확인</button>
+        </div>
+        <p id="status" class="status" role="status"></p>
+      </section>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

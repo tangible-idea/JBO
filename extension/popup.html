@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JEV 북마크 분류기</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="popup-shell">
+      <header class="brand-row">
+        <div class="logo" aria-hidden="true">J</div>
+        <div>
+          <p class="eyebrow">JEV BOOKMARKS</p>
+          <h1>어디에 저장할까요?</h1>
+        </div>
+        <button id="open-options" class="icon-button" title="설정" aria-label="설정 열기">⚙</button>
+      </header>
+
+      <section class="page-card" aria-labelledby="page-title">
+        <div id="site-icon" class="site-icon" aria-hidden="true">↗</div>
+        <div class="page-copy">
+          <h2 id="page-title">현재 페이지를 불러오는 중…</h2>
+          <p id="page-host"></p>
+        </div>
+      </section>
+
+      <button id="classify" class="primary-button" disabled>
+        <span class="spark">✦</span>
+        JEV로 폴더 찾기
+      </button>
+
+      <section id="result" class="result" hidden>
+        <div class="result-heading">
+          <div>
+            <p class="eyebrow">추천 결과</p>
+            <h2 id="result-title">가장 잘 맞는 폴더</h2>
+          </div>
+          <span id="confidence" class="confidence-badge"></span>
+        </div>
+        <div id="candidates" class="candidate-list"></div>
+      </section>
+
+      <label class="field-label" for="folder-select">직접 폴더 선택</label>
+      <select id="folder-select" disabled>
+        <option>북마크 폴더를 불러오는 중…</option>
+      </select>
+
+      <button id="save" class="save-button" disabled>이 폴더에 저장</button>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
