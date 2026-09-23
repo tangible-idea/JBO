@@ -43,6 +43,15 @@ make
 
 공통으로 전체 북마크 또는 특정 폴더 안만 정리할 수 있습니다. 서버는 각 북마크의 페이지 제목과 메타 설명·키워드·사이트 이름을 읽어 JEV로 분류합니다. 결과는 목적지 폴더별로 묶인 이동 예정표로 보여 줍니다. 항목마다 목적지를 바꿀 수 있고, 확신도가 기준 이하인 항목은 ‘검토 필요’로 표시되어 기본 선택에서 빠집니다. 적용 전에는 아무것도 바뀌지 않으며, 마지막 정리는 되돌릴 수 있습니다.
 
+### 관심사 분석 — Poe LLM으로 폴더 구조 추천
+
+정리 스튜디오의 **관심사 분석** 탭에서 실행합니다. `.env`에 `POE_API_KEY`가 필요하고, 모델은 `POE_MODEL`로 바꿀 수 있습니다(기본 `Claude-Sonnet-4.6`).
+
+1. 모든 북마크의 페이지 제목과 메타정보(설명·키워드·사이트 이름)를 읽습니다.
+2. 전체를 JSON 한 파일로 `data/snapshots/bookmarks-<시각>.json`(최신본은 `data/bookmarks-latest.json`)에 저장합니다. LLM 호출이 실패해도 이 파일은 남습니다.
+3. Poe의 OpenAI 호환 API로 LLM에 보내 관심 분야(비중, 근거)와 새 폴더 구조(상위/하위 폴더)를 받습니다. 결과는 `data/profile-latest.json`에 저장됩니다. 북마크가 많으면 설명을 줄이거나 균등 추출해 컨텍스트에 맞춥니다.
+4. **이 구조로 정리하기**를 누르면 추천 구조가 A 방식(새 폴더 만들어서 정리)의 카테고리로 들어갑니다. `개발 / 프론트엔드` 같은 하위 폴더도 그대로 만들어집니다.
+
 ## 검증
 
 ```bash
@@ -50,4 +59,4 @@ make verify
 make doctor
 ```
 
-`GET /health`는 서버와 API 키 설정 상태를, `POST /api/classify`는 단일 페이지 분류를, `POST /api/classify-batch`는 카테고리(`categories`) 또는 기존 폴더(`folders`) 기준의 일괄 분류를 제공합니다.
+`GET /health`는 서버와 API 키 설정 상태를, `POST /api/classify`는 단일 페이지 분류를, `POST /api/classify-batch`는 카테고리(`categories`) 또는 기존 폴더(`folders`) 기준의 일괄 분류를, `POST /api/metadata`와 `POST /api/profile`은 관심사 분석을 제공합니다.

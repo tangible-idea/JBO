@@ -82,6 +82,10 @@ let plan = null; // { mode, items, destinations: [{ key, label }] }
 let filter = "all";
 const collapsedGroups = new Set();
 let abortController = null;
+let serverHealth = null;
+let insightController = null;
+let lastSnapshot = null; // enriched bookmarks from the latest interest analysis
+let lastProfile = null;
 
 const scopePicker = createFolderPicker($("#scope-picker"), { onChange: updateScopeCount });
 const rootParentPicker = createFolderPicker($("#root-parent-picker"));
@@ -566,9 +570,14 @@ async function applyPlan() {
       const root = await findOrCreateFolder(plan.rootParentId, plan.rootName);
       if (root.created) createdFolderIds.push(root.folder.id);
       for (const key of new Set(selected.map((item) => item.destination))) {
-        const result = await findOrCreateFolder(root.folder.id, key.slice("category:".length));
-        if (result.created) createdFolderIds.push(result.folder.id);
-        folderIdFor.set(key, result.folder.id);
+        // "개발 / 프론트엔드" becomes a nested folder pair under the root.
+        let parentId = root.folder.id;
+        for (const title of key.slice("category:".length).split(" / ")) {
+          const result = await findOrCreateFolder(parentId, title);
+          if (result.created) createdFolderIds.push(result.folder.id);
+          parentId = result.folder.id;
+        }
+        folderIdFor.set(key, parentId);
       }
     } else {
       for (const item of selected) folderIdFor.set(item.destination, item.destination.slice("folder:".length));
@@ -649,6 +658,206 @@ async function undoLastBatch() {
   );
 }
 
+/* ---------- interests (Poe LLM) ---------- */
+
+function renderPoeWarning() {
+  $("#poe-warning").hidden = !serverHealth || serverHealth.poeConfigured !== false;
+}
+
+function setInsightStep(step) {
+  const order = ["meta", "save", "llm"];
+  document.querySelectorAll("#insight-steps li").forEach((item) => {
+    const index = order.indexOf(item.dataset.step);
+    const current = order.indexOf(step);
+    item.dataset.state = step === "done" || index < current ? "done" : index === current ? "active" : "";
+  });
+}
+
+async function postJson(pathname, body, signal) {
+  const response = await fetch(`${endpointBase()}${pathname}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    signal,
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result.error || `서버 오류 (${response.status})`);
+  return result;
+}
+
+async function analyzeInterests() {
+  const status = $("#insight-status");
+  const progress = $("#insight-progress");
+  const button = $("#analyze-interests");
+  const cancel = $("#cancel-interests");
+  if (allBookmarks.length < 3) {
+    setStatus(status, "분석하려면 북마크가 3개 이상 필요해요.", "error");
+    return;
+  }
+  insightController = new AbortController();
+  const { signal } = insightController;
+  button.disabled = true;
+  cancel.hidden = false;
+  progress.style.width = "0%";
+  document.body.classList.add("is-analyzing");
+  try {
+    if (!(await ensureOriginPermission(settings.endpoint))) throw new Error("백엔드 접근 권한이 필요해요.");
+    setInsightStep("meta");
+    const total = allBookmarks.length;
+    let done = 0;
+    const chunks = chunkItems(
+      allBookmarks.map(({ id, title, url, currentPath }) => ({ id, title, url, folder: currentPath })),
+      25,
+    );
+    const enriched = await mapWithConcurrency(chunks, 4, async (chunk) => {
+      const { results } = await postJson("/api/metadata", { bookmarks: chunk }, signal);
+      done += chunk.length;
+      progress.style.width = `${Math.round((done / total) * 80)}%`;
+      setStatus(status, `페이지 메타정보 ${done.toLocaleString()} / ${total.toLocaleString()}`);
+      return results;
+    });
+    lastSnapshot = enriched.flat();
+
+    setInsightStep("llm");
+    progress.style.width = "90%";
+    setStatus(status, `${serverHealth?.poeModel || "LLM"}이 관심사를 읽는 중… 1~2분 걸릴 수 있어요.`);
+    lastProfile = await postJson("/api/profile", { bookmarks: lastSnapshot }, signal);
+    await chrome.storage.local.set({ lastProfile });
+    setInsightStep("done");
+    progress.style.width = "100%";
+    renderProfile(lastProfile);
+    setStatus(status, "분석이 끝났어요.", "success");
+  } catch (error) {
+    setInsightStep("");
+    setStatus(status, signal.aborted ? "분석을 중지했어요." : error.message, signal.aborted ? "" : "error");
+  } finally {
+    insightController = null;
+    button.disabled = false;
+    cancel.hidden = true;
+    document.body.classList.remove("is-analyzing");
+  }
+}
+
+function renderProfile(profile) {
+  $("#insight-result").hidden = false;
+  $("#insight-summary-text").textContent = profile.summary || "요약이 없어요.";
+  const created = new Date(profile.createdAt);
+  const coverage = profile.coverage?.included < profile.coverage?.total
+    ? `북마크 ${profile.coverage.total}개 중 ${profile.coverage.included}개 반영`
+    : `북마크 ${profile.coverage?.total ?? "?"}개 반영`;
+  $("#insight-meta").textContent = [
+    `${created.toLocaleString("ko-KR")} · ${profile.model}`,
+    coverage,
+    profile.snapshotFile ? `저장: ${profile.snapshotFile}` : "",
+  ].filter(Boolean).join(" · ");
+
+  const list = $("#interest-list");
+  list.replaceChildren();
+  profile.interests.forEach((interest, index) => {
+    const item = document.createElement("li");
+    item.style.setProperty("--w", `${interest.weight}%`);
+    item.style.animationDelay = `${index * 50}ms`;
+    const head = document.createElement("div");
+    head.className = "interest-head";
+    const name = document.createElement("strong");
+    name.textContent = interest.name;
+    const weight = document.createElement("span");
+    weight.textContent = interest.weight;
+    head.append(name, weight);
+    const bar = document.createElement("div");
+    bar.className = "interest-bar";
+    const description = document.createElement("p");
+    description.textContent = interest.description;
+    const evidence = document.createElement("div");
+    evidence.className = "evidence";
+    for (const example of interest.evidence) {
+      const chip = document.createElement("span");
+      chip.textContent = example;
+      evidence.append(chip);
+    }
+    item.append(head, bar, description, evidence);
+    list.append(item);
+  });
+
+  const structure = profile.folderStructure;
+  const tree = $("#structure-tree");
+  const rootLine = document.createElement("p");
+  rootLine.className = "structure-root";
+  rootLine.innerHTML = '<span class="folder-glyph open"></span>';
+  rootLine.append(structure.rootName);
+  const categoriesList = document.createElement("ul");
+  for (const category of structure.categories) {
+    const item = document.createElement("li");
+    const label = document.createElement("div");
+    label.className = "structure-node";
+    label.innerHTML = '<span class="folder-glyph"></span>';
+    const name = document.createElement("strong");
+    name.textContent = category.name;
+    const description = document.createElement("small");
+    description.textContent = category.description;
+    label.append(name, description);
+    item.append(label);
+    if (category.children.length) {
+      const children = document.createElement("ul");
+      for (const child of category.children) {
+        const childItem = document.createElement("li");
+        childItem.className = "structure-node child";
+        childItem.innerHTML = '<span class="folder-glyph"></span>';
+        const childName = document.createElement("span");
+        childName.textContent = child.name;
+        childItem.append(childName);
+        if (child.description) childItem.title = child.description;
+        children.append(childItem);
+      }
+      item.append(children);
+    }
+    categoriesList.append(item);
+  }
+  tree.replaceChildren(rootLine, categoriesList);
+  $("#structure-count").textContent = `말단 폴더 ${profile.leafCategories.length}개`;
+}
+
+function useProfileStructure() {
+  if (!lastProfile) return;
+  categories = parseCategories(lastProfile.leafCategories.join("\n"));
+  el.rootName.value = lastProfile.folderStructure.rootName;
+  chrome.storage.sync.set({ batchRootName: el.rootName.value });
+  renderCategories();
+  saveCategories();
+  setMode("new");
+  showView("organize");
+  setStatus(el.batchStatus, `추천 구조(${categories.length}개 카테고리)를 적용했어요. 분석을 시작해 보세요.`, "success");
+  el.analyze.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function downloadSnapshot() {
+  const data = {
+    exportedAt: new Date().toISOString(),
+    profile: lastProfile,
+    bookmarks: lastSnapshot || undefined,
+  };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `bookmark-profile-${new Date().toISOString().slice(0, 10)}.json`;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1_000);
+}
+
+async function loadLatestProfile() {
+  const local = await chrome.storage.local.get("lastProfile");
+  lastProfile = local.lastProfile || null;
+  if (!lastProfile) {
+    try {
+      const response = await fetch(`${endpointBase()}/api/profile/latest`);
+      if (response.ok) lastProfile = await response.json();
+    } catch {
+      // The server may be offline; the view simply starts empty.
+    }
+  }
+  if (lastProfile?.folderStructure) renderProfile(lastProfile);
+}
+
 /* ---------- settings ---------- */
 
 async function checkServer({ report = false } = {}) {
@@ -658,6 +867,8 @@ async function checkServer({ report = false } = {}) {
     const response = await fetch(`${endpointBase()}/health`);
     const body = await response.json();
     if (!response.ok || !body.ok) throw new Error();
+    serverHealth = body;
+    renderPoeWarning();
     pill.dataset.state = body.configured ? "ok" : "warn";
     label.textContent = body.configured ? "JEV 연결됨" : "API 키 없음";
     if (report) {
@@ -757,9 +968,12 @@ async function initialize() {
   }
   setMode(local.organizeMode === "existing" ? "existing" : "new");
   setScope("all");
-  showView(location.hash === "#settings" ? "settings" : "organize");
+  const initialView = location.hash.slice(1);
+  showView(["settings", "insights"].includes(initialView) ? initialView : "organize");
   await renderUndoBanner();
-  checkServer();
+  $("#insight-count").textContent = allBookmarks.length.toLocaleString();
+  await checkServer();
+  await loadLatestProfile();
 }
 
 document.querySelectorAll(".nav-tab").forEach((tab) => {
@@ -812,6 +1026,14 @@ $("#targets-none").addEventListener("click", () => {
 });
 
 el.analyze.addEventListener("click", analyze);
+$("#analyze-interests").addEventListener("click", analyzeInterests);
+$("#cancel-interests").addEventListener("click", () => insightController?.abort());
+$("#use-structure").addEventListener("click", useProfileStructure);
+$("#download-snapshot").addEventListener("click", downloadSnapshot);
+$("#suggest-categories").addEventListener("click", () => {
+  if (lastProfile) useProfileStructure();
+  else showView("insights");
+});
 el.cancel.addEventListener("click", () => abortController?.abort());
 el.apply.addEventListener("click", () => applyPlan());
 el.undoButton.addEventListener("click", undoLastBatch);

@@ -15,7 +15,7 @@ node_modules/.package-lock.json: package.json package-lock.json
 	@echo "npm 의존성을 설치합니다…"
 	@npm ci
 
-.env: .env.example
+.env: ## 없을 때만 .env.example로 만듭니다. 기존 .env는 덮어쓰지 않습니다.
 	@install -m 600 .env.example .env
 	@echo ".env를 만들었습니다. TYPESAFE_API_KEY를 입력한 뒤 다시 실행하세요."
 

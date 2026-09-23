@@ -18,6 +18,7 @@
       </div>
       <nav class="studio-nav" role="tablist" aria-label="화면">
         <button class="nav-tab" role="tab" type="button" data-view="organize" aria-selected="true">정리하기</button>
+        <button class="nav-tab" role="tab" type="button" data-view="insights" aria-selected="false">관심사 분석</button>
         <button class="nav-tab" role="tab" type="button" data-view="settings" aria-selected="false">설정</button>
       </nav>
       <span id="server-pill" class="server-pill" data-state="unknown"><i></i><span>서버 확인 중</span></span>
@@ -102,6 +103,7 @@
             </div>
             <div class="section-row">
               <p class="section-label">카테고리 <span id="category-count" class="muted"></span></p>
+              <button id="suggest-categories" class="text-button" type="button">✦ 내 관심사로 추천</button>
               <button id="reset-categories" class="text-button" type="button">기본값으로</button>
             </div>
             <div id="category-chips" class="chips">
@@ -150,6 +152,55 @@
           <div class="apply-bar">
             <span id="apply-summary"></span>
             <button id="apply-batch" class="action-button" type="button" disabled>적용하기</button>
+          </div>
+        </section>
+      </section>
+
+      <!-- 관심사 분석 -->
+      <section id="view-insights" class="view" data-view="insights" hidden>
+        <div class="hero">
+          <h1>내 북마크로 보는 관심사</h1>
+          <p>모든 북마크의 제목과 페이지 메타정보를 JSON 한 파일로 모은 뒤, Poe의 LLM이 관심 분야를 읽고 그에 맞는 새 폴더 구조를 추천해요.</p>
+        </div>
+        <p id="poe-warning" class="hint-banner warn" hidden>
+          서버에 <code>POE_API_KEY</code>가 없어요. <code>.env</code>에 키를 넣고 <code>make restart</code>로 다시 켜 주세요.
+        </p>
+        <div class="run-row">
+          <button id="analyze-interests" class="action-button big" type="button">
+            <span class="spark" aria-hidden="true">✦</span><span>북마크 <b id="insight-count">0</b>개 분석하기</span>
+          </button>
+          <button id="cancel-interests" class="ghost-button" type="button" hidden>중지</button>
+          <div class="progress" aria-hidden="true"><span id="insight-progress"></span></div>
+          <ol id="insight-steps" class="insight-steps">
+            <li data-step="meta">페이지 메타정보 읽기</li>
+            <li data-step="save">JSON으로 저장</li>
+            <li data-step="llm">LLM 분석</li>
+          </ol>
+          <p id="insight-status" class="status" role="status" aria-live="polite"></p>
+        </div>
+
+        <section id="insight-result" class="insight-result" hidden>
+          <div class="insight-summary panel">
+            <p class="eyebrow">SUMMARY</p>
+            <p id="insight-summary-text" class="insight-quote"></p>
+            <p id="insight-meta" class="panel-note"></p>
+          </div>
+          <div class="insight-grid">
+            <section class="panel">
+              <h2>관심 분야</h2>
+              <ol id="interest-list" class="interest-list"></ol>
+            </section>
+            <section class="panel">
+              <div class="section-row">
+                <h2 class="grow">추천 폴더 구조</h2>
+                <span id="structure-count" class="muted"></span>
+              </div>
+              <div id="structure-tree" class="structure-tree"></div>
+              <div class="insight-actions">
+                <button id="use-structure" class="action-button" type="button">이 구조로 정리하기 →</button>
+                <button id="download-snapshot" class="ghost-button" type="button">JSON 다운로드</button>
+              </div>
+            </section>
           </div>
         </section>
       </section>
