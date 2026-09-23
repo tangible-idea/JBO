@@ -1,4 +1,4 @@
-import "node:process";
+import process from "node:process";
 import { readFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import path from "node:path";
@@ -16,6 +16,14 @@ import {
   normalizeMetadataRequest,
   normalizeProfileRequest,
 } from "./profile.mjs";
+
+// Load .env so `npm start` works without `make`. Variables already set in the
+// shell take precedence over the file.
+try {
+  process.loadEnvFile(new URL("../.env", import.meta.url));
+} catch (error) {
+  if (error.code !== "ENOENT") throw error;
+}
 
 const port = Number.parseInt(process.env.PORT || "8787", 10);
 const maxBodyBytes = 256 * 1024;
