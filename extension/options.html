@@ -170,9 +170,12 @@
             <span class="spark" aria-hidden="true">✦</span><span>북마크 <b id="insight-count">0</b>개 분석하기</span>
           </button>
           <button id="cancel-interests" class="ghost-button" type="button" hidden>중지</button>
+          <label class="inline-check" title="끄면 저장된 JSON에 있는 페이지는 다시 읽지 않아요.">
+            <input id="refresh-meta" type="checkbox" /> 메타정보 새로 읽기
+          </label>
           <div class="progress" aria-hidden="true"><span id="insight-progress"></span></div>
           <ol id="insight-steps" class="insight-steps">
-            <li data-step="meta">페이지 메타정보 읽기</li>
+            <li data-step="meta">페이지 메타정보 읽기 <small>(저장된 JSON 재사용)</small></li>
             <li data-step="save">JSON으로 저장</li>
             <li data-step="llm">LLM 분석</li>
           </ol>

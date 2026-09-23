@@ -3,6 +3,8 @@ import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { writeFile } from "node:fs/promises";
+import { createMetadataCache } from "./metadata-cache.mjs";
 import { createPoeClient } from "./poe.mjs";
 import {
   analyzeBookmarkProfile,
@@ -127,4 +129,39 @@ test("analyzeBookmarkProfile keeps the snapshot when the LLM call fails", async 
   await assert.rejects(analyzeBookmarkProfile(poe, { bookmarks }, { dataDir }), /Poe down.*저장했습니다/);
   const snapshot = JSON.parse(await readFile(path.join(dataDir, "bookmarks-latest.json"), "utf8"));
   assert.equal(snapshot.count, 3);
+});
+
+test("metadata cache reuses saved snapshot values and refetches empty or forced ones", async () => {
+  const dataDir = await mkdtemp(path.join(tmpdir(), "jev-cache-"));
+  const file = path.join(dataDir, "bookmarks-latest.json");
+  await writeFile(file, JSON.stringify({ bookmarks: [
+    { url: "https://saved.example", meta: { description: "저장된 설명" } },
+    { url: "https://failed.example", meta: { description: "" } },
+  ] }));
+  const fetched = [];
+  const cache = createMetadataCache(file, {
+    fetchMetadata: async (url) => {
+      fetched.push(url);
+      return { description: "새로 읽음" };
+    },
+  });
+  const input = { bookmarks: [
+    { id: "1", title: "Saved", url: "https://saved.example" },
+    { id: "2", title: "Failed", url: "https://failed.example" },
+    { id: "3", title: "New", url: "https://new.example" },
+  ] };
+  const first = await enrichBookmarks(input, { cache });
+  assert.equal(first.cached, 1);
+  assert.equal(first.results[0].meta.description, "저장된 설명");
+  assert.deepEqual(fetched, ["https://failed.example", "https://new.example"]);
+
+  const forced = await enrichBookmarks({ ...input, refresh: true }, { cache });
+  assert.equal(forced.cached, 0);
+  assert.equal(forced.results[0].meta.description, "새로 읽음");
+});
+
+test("metadata cache works before any snapshot exists", async () => {
+  const dataDir = await mkdtemp(path.join(tmpdir(), "jev-cache-"));
+  const cache = createMetadataCache(path.join(dataDir, "missing.json"), { fetchMetadata: async () => ({ siteName: "A" }) });
+  assert.deepEqual(await cache.fetch("https://a.example"), { meta: { siteName: "A" }, cached: false });
 });

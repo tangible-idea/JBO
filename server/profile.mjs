@@ -48,12 +48,20 @@ export function normalizeMetadataRequest(input) {
   return { bookmarks };
 }
 
-export async function enrichBookmarks(input, { metadataFetch = fetchBookmarkMetadata } = {}) {
+export async function enrichBookmarks(input, { metadataFetch = fetchBookmarkMetadata, cache } = {}) {
   const { bookmarks } = normalizeMetadataRequest(input);
+  const refresh = input?.refresh === true;
+  let cached = 0;
   const results = await Promise.all(
-    bookmarks.map(async (bookmark) => ({ ...bookmark, meta: normalizeMeta(await metadataFetch(bookmark.url)) })),
+    bookmarks.map(async (bookmark) => {
+      const found = cache
+        ? await cache.fetch(bookmark.url, { refresh })
+        : { meta: await metadataFetch(bookmark.url), cached: false };
+      if (found.cached) cached += 1;
+      return { ...bookmark, meta: normalizeMeta(found.meta) };
+    }),
   );
-  return { results };
+  return { results, cached };
 }
 
 export function normalizeProfileRequest(input) {

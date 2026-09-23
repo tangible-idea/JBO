@@ -704,16 +704,23 @@ async function analyzeInterests() {
     if (!(await ensureOriginPermission(settings.endpoint))) throw new Error("백엔드 접근 권한이 필요해요.");
     setInsightStep("meta");
     const total = allBookmarks.length;
+    const refresh = $("#refresh-meta").checked;
     let done = 0;
+    let reused = 0;
     const chunks = chunkItems(
       allBookmarks.map(({ id, title, url, currentPath }) => ({ id, title, url, folder: currentPath })),
       25,
     );
     const enriched = await mapWithConcurrency(chunks, 4, async (chunk) => {
-      const { results } = await postJson("/api/metadata", { bookmarks: chunk }, signal);
+      const { results, cached = 0 } = await postJson("/api/metadata", { bookmarks: chunk, refresh }, signal);
       done += chunk.length;
+      reused += cached;
       progress.style.width = `${Math.round((done / total) * 80)}%`;
-      setStatus(status, `페이지 메타정보 ${done.toLocaleString()} / ${total.toLocaleString()}`);
+      setStatus(
+        status,
+        `페이지 메타정보 ${done.toLocaleString()} / ${total.toLocaleString()}` +
+          (reused ? ` · ${reused.toLocaleString()}개는 저장된 JSON에서 가져옴` : ""),
+      );
       return results;
     });
     lastSnapshot = enriched.flat();
@@ -726,7 +733,13 @@ async function analyzeInterests() {
     setInsightStep("done");
     progress.style.width = "100%";
     renderProfile(lastProfile);
-    setStatus(status, "분석이 끝났어요.", "success");
+    setStatus(
+      status,
+      reused
+        ? `분석이 끝났어요. 메타정보 ${reused.toLocaleString()}개는 저장된 JSON을 재사용했어요.`
+        : "분석이 끝났어요.",
+      "success",
+    );
   } catch (error) {
     setInsightStep("");
     setStatus(status, signal.aborted ? "분석을 중지했어요." : error.message, signal.aborted ? "" : "error");

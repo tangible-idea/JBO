@@ -9,6 +9,7 @@ import {
   normalizeBatchRequest,
   normalizeRequest,
 } from "./classifier.mjs";
+import { createMetadataCache } from "./metadata-cache.mjs";
 import { createPoeClient, DEFAULT_POE_MODEL, PoeError } from "./poe.mjs";
 import {
   analyzeBookmarkProfile,
@@ -29,6 +30,8 @@ const port = Number.parseInt(process.env.PORT || "8787", 10);
 const maxBodyBytes = 256 * 1024;
 const maxProfileBodyBytes = 8 * 1024 * 1024;
 const dataDir = path.resolve(process.env.DATA_DIR || "data");
+const metadataCache = createMetadataCache(path.join(dataDir, "bookmarks-latest.json"));
+const cachedMetadataFetch = async (url) => (await metadataCache.fetch(url)).meta;
 const poeModel = () => process.env.POE_MODEL?.trim() || DEFAULT_POE_MODEL;
 
 function setCorsHeaders(request, response) {
@@ -115,6 +118,7 @@ const server = createServer(async (request, response) => {
       normalizeBatchRequest(body);
       return classifyBookmarksBatch(getClient(), body, {
         model: process.env.TYPESAFE_MODEL?.trim() || undefined,
+        metadataFetch: cachedMetadataFetch,
       });
     });
     return;
@@ -124,7 +128,7 @@ const server = createServer(async (request, response) => {
     await handle(response, "페이지 메타정보를 읽지 못했습니다.", async () => {
       const body = await readJson(request);
       normalizeMetadataRequest(body);
-      return enrichBookmarks(body);
+      return enrichBookmarks(body, { cache: metadataCache });
     });
     return;
   }
