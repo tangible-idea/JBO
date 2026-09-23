@@ -41,3 +41,34 @@ export function suggestFolderName(page) {
   const title = String(page?.title || "").split(/\s[-–—|:]\s/)[0].trim();
   return title.slice(0, 80) || "새 북마크 폴더";
 }
+
+export function buildFolderTree(nodes, parentPath = "") {
+  const result = [];
+  for (const node of nodes) {
+    if (!node.children) continue;
+    if (!node.title) {
+      result.push(...buildFolderTree(node.children, parentPath));
+      continue;
+    }
+    const path = parentPath ? `${parentPath} / ${node.title}` : node.title;
+    result.push({ id: node.id, title: node.title, path, children: buildFolderTree(node.children, path) });
+  }
+  return result;
+}
+
+export function flattenFolderTree(tree) {
+  return tree.flatMap((folder) => [{ id: folder.id, path: folder.path }, ...flattenFolderTree(folder.children)]);
+}
+
+// Keeps folders whose title matches, plus their ancestors so the match stays in context.
+export function filterFolderTree(tree, query) {
+  const needle = String(query || "").trim().toLocaleLowerCase();
+  if (!needle) return tree;
+  const result = [];
+  for (const folder of tree) {
+    const children = filterFolderTree(folder.children, needle);
+    const matches = folder.title.toLocaleLowerCase().includes(needle);
+    if (matches || children.length > 0) result.push({ ...folder, matches, children });
+  }
+  return result;
+}

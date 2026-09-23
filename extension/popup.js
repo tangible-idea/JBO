@@ -1,65 +1,208 @@
-import { shouldSuggestNewFolder, suggestFolderName } from "./popup-utils.js";
+import { createFolderPicker } from "./folder-picker.js";
+import {
+  buildFolderTree,
+  flattenFolderTree,
+  shouldSuggestNewFolder,
+  suggestFolderName,
+} from "./popup-utils.js";
 
 const DEFAULT_SETTINGS = {
   endpoint: "http://127.0.0.1:8787",
+  autoClassify: true,
   autoSave: false,
   confidenceThreshold: 0.78,
 };
 
+const $ = (selector) => document.querySelector(selector);
 const elements = {
-  classify: document.querySelector("#classify"),
-  confidence: document.querySelector("#confidence"),
-  candidates: document.querySelector("#candidates"),
-  createFolder: document.querySelector("#create-folder"),
-  folderSelect: document.querySelector("#folder-select"),
-  newFolder: document.querySelector("#new-folder"),
-  newFolderName: document.querySelector("#new-folder-name"),
-  newFolderParent: document.querySelector("#new-folder-parent"),
-  newFolderReason: document.querySelector("#new-folder-reason"),
-  openOptions: document.querySelector("#open-options"),
-  pageHost: document.querySelector("#page-host"),
-  pageTitle: document.querySelector("#page-title"),
-  result: document.querySelector("#result"),
-  resultTitle: document.querySelector("#result-title"),
-  save: document.querySelector("#save"),
-  siteIcon: document.querySelector("#site-icon"),
-  status: document.querySelector("#status"),
+  classify: $("#classify"),
+  newFolderHint: $("#new-folder-hint"),
+  newFolderName: $("#new-folder-name"),
+  newFolderPreview: $("#new-folder-preview"),
+  pageHost: $("#page-host"),
+  pageTitle: $("#page-title"),
+  recommendations: $("#recommendations"),
+  save: $("#save"),
+  saveLabel: $("#save-label"),
+  savedBadge: $("#saved-badge"),
+  siteFavicon: $("#site-favicon"),
+  siteLetter: $("#site-letter"),
+  status: $("#status"),
+  tabs: document.querySelectorAll(".mode-tab"),
+  panels: document.querySelectorAll(".mode-panel"),
 };
 
 let activeTab;
+let folderTree = [];
 let folders = [];
 let settings = DEFAULT_SETTINGS;
 let existingBookmark;
+let mode = "existing";
+let busy = false;
+
+const destinationPicker = createFolderPicker($("#destination-picker"), {
+  onChange: () => {
+    highlightRecommendation();
+    updateAction();
+  },
+});
+const parentPicker = createFolderPicker($("#parent-picker"), { onChange: updateAction });
 
 function setStatus(message, kind = "") {
   elements.status.textContent = message;
   elements.status.className = `status ${kind}`.trim();
 }
 
-function flattenFolders(nodes, parentPath = "") {
-  const result = [];
+function findFolder(id, nodes = folderTree, parent = null) {
   for (const node of nodes) {
-    const path = node.title ? (parentPath ? `${parentPath} / ${node.title}` : node.title) : parentPath;
-    if (node.children && node.title) result.push({ id: node.id, path });
-    if (node.children) result.push(...flattenFolders(node.children, path));
+    if (node.id === id) return { node, parent };
+    const found = findFolder(id, node.children, node);
+    if (found) return found;
   }
-  return result;
+  return null;
 }
 
-function renderFolders() {
-  elements.folderSelect.replaceChildren();
-  elements.newFolderParent.replaceChildren();
-  for (const folder of folders) {
-    const option = document.createElement("option");
-    option.value = folder.id;
-    option.textContent = folder.path;
-    elements.folderSelect.append(option);
+function folderTitle(id) {
+  return findFolder(id)?.node.title || "";
+}
 
-    const parentOption = option.cloneNode(true);
-    elements.newFolderParent.append(parentOption);
+function parentPath(path, title) {
+  return path.endsWith(title) ? path.slice(0, -title.length).replace(/\s\/\s$/, "") : "";
+}
+
+function setMode(nextMode) {
+  mode = nextMode;
+  elements.tabs.forEach((tab) => tab.setAttribute("aria-selected", String(tab.dataset.mode === mode)));
+  elements.panels.forEach((panel) => {
+    panel.hidden = panel.dataset.mode !== mode;
+  });
+  document.body.dataset.mode = mode;
+  if (mode === "new") {
+    elements.newFolderName.focus();
+    elements.newFolderName.select();
   }
-  elements.folderSelect.disabled = folders.length === 0;
-  elements.save.disabled = folders.length === 0;
+  updateAction();
+}
+
+function updateAction() {
+  let label;
+  let enabled = !busy && Boolean(activeTab?.url);
+  if (mode === "existing") {
+    const folder = destinationPicker.selected;
+    if (!folder) {
+      label = "저장할 폴더를 선택하세요";
+      enabled = false;
+    } else if (existingBookmark?.parentId === folder.id) {
+      label = `‘${folder.title}’에 저장되어 있어요`;
+      enabled = false;
+    } else {
+      label = existingBookmark ? `‘${folder.title}’(으)로 옮기기` : `‘${folder.title}’에 저장`;
+    }
+  } else {
+    const name = elements.newFolderName.value.trim();
+    const parent = parentPicker.selected;
+    elements.newFolderPreview.textContent = parent && name ? `${parent.path} / ${name}` : "";
+    if (!name) {
+      label = "새 폴더 이름을 입력하세요";
+      enabled = false;
+    } else if (!parent) {
+      label = "만들 위치를 선택하세요";
+      enabled = false;
+    } else {
+      label = `‘${name}’ 만들고 저장`;
+    }
+  }
+  elements.saveLabel.textContent = label;
+  elements.save.disabled = !enabled;
+  elements.savedBadge.hidden = !existingBookmark;
+}
+
+function highlightRecommendation() {
+  elements.recommendations.querySelectorAll(".rec-row").forEach((row) => {
+    row.setAttribute("aria-pressed", String(row.dataset.folderId === destinationPicker.value));
+  });
+}
+
+function renderRecommendationMessage(message, { retry = false } = {}) {
+  const box = document.createElement("div");
+  box.className = "rec-empty";
+  box.textContent = message;
+  if (retry) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "text-button";
+    button.textContent = "다시 시도";
+    button.addEventListener("click", classify);
+    box.append(button);
+  }
+  elements.recommendations.replaceChildren(box);
+}
+
+function renderRecommendations(result) {
+  elements.recommendations.replaceChildren();
+  const recommendedId = result.recommendation?.id;
+  result.candidates.forEach((candidate, index) => {
+    const title = folderTitle(candidate.id) || candidate.path;
+    const percent = Math.round(candidate.probability * 100);
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = "rec-row";
+    row.dataset.folderId = candidate.id;
+    row.style.setProperty("--p", `${percent}%`);
+    row.style.animationDelay = `${index * 60}ms`;
+
+    const glyph = document.createElement("span");
+    glyph.className = "folder-glyph";
+    const copy = document.createElement("span");
+    copy.className = "rec-copy";
+    const name = document.createElement("strong");
+    name.textContent = title;
+    if (candidate.id === recommendedId) {
+      const tag = document.createElement("em");
+      tag.className = "rec-tag";
+      tag.textContent = "추천";
+      name.append(tag);
+    }
+    const path = document.createElement("small");
+    path.textContent = parentPath(candidate.path, title) || "최상위";
+    copy.append(name, path);
+    const score = document.createElement("span");
+    score.className = "rec-score";
+    score.textContent = `${percent}%`;
+    row.append(glyph, copy, score);
+    row.addEventListener("click", () => {
+      destinationPicker.setValue(candidate.id);
+      highlightRecommendation();
+      updateAction();
+    });
+    elements.recommendations.append(row);
+  });
+
+  if (result.candidates.length === 0) renderRecommendationMessage("맞는 기존 폴더를 찾지 못했어요.");
+
+  if (shouldSuggestNewFolder(result, settings.confidenceThreshold)) {
+    const nudge = document.createElement("button");
+    nudge.type = "button";
+    nudge.className = "rec-nudge";
+    nudge.innerHTML = "<span>딱 맞는 폴더가 없어 보여요</span><strong>새 폴더 만들기 →</strong>";
+    nudge.addEventListener("click", () => setMode("new"));
+    elements.recommendations.append(nudge);
+  }
+  highlightRecommendation();
+}
+
+function prepareNewFolder(result) {
+  const confidencePercent = Math.round((result?.confidence || 0) * 100);
+  elements.newFolderHint.hidden = !result;
+  if (result) {
+    elements.newFolderHint.textContent = result.recommendation
+      ? `추천 확신도 ${confidencePercent}% — 기준 ${Math.round(settings.confidenceThreshold * 100)}%보다 낮아 새 폴더를 제안해요.`
+      : "기존 폴더 중 어울리는 곳이 없어 새 폴더를 제안해요.";
+  }
+  // Put the new folder next to the closest match, not inside it.
+  const closest = result?.candidates[0] && findFolder(result.candidates[0].id);
+  if (closest) parentPicker.setValue((closest.parent || closest.node).id);
+  updateAction();
 }
 
 async function getPageContext() {
@@ -80,57 +223,19 @@ async function getPageContext() {
   }
 }
 
-function selectFolder(folderId) {
-  elements.folderSelect.value = folderId;
-  document.querySelectorAll(".candidate").forEach((button) => {
-    button.classList.toggle("selected", button.dataset.folderId === folderId);
-  });
-}
-
-function renderResult(result) {
-  elements.result.hidden = false;
-  elements.confidence.textContent = `${Math.round(result.confidence * 100)}% confidence`;
-  elements.resultTitle.textContent = result.recommendation
-    ? "가장 잘 맞는 폴더"
-    : "확실한 폴더가 없어요";
-  elements.candidates.replaceChildren();
-
-  for (const candidate of result.candidates) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "candidate";
-    button.dataset.folderId = candidate.id;
-    const path = document.createElement("span");
-    path.textContent = candidate.path;
-    const probability = document.createElement("span");
-    probability.textContent = `${Math.round(candidate.probability * 100)}%`;
-    button.append(path, probability);
-    button.addEventListener("click", () => selectFolder(candidate.id));
-    elements.candidates.append(button);
-  }
-
-  if (result.recommendation) selectFolder(result.recommendation.id);
-  const suggestNewFolder = shouldSuggestNewFolder(result, settings.confidenceThreshold);
-  elements.newFolder.hidden = !suggestNewFolder;
-  if (suggestNewFolder) {
-    const thresholdPercent = Math.round(settings.confidenceThreshold * 100);
-    const confidencePercent = Math.round(result.confidence * 100);
-    elements.newFolderReason.textContent = result.recommendation
-      ? `confidence ${confidencePercent}%가 저장한 기준 ${thresholdPercent}% 이하입니다.`
-      : "기존 폴더 중 적합한 항목이 없어 새 폴더를 제안합니다.";
-    elements.newFolderName.value = suggestFolderName(activeTab);
-    elements.newFolderParent.value = result.candidates[0]?.id || folders[0]?.id || "";
-  }
-  if (result.truncatedFolderCount > 0) {
-    setStatus(`폴더가 많아 처음 100개만 비교했습니다. (${result.truncatedFolderCount}개 제외)`);
-  } else {
-    setStatus(result.recommendation ? "추천을 확인하고 저장하세요." : "직접 폴더를 선택해 주세요.");
-  }
+async function loadFolders() {
+  folderTree = buildFolderTree(await chrome.bookmarks.getTree());
+  folders = flattenFolderTree(folderTree);
+  destinationPicker.setTree(folderTree);
+  parentPicker.setTree(folderTree);
+  destinationPicker.setDisabled(folders.length === 0);
+  parentPicker.setDisabled(folders.length === 0);
+  if (!parentPicker.value && folders[0]) parentPicker.setValue(folders[0].id);
 }
 
 async function upsertBookmark(parentId) {
   if (existingBookmark) {
-    await chrome.bookmarks.move(existingBookmark.id, { parentId });
+    existingBookmark = await chrome.bookmarks.move(existingBookmark.id, { parentId });
   } else {
     existingBookmark = await chrome.bookmarks.create({
       parentId,
@@ -140,122 +245,162 @@ async function upsertBookmark(parentId) {
   }
 }
 
-async function saveBookmark({ automatic = false } = {}) {
-  const parentId = elements.folderSelect.value;
-  if (!parentId || !activeTab?.url) return;
-  elements.save.disabled = true;
-  try {
-    await upsertBookmark(parentId);
-    elements.save.textContent = "저장 완료 ✓";
-    setStatus(automatic ? "높은 confidence로 자동 저장했습니다." : "북마크를 저장했습니다.", "success");
-  } catch (error) {
-    elements.save.disabled = false;
-    setStatus(error.message || "북마크를 저장하지 못했습니다.", "error");
-  }
+async function saveToExisting({ automatic = false } = {}) {
+  const folder = destinationPicker.selected;
+  if (!folder) return;
+  const moved = Boolean(existingBookmark);
+  await upsertBookmark(folder.id);
+  setStatus(
+    automatic
+      ? `확신도가 높아 ‘${folder.title}’에 자동 저장했어요.`
+      : moved
+        ? `‘${folder.path}’(으)로 옮겼어요.`
+        : `‘${folder.path}’에 저장했어요.`,
+    "success",
+  );
 }
 
 async function createFolderAndSave() {
   const title = elements.newFolderName.value.trim();
-  const parentId = elements.newFolderParent.value;
-  if (!title) {
-    elements.newFolderName.focus();
-    setStatus("새 폴더 이름을 입력해 주세요.", "error");
-    return;
-  }
-  if (!parentId || !activeTab?.url) return;
+  const parent = parentPicker.selected;
+  if (!title || !parent) return;
+  const children = await chrome.bookmarks.getChildren(parent.id);
+  let folder = children.find(
+    (item) => !item.url && item.title.trim().toLocaleLowerCase() === title.toLocaleLowerCase(),
+  );
+  if (!folder) folder = await chrome.bookmarks.create({ parentId: parent.id, title });
+  await upsertBookmark(folder.id);
+  await loadFolders();
+  destinationPicker.setValue(folder.id);
+  elements.newFolderHint.hidden = true;
+  setMode("existing");
+  setStatus(`‘${parent.path} / ${folder.title}’ 폴더를 만들고 저장했어요.`, "success");
+}
 
-  elements.createFolder.disabled = true;
+async function save() {
+  busy = true;
+  updateAction();
   try {
-    const children = await chrome.bookmarks.getChildren(parentId);
-    let folder = children.find(
-      (item) => !item.url && item.title.trim().toLocaleLowerCase() === title.toLocaleLowerCase(),
-    );
-    if (!folder) folder = await chrome.bookmarks.create({ parentId, title });
-    await upsertBookmark(folder.id);
-
-    const parent = folders.find((item) => item.id === parentId);
-    const path = parent ? `${parent.path} / ${folder.title}` : folder.title;
-    if (!folders.some((item) => item.id === folder.id)) folders.push({ id: folder.id, path });
-    renderFolders();
-    elements.folderSelect.value = folder.id;
-    elements.newFolder.hidden = true;
-    elements.save.textContent = "저장 완료 ✓";
-    elements.save.disabled = true;
-    setStatus(`“${folder.title}” 폴더를 만들고 북마크를 저장했습니다.`, "success");
+    if (mode === "existing") await saveToExisting();
+    else await createFolderAndSave();
   } catch (error) {
-    elements.createFolder.disabled = false;
-    setStatus(error.message || "새 폴더를 만들지 못했습니다.", "error");
+    setStatus(error.message || "저장하지 못했어요.", "error");
+  } finally {
+    busy = false;
+    updateAction();
   }
 }
 
 async function classify() {
   elements.classify.disabled = true;
-  elements.classify.innerHTML = '<span class="spark">✦</span> 분류하는 중…';
-  setStatus("페이지와 폴더를 JEV가 비교하고 있습니다.");
+  elements.recommendations.innerHTML = '<div class="skeleton"></div><div class="skeleton short"></div>';
+  elements.recommendations.setAttribute("aria-busy", "true");
   try {
     const pageContext = await getPageContext();
     const response = await fetch(`${settings.endpoint.replace(/\/$/, "")}/api/classify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        page: {
-          title: activeTab.title,
-          url: activeTab.url,
-          description: pageContext.description,
-        },
+        page: { title: activeTab.title, url: activeTab.url, description: pageContext.description },
         folders,
       }),
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || `서버 오류 (${response.status})`);
-    renderResult(result);
+    if (result.recommendation && !existingBookmark) destinationPicker.setValue(result.recommendation.id);
+    renderRecommendations(result);
+    prepareNewFolder(shouldSuggestNewFolder(result, settings.confidenceThreshold) ? result : null);
+    if (result.truncatedFolderCount > 0) {
+      setStatus(`폴더가 많아 100개만 비교했어요. (${result.truncatedFolderCount}개 제외)`);
+    }
     if (
       settings.autoSave &&
+      !existingBookmark &&
       result.recommendation &&
       result.confidence > settings.confidenceThreshold
     ) {
-      await saveBookmark({ automatic: true });
+      await saveToExisting({ automatic: true });
     }
   } catch (error) {
-    setStatus(`${error.message} 설정에서 백엔드 주소를 확인하세요.`, "error");
+    renderRecommendationMessage(`추천을 받지 못했어요. ${error.message}`, { retry: true });
+    setStatus("설정에서 백엔드 주소를 확인하세요.", "error");
   } finally {
     elements.classify.disabled = false;
-    elements.classify.innerHTML = '<span class="spark">✦</span> 다시 분류하기';
+    elements.recommendations.removeAttribute("aria-busy");
+    updateAction();
+  }
+}
+
+function renderPage() {
+  elements.pageTitle.textContent = activeTab.title || "제목 없는 페이지";
+  try {
+    const url = new URL(activeTab.url);
+    elements.pageHost.textContent = url.hostname || activeTab.url;
+    elements.siteLetter.textContent = (url.hostname.replace(/^www\./, "")[0] || "↗").toUpperCase();
+  } catch {
+    elements.pageHost.textContent = activeTab.url;
+  }
+  if (activeTab.favIconUrl?.startsWith("http")) {
+    elements.siteFavicon.src = activeTab.favIconUrl;
+    elements.siteFavicon.addEventListener("load", () => {
+      elements.siteFavicon.hidden = false;
+      elements.siteLetter.hidden = true;
+    });
   }
 }
 
 async function initialize() {
   settings = { ...DEFAULT_SETTINGS, ...(await chrome.storage.sync.get(DEFAULT_SETTINGS)) };
   [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!activeTab?.url) {
-    elements.pageTitle.textContent = "이 페이지는 읽을 수 없습니다.";
-    setStatus("일반 웹페이지에서 다시 열어 주세요.", "error");
+  if (!activeTab?.url || !/^(https?|file|ftp):/.test(activeTab.url)) {
+    elements.pageTitle.textContent = "이 페이지는 저장할 수 없어요";
+    elements.pageHost.textContent = "일반 웹페이지에서 다시 열어 주세요.";
+    renderRecommendationMessage("브라우저 내부 페이지는 북마크할 수 없어요.");
+    activeTab = null;
+    updateAction();
     return;
   }
-
-  elements.pageTitle.textContent = activeTab.title || "제목 없는 페이지";
-  try {
-    const url = new URL(activeTab.url);
-    elements.pageHost.textContent = url.hostname || activeTab.url;
-    elements.siteIcon.textContent = (url.hostname.replace(/^www\./, "")[0] || "↗").toUpperCase();
-  } catch {
-    elements.pageHost.textContent = activeTab.url;
-  }
-
-  const tree = await chrome.bookmarks.getTree();
-  folders = flattenFolders(tree);
-  renderFolders();
+  renderPage();
+  await loadFolders();
   [existingBookmark] = await chrome.bookmarks.search({ url: activeTab.url });
   if (existingBookmark) {
-    elements.save.textContent = "기존 북마크를 이 폴더로 이동";
-    elements.folderSelect.value = existingBookmark.parentId;
+    destinationPicker.setValue(existingBookmark.parentId);
+    const current = folders.find((folder) => folder.id === existingBookmark.parentId);
+    setStatus(current ? `이미 ‘${current.path}’에 저장된 페이지예요.` : "이미 저장된 페이지예요.");
+  } else if (folders[0]) {
+    destinationPicker.setValue(folders[0].id);
   }
-  elements.classify.disabled = folders.length === 0;
-  if (folders.length === 0) setStatus("먼저 Chrome에 북마크 폴더를 하나 만들어 주세요.", "error");
+  elements.newFolderName.value = suggestFolderName(activeTab);
+  updateAction();
+
+  if (folders.length === 0) {
+    renderRecommendationMessage("먼저 Chrome에 북마크 폴더를 하나 만들어 주세요.");
+    return;
+  }
+  if (settings.autoClassify) await classify();
+  else {
+    elements.classify.disabled = false;
+    elements.classify.textContent = "추천 받기";
+    renderRecommendationMessage("‘추천 받기’를 누르면 JEV가 어울리는 폴더를 찾아요.");
+  }
 }
 
+elements.tabs.forEach((tab) => tab.addEventListener("click", () => setMode(tab.dataset.mode)));
+document.querySelector(".mode-tabs").addEventListener("keydown", (event) => {
+  if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+  const next = mode === "existing" ? "new" : "existing";
+  setMode(next);
+  document.querySelector(`.mode-tab[data-mode="${next}"]`).focus();
+});
+elements.newFolderName.addEventListener("input", updateAction);
+elements.newFolderName.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !elements.save.disabled) save();
+});
 elements.classify.addEventListener("click", classify);
-elements.createFolder.addEventListener("click", createFolderAndSave);
-elements.save.addEventListener("click", () => saveBookmark());
-elements.openOptions.addEventListener("click", () => chrome.runtime.openOptionsPage());
+elements.save.addEventListener("click", save);
+$("#open-options").addEventListener("click", () => chrome.runtime.openOptionsPage());
+$("#open-organizer").addEventListener("click", () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("options.html#organize") });
+});
+document.body.dataset.mode = mode;
 initialize().catch((error) => setStatus(error.message, "error"));

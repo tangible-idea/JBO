@@ -9,6 +9,23 @@ function cleanText(value, maxLength) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 }
 
+function normalizeFolders(input) {
+  const seenIds = new Set();
+  return Array.isArray(input)
+    ? input
+        .map((folder) => ({
+          id: cleanText(folder?.id, 200),
+          path: cleanText(folder?.path, 500),
+        }))
+        .filter((folder) => {
+          if (!folder.id || !folder.path || seenIds.has(folder.id)) return false;
+          seenIds.add(folder.id);
+          return true;
+        })
+        .slice(0, MAX_FOLDERS)
+    : [];
+}
+
 export function normalizeRequest(input) {
   if (!input || typeof input !== "object" || Array.isArray(input)) {
     throw new TypeError("요청 본문은 객체여야 합니다.");
@@ -24,21 +41,7 @@ export function normalizeRequest(input) {
     throw new TypeError("페이지 제목 또는 URL이 필요합니다.");
   }
 
-  const seenIds = new Set();
-  const folders = Array.isArray(input.folders)
-    ? input.folders
-        .map((folder) => ({
-          id: cleanText(folder?.id, 200),
-          path: cleanText(folder?.path, 500),
-        }))
-        .filter((folder) => {
-          if (!folder.id || !folder.path || seenIds.has(folder.id)) return false;
-          seenIds.add(folder.id);
-          return true;
-        })
-        .slice(0, MAX_FOLDERS)
-    : [];
-
+  const folders = normalizeFolders(input.folders);
   if (folders.length === 0) {
     throw new TypeError("분류할 북마크 폴더가 없습니다.");
   }
@@ -110,8 +113,10 @@ export function normalizeBatchRequest(input) {
     throw new TypeError("요청 본문은 객체여야 합니다.");
   }
 
+  // Existing-folder mode sends `folders`; new-folder mode sends category names.
+  const folders = normalizeFolders(input.folders);
   const seenCategories = new Set();
-  const categories = Array.isArray(input.categories)
+  const categories = folders.length > 0 ? [] : Array.isArray(input.categories)
     ? input.categories
         .map((category) => cleanText(category, 120))
         .filter((category) => {
@@ -122,7 +127,7 @@ export function normalizeBatchRequest(input) {
         })
         .slice(0, MAX_BATCH_CATEGORIES)
     : [];
-  if (categories.length < 2) {
+  if (folders.length === 0 && categories.length < 2) {
     throw new TypeError("일괄 정리 카테고리는 두 개 이상 필요합니다.");
   }
 
@@ -148,28 +153,26 @@ export function normalizeBatchRequest(input) {
     throw new TypeError("분류할 북마크가 없습니다.");
   }
 
-  return { bookmarks, categories };
+  return { bookmarks, categories, folders };
 }
 
 export async function classifyBookmarksBatch(client, input, { model, metadataFetch = fetchBookmarkMetadata } = {}) {
-  const { bookmarks, categories } = normalizeBatchRequest(input);
+  const { bookmarks, categories, folders } = normalizeBatchRequest(input);
+  const targets = folders.length > 0
+    ? folders.map((folder) => `Move this bookmark into the existing bookmark folder “${folder.path}”.`)
+    : categories.map((category) => `Organize this bookmark in the category “${category}”.`);
   const enrichedBookmarks = await Promise.all(bookmarks.map(async (bookmark) => ({
     ...bookmark,
     meta: await metadataFetch(bookmark.url),
   })));
-  const criteria = Object.fromEntries(
-    categories.map((category, index) => [
-      `category_${index}`,
-      `Organize this bookmark in the category “${category}”.`,
-    ]),
-  );
-  criteria.no_good_match = "None of the proposed categories reasonably fits this bookmark.";
+  const criteria = Object.fromEntries(targets.map((target, index) => [`category_${index}`, target]));
+  criteria.no_good_match = "None of the proposed destinations reasonably fits this bookmark.";
 
   const questions = Object.fromEntries(
     enrichedBookmarks.map((_, index) => [
       `bookmark_${index}`,
       choice(
-        `Which proposed category best fits \`bookmarks[${index}]\`? Use its bookmark title, URL, page metadata, and current folder as evidence. Choose no_good_match rather than forcing a misleading category.`,
+        `Which proposed destination best fits \`bookmarks[${index}]\`? Use its bookmark title, URL, page metadata, and current folder as evidence. Choose no_good_match rather than forcing a misleading destination.`,
         criteria,
       ),
     ]),
@@ -185,11 +188,14 @@ export async function classifyBookmarksBatch(client, input, { model, metadataFet
       const categoryIndex = answer.choice.startsWith("category_")
         ? Number(answer.choice.slice("category_".length))
         : Number.NaN;
-      const category = Number.isInteger(categoryIndex) ? categories[categoryIndex] : null;
+      const matched = Number.isInteger(categoryIndex) && categoryIndex < targets.length;
+      const folder = matched && folders.length > 0 ? folders[categoryIndex] : null;
+      const category = matched && !folder ? categories[categoryIndex] : null;
       return {
         ...bookmark,
         category,
-        probability: category ? (answer.probabilities[answer.choice] ?? null) : null,
+        folder,
+        probability: matched ? (answer.probabilities[answer.choice] ?? null) : null,
         confidence: answer.confidence,
         noGoodMatchProbability: answer.probabilities.no_good_match ?? null,
       };

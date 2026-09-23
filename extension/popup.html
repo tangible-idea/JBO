@@ -3,67 +3,99 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>JEV 북마크 분류기</title>
+    <title>JEV 북마크</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="popup">
     <main class="popup-shell">
-      <header class="brand-row">
+      <header class="topbar">
         <div class="logo" aria-hidden="true">J</div>
-        <div>
+        <div class="topbar-copy">
           <p class="eyebrow">JEV BOOKMARKS</p>
-          <h1>어디에 저장할까요?</h1>
+          <h1>북마크 저장</h1>
         </div>
-        <button id="open-options" class="icon-button" title="설정" aria-label="설정 열기">⚙</button>
+        <button id="open-organizer" class="ghost-button" type="button" title="북마크 전체 정리">전체 정리</button>
+        <button id="open-options" class="icon-button" type="button" aria-label="설정 열기" title="설정">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+        </button>
       </header>
 
       <section class="page-card" aria-labelledby="page-title">
-        <div id="site-icon" class="site-icon" aria-hidden="true">↗</div>
+        <div class="site-icon" aria-hidden="true"><img id="site-favicon" alt="" hidden /><span id="site-letter">↗</span></div>
         <div class="page-copy">
           <h2 id="page-title">현재 페이지를 불러오는 중…</h2>
           <p id="page-host"></p>
         </div>
+        <span id="saved-badge" class="saved-badge" hidden>저장됨</span>
       </section>
 
-      <button id="classify" class="primary-button" disabled>
-        <span class="spark">✦</span>
-        JEV로 폴더 찾기
-      </button>
+      <nav class="mode-tabs" role="tablist" aria-label="저장 방식">
+        <button id="tab-existing" class="mode-tab" role="tab" type="button" aria-selected="true" aria-controls="panel-existing" data-mode="existing">
+          <span class="mode-dot" aria-hidden="true"></span>기존 폴더에 넣기
+        </button>
+        <button id="tab-new" class="mode-tab" role="tab" type="button" aria-selected="false" aria-controls="panel-new" data-mode="new">
+          <span class="mode-dot" aria-hidden="true"></span>새 폴더 만들기
+        </button>
+      </nav>
 
-      <section id="result" class="result" hidden>
-        <div class="result-heading">
-          <div>
-            <p class="eyebrow">추천 결과</p>
-            <h2 id="result-title">가장 잘 맞는 폴더</h2>
-          </div>
-          <span id="confidence" class="confidence-badge"></span>
+      <section id="panel-existing" class="mode-panel" role="tabpanel" aria-labelledby="tab-existing" data-mode="existing">
+        <div class="section-row">
+          <p class="section-label">JEV 추천</p>
+          <button id="classify" class="text-button" type="button" disabled>다시 추천</button>
         </div>
-        <div id="candidates" class="candidate-list"></div>
-      </section>
+        <div id="recommendations" class="recommendations" aria-live="polite">
+          <div class="skeleton"></div>
+          <div class="skeleton short"></div>
+        </div>
 
-      <section id="new-folder" class="new-folder" hidden>
-        <div class="new-folder-heading">
-          <span class="new-folder-icon" aria-hidden="true">＋</span>
-          <div>
-            <p class="eyebrow">새 폴더 제안</p>
-            <h2>기존 폴더가 애매해요</h2>
+        <p class="section-label">저장 위치</p>
+        <div id="destination-picker" class="folder-picker">
+          <button class="folder-picker-toggle" type="button" aria-haspopup="tree" aria-expanded="false" disabled>
+            <span class="folder-glyph" aria-hidden="true"></span>
+            <span class="folder-picker-label">
+              <span class="folder-picker-parent"></span>
+              <span class="folder-picker-title">폴더를 불러오는 중…</span>
+            </span>
+            <span class="folder-picker-caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="folder-picker-panel" hidden>
+            <input class="folder-search" type="search" placeholder="폴더 이름으로 검색" aria-label="폴더 검색" autocomplete="off" />
+            <ul class="folder-tree" role="tree" aria-label="북마크 폴더" tabindex="0"></ul>
+            <p class="folder-picker-hint">↑↓ 이동 · ←→ 접기/펼치기 · Enter 선택</p>
           </div>
         </div>
-        <p id="new-folder-reason" class="new-folder-reason"></p>
-        <label class="field-label" for="new-folder-name">새 폴더 이름</label>
-        <input id="new-folder-name" type="text" maxlength="255" autocomplete="off" />
-        <label class="field-label" for="new-folder-parent">상위 폴더</label>
-        <select id="new-folder-parent"></select>
-        <button id="create-folder" class="create-folder-button">폴더 만들고 여기에 저장</button>
       </section>
 
-      <label class="field-label" for="folder-select">직접 폴더 선택</label>
-      <select id="folder-select" disabled>
-        <option>북마크 폴더를 불러오는 중…</option>
-      </select>
+      <section id="panel-new" class="mode-panel" role="tabpanel" aria-labelledby="tab-new" data-mode="new" hidden>
+        <p id="new-folder-hint" class="hint-banner" hidden></p>
+        <label class="section-label" for="new-folder-name">새 폴더 이름</label>
+        <input id="new-folder-name" class="text-input" type="text" maxlength="255" autocomplete="off" />
+        <p class="section-label">만들 위치</p>
+        <div id="parent-picker" class="folder-picker">
+          <button class="folder-picker-toggle" type="button" aria-haspopup="tree" aria-expanded="false" disabled>
+            <span class="folder-glyph" aria-hidden="true"></span>
+            <span class="folder-picker-label">
+              <span class="folder-picker-parent"></span>
+              <span class="folder-picker-title">폴더를 불러오는 중…</span>
+            </span>
+            <span class="folder-picker-caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="folder-picker-panel" hidden>
+            <input class="folder-search" type="search" placeholder="폴더 이름으로 검색" aria-label="폴더 검색" autocomplete="off" />
+            <ul class="folder-tree" role="tree" aria-label="상위 폴더" tabindex="0"></ul>
+            <p class="folder-picker-hint">↑↓ 이동 · ←→ 접기/펼치기 · Enter 선택</p>
+          </div>
+        </div>
+        <p id="new-folder-preview" class="path-preview"></p>
+      </section>
 
-      <button id="save" class="save-button" disabled>이 폴더에 저장</button>
-      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <footer class="action-bar">
+        <button id="save" class="action-button" type="button" disabled>
+          <span id="save-label">폴더를 선택하세요</span>
+        </button>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </footer>
     </main>
     <script type="module" src="popup.js"></script>
   </body>

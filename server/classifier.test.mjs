@@ -167,3 +167,20 @@ test("classifyBookmarksBatch starts every metadata check before asking JEV", asy
   await classification;
   assert.equal(jevCalled, true);
 });
+
+test("classifyBookmarksBatch can target existing folders instead of categories", async () => {
+  const result = await classifyBookmarksBatch({
+    async systemOne(request) {
+      assert.match(request.questions.bookmark_0.criteria.category_1, /개발 \/ TypeScript/);
+      return { model: "jev-test", answers: {
+        bookmark_0: { choice: "category_1", confidence: 0.88, probabilities: { category_1: 0.88 } },
+      } };
+    },
+  }, {
+    folders: [{ id: "10", path: "디자인" }, { id: "20", path: "개발 / TypeScript" }],
+    categories: ["무시됨"],
+    bookmarks: [{ id: "1", title: "TS handbook", url: "https://typescriptlang.org" }],
+  }, { metadataFetch: async () => ({}) });
+  assert.deepEqual(result.results[0].folder, { id: "20", path: "개발 / TypeScript" });
+  assert.equal(result.results[0].category, null);
+});
