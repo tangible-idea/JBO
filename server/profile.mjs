@@ -48,7 +48,7 @@ export function normalizeMetadataRequest(input) {
   return { bookmarks };
 }
 
-export async function enrichBookmarks(input, { metadataFetch = fetchBookmarkMetadata, cache } = {}) {
+export async function enrichBookmarks(input, { metadataFetch = fetchBookmarkMetadata, cache, onResult } = {}) {
   const { bookmarks } = normalizeMetadataRequest(input);
   const refresh = input?.refresh === true;
   let cached = 0;
@@ -58,7 +58,9 @@ export async function enrichBookmarks(input, { metadataFetch = fetchBookmarkMeta
         ? await cache.fetch(bookmark.url, { refresh })
         : { meta: await metadataFetch(bookmark.url), cached: false };
       if (found.cached) cached += 1;
-      return { ...bookmark, meta: normalizeMeta(found.meta) };
+      const result = { ...bookmark, meta: normalizeMeta(found.meta) };
+      onResult?.(result, { cached: found.cached });
+      return result;
     }),
   );
   return { results, cached };

@@ -685,6 +685,168 @@ async function postJson(pathname, body, signal) {
   return result;
 }
 
+const FEED_LOG_SIZE = 7;
+const FEED_NOW_SIZE = 4;
+
+function hasMetaValues(meta) {
+  return Object.values(meta || {}).some((value) => value);
+}
+
+// Live view of the metadata step: what is being read now and what just finished.
+function createReadFeed() {
+  const root = $("#read-feed");
+  const nowHosts = $("#read-now");
+  const log = $("#read-log");
+  const counts = { fetched: $("#count-fetched"), cached: $("#count-cached"), empty: $("#count-empty") };
+  const rate = $("#read-rate");
+  const pending = new Map();
+  let recent = [];
+  let tally = { fetched: 0, cached: 0, empty: 0 };
+  let total = 0;
+  let startedAt = 0;
+  let frame = 0;
+
+  function renderNow() {
+    const hosts = [...pending.values()].slice(0, FEED_NOW_SIZE);
+    nowHosts.replaceChildren(
+      ...hosts.map((bookmark) => {
+        const chip = document.createElement("span");
+        const icon = document.createElement("img");
+        icon.src = faviconUrl(bookmark.url);
+        icon.alt = "";
+        icon.onerror = () => icon.remove();
+        chip.append(icon, hostOf(bookmark.url));
+        return chip;
+      }),
+    );
+    const rest = pending.size - hosts.length;
+    if (rest > 0) nowHosts.append(Object.assign(document.createElement("em"), { textContent: `외 ${rest}개` }));
+  }
+
+  function renderLog() {
+    const existing = new Set([...log.children].map((item) => item.dataset.id));
+    log.replaceChildren(
+      ...recent.map(({ result, kind }) => {
+        const item = document.createElement("li");
+        item.dataset.id = result.id;
+        if (!existing.has(result.id)) item.classList.add("fresh");
+        const icon = document.createElement("img");
+        icon.className = "favicon";
+        icon.src = faviconUrl(result.url);
+        icon.alt = "";
+        icon.onerror = () => {
+          icon.style.visibility = "hidden";
+        };
+        const copy = document.createElement("div");
+        const title = document.createElement("strong");
+        title.textContent = result.meta.pageTitle || result.title || result.url;
+        const detail = document.createElement("small");
+        detail.textContent = result.meta.description || result.meta.siteName || hostOf(result.url);
+        copy.append(title, detail);
+        const badge = document.createElement("span");
+        badge.className = `read-badge ${kind}`;
+        badge.textContent = { fetched: "읽음", cached: "재사용", empty: "정보 없음" }[kind];
+        item.append(icon, copy, badge);
+        return item;
+      }),
+    );
+  }
+
+  function renderCounts() {
+    for (const [key, node] of Object.entries(counts)) node.textContent = tally[key].toLocaleString();
+    const done = tally.fetched + tally.cached + tally.empty;
+    const seconds = (performance.now() - startedAt) / 1000;
+    if (done > 0 && seconds > 1 && done < total) {
+      const perSecond = done / seconds;
+      const left = Math.ceil((total - done) / perSecond);
+      rate.textContent = `초당 ${perSecond.toFixed(1)}개 · 약 ${left < 60 ? `${left}초` : `${Math.ceil(left / 60)}분`} 남음`;
+    } else if (done >= total) {
+      rate.textContent = `${seconds.toFixed(0)}초 걸림`;
+    }
+  }
+
+  function schedule() {
+    if (frame) return;
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      renderNow();
+      renderLog();
+      renderCounts();
+    });
+  }
+
+  return {
+    start(count) {
+      total = count;
+      startedAt = performance.now();
+      pending.clear();
+      recent = [];
+      tally = { fetched: 0, cached: 0, empty: 0 };
+      log.replaceChildren();
+      rate.textContent = "";
+      root.hidden = false;
+      root.classList.remove("finished");
+      schedule();
+    },
+    begin(bookmarks) {
+      for (const bookmark of bookmarks) pending.set(bookmark.id, bookmark);
+      schedule();
+    },
+    add(result, cached) {
+      pending.delete(result.id);
+      const kind = cached ? "cached" : hasMetaValues(result.meta) ? "fetched" : "empty";
+      tally[kind] += 1;
+      recent = [{ result, kind }, ...recent].slice(0, FEED_LOG_SIZE);
+      schedule();
+    },
+    finish() {
+      pending.clear();
+      root.classList.add("finished");
+      schedule();
+    },
+  };
+}
+
+// Reads /api/metadata as NDJSON so each page shows up as soon as it is read.
+async function streamMetadata(bookmarks, refresh, signal, onItem) {
+  const response = await fetch(`${endpointBase()}/api/metadata`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ bookmarks, refresh, stream: true }),
+    signal,
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.error || `서버 오류 (${response.status})`);
+  }
+  if (!response.headers.get("content-type")?.includes("ndjson")) {
+    // Older server without streaming: report the whole chunk at once.
+    const { results } = await response.json();
+    results.forEach((result) => onItem(result, false));
+    return results;
+  }
+  const results = [];
+  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffer = "";
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (value) buffer += value;
+    const lines = buffer.split("\n");
+    buffer = done ? "" : lines.pop();
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const message = JSON.parse(line);
+      if (message.type === "error") throw new Error(message.error);
+      if (message.type === "item") {
+        results.push(message.result);
+        onItem(message.result, message.cached);
+      }
+    }
+    if (done) break;
+  }
+  return results;
+}
+
 async function analyzeInterests() {
   const status = $("#insight-status");
   const progress = $("#insight-progress");
@@ -696,6 +858,7 @@ async function analyzeInterests() {
   }
   insightController = new AbortController();
   const { signal } = insightController;
+  const feed = createReadFeed();
   button.disabled = true;
   cancel.hidden = false;
   progress.style.width = "0%";
@@ -711,18 +874,18 @@ async function analyzeInterests() {
       allBookmarks.map(({ id, title, url, currentPath }) => ({ id, title, url, folder: currentPath })),
       25,
     );
-    const enriched = await mapWithConcurrency(chunks, 4, async (chunk) => {
-      const { results, cached = 0 } = await postJson("/api/metadata", { bookmarks: chunk, refresh }, signal);
-      done += chunk.length;
-      reused += cached;
-      progress.style.width = `${Math.round((done / total) * 80)}%`;
-      setStatus(
-        status,
-        `페이지 메타정보 ${done.toLocaleString()} / ${total.toLocaleString()}` +
-          (reused ? ` · ${reused.toLocaleString()}개는 저장된 JSON에서 가져옴` : ""),
-      );
-      return results;
+    feed.start(total);
+    const enriched = await mapWithConcurrency(chunks, 4, (chunk) => {
+      feed.begin(chunk);
+      return streamMetadata(chunk, refresh, signal, (result, cached) => {
+        done += 1;
+        if (cached) reused += 1;
+        feed.add(result, cached);
+        progress.style.width = `${Math.round((done / total) * 80)}%`;
+        setStatus(status, `페이지 메타정보 ${done.toLocaleString()} / ${total.toLocaleString()}`);
+      });
     });
+    feed.finish();
     lastSnapshot = enriched.flat();
 
     setInsightStep("llm");
@@ -744,6 +907,7 @@ async function analyzeInterests() {
     setInsightStep("");
     setStatus(status, signal.aborted ? "분석을 중지했어요." : error.message, signal.aborted ? "" : "error");
   } finally {
+    feed.finish();
     insightController = null;
     button.disabled = false;
     cancel.hidden = true;

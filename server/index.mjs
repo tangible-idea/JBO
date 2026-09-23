@@ -66,18 +66,22 @@ function getClient() {
   return client;
 }
 
+function sendError(response, fallbackMessage, error) {
+  const isInputError = error instanceof TypeError || error instanceof SyntaxError;
+  const isTooLarge = error instanceof RangeError;
+  const isPoe = error instanceof PoeError;
+  if (!isInputError && !isTooLarge) console.error(error);
+  const status = isTooLarge ? 413 : isInputError ? 400 : isPoe && error.status === 503 ? 503 : 502;
+  sendJson(response, status, {
+    error: isInputError || isTooLarge || isPoe ? error.message : fallbackMessage,
+  });
+}
+
 async function handle(response, fallbackMessage, work) {
   try {
     sendJson(response, 200, await work());
   } catch (error) {
-    const isInputError = error instanceof TypeError || error instanceof SyntaxError;
-    const isTooLarge = error instanceof RangeError;
-    const isPoe = error instanceof PoeError;
-    if (!isInputError && !isTooLarge) console.error(error);
-    const status = isTooLarge ? 413 : isInputError ? 400 : isPoe && error.status === 503 ? 503 : 502;
-    sendJson(response, status, {
-      error: isInputError || isTooLarge || isPoe ? error.message : fallbackMessage,
-    });
+    sendError(response, fallbackMessage, error);
   }
 }
 
@@ -125,11 +129,37 @@ const server = createServer(async (request, response) => {
   }
 
   if (request.method === "POST" && url.pathname === "/api/metadata") {
-    await handle(response, "페이지 메타정보를 읽지 못했습니다.", async () => {
-      const body = await readJson(request);
+    let body;
+    try {
+      body = await readJson(request);
       normalizeMetadataRequest(body);
-      return enrichBookmarks(body, { cache: metadataCache });
+    } catch (error) {
+      sendError(response, "페이지 메타정보를 읽지 못했습니다.", error);
+      return;
+    }
+    if (body.stream !== true) {
+      await handle(response, "페이지 메타정보를 읽지 못했습니다.", () =>
+        enrichBookmarks(body, { cache: metadataCache }),
+      );
+      return;
+    }
+    // Stream one NDJSON line per bookmark as soon as its page is read.
+    response.writeHead(200, {
+      "Content-Type": "application/x-ndjson; charset=utf-8",
+      "Cache-Control": "no-cache",
     });
+    const writeLine = (line) => response.write(`${JSON.stringify(line)}\n`);
+    try {
+      const { cached } = await enrichBookmarks(body, {
+        cache: metadataCache,
+        onResult: (result, info) => writeLine({ type: "item", result, cached: info.cached }),
+      });
+      writeLine({ type: "done", cached });
+    } catch (error) {
+      console.error(error);
+      writeLine({ type: "error", error: "페이지 메타정보를 읽지 못했습니다." });
+    }
+    response.end();
     return;
   }
 

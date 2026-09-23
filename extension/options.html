@@ -180,6 +180,20 @@
             <li data-step="llm">LLM 분석</li>
           </ol>
           <p id="insight-status" class="status" role="status" aria-live="polite"></p>
+          <div id="read-feed" class="read-feed" hidden>
+            <div class="read-now">
+              <span class="pulse-dot" aria-hidden="true"></span>
+              <span class="read-now-label">지금 읽는 중</span>
+              <span id="read-now" class="read-now-hosts"></span>
+            </div>
+            <ul id="read-log" class="read-log" aria-label="최근 읽은 페이지"></ul>
+            <div class="read-counts">
+              <span><i class="badge-dot fetched"></i>새로 읽음 <b id="count-fetched">0</b></span>
+              <span><i class="badge-dot cached"></i>저장본 재사용 <b id="count-cached">0</b></span>
+              <span><i class="badge-dot empty"></i>정보 없음 <b id="count-empty">0</b></span>
+              <span id="read-rate" class="read-rate"></span>
+            </div>
+          </div>
         </div>
 
         <section id="insight-result" class="insight-result" hidden>

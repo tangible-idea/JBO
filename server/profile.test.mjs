@@ -165,3 +165,20 @@ test("metadata cache works before any snapshot exists", async () => {
   const cache = createMetadataCache(path.join(dataDir, "missing.json"), { fetchMetadata: async () => ({ siteName: "A" }) });
   assert.deepEqual(await cache.fetch("https://a.example"), { meta: { siteName: "A" }, cached: false });
 });
+
+test("enrichBookmarks reports each bookmark as soon as it is read", async () => {
+  const seen = [];
+  const { results } = await enrichBookmarks(
+    { bookmarks: [
+      { id: "1", title: "Slow", url: "https://slow.example" },
+      { id: "2", title: "Fast", url: "https://fast.example" },
+    ] },
+    {
+      metadataFetch: (url) =>
+        new Promise((resolve) => setTimeout(() => resolve({ siteName: url }), url.includes("slow") ? 20 : 1)),
+      onResult: (result, info) => seen.push([result.id, info.cached]),
+    },
+  );
+  assert.deepEqual(seen, [["2", false], ["1", false]]);
+  assert.deepEqual(results.map((result) => result.id), ["1", "2"]);
+});
