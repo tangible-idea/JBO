@@ -107,6 +107,7 @@ test("classifyBookmarksBatch asks one independent Choice per bookmark", async ()
     async systemOne(request) {
       assert.equal(Object.keys(request.questions).length, 2);
       assert.match(request.questions.bookmark_1.instructions, /bookmarks\[1\]/);
+      assert.deepEqual(request.state.bookmarks[0].meta, { description: "TypeScript reference" });
       return {
         model: "jev-test",
         answers: {
@@ -132,8 +133,37 @@ test("classifyBookmarksBatch asks one independent Choice per bookmark", async ()
       { id: "1", title: "TypeScript docs", url: "https://typescriptlang.org" },
       { id: "2", title: "Unknown", url: "https://example.com" },
     ],
-  });
+  }, { metadataFetch: async (url) => url.includes("typescript") ? { description: "TypeScript reference" } : {} });
   assert.equal(result.results[0].category, "개발");
   assert.equal(result.results[0].confidence, 0.91);
   assert.equal(result.results[1].category, null);
+});
+
+test("classifyBookmarksBatch starts every metadata check before asking JEV", async () => {
+  const resolvers = new Map();
+  let jevCalled = false;
+  const classification = classifyBookmarksBatch({
+    async systemOne(request) {
+      jevCalled = true;
+      assert.deepEqual(request.state.bookmarks.map((bookmark) => bookmark.meta.description), ["first", "second"]);
+      return { model: "jev-test", answers: Object.fromEntries([0, 1].map((index) => [
+        `bookmark_${index}`,
+        { choice: "category_0", confidence: 0.9, probabilities: { category_0: 0.9 } },
+      ])) };
+    },
+  }, {
+    categories: ["개발", "디자인"],
+    bookmarks: [
+      { id: "1", title: "First", url: "https://example.com/first" },
+      { id: "2", title: "Second", url: "https://example.com/second" },
+    ],
+  }, { metadataFetch: (url) => new Promise((resolve) => resolvers.set(url, resolve)) });
+
+  assert.equal(resolvers.size, 2);
+  resolvers.get("https://example.com/second")({ description: "second" });
+  await Promise.resolve();
+  assert.equal(jevCalled, false);
+  resolvers.get("https://example.com/first")({ description: "first" });
+  await classification;
+  assert.equal(jevCalled, true);
 });

@@ -1,4 +1,5 @@
 import { choice } from "@typesafe-ai/sdk";
+import { fetchBookmarkMetadata } from "./metadata.mjs";
 
 export const MAX_FOLDERS = 100;
 export const MAX_BATCH_BOOKMARKS = 20;
@@ -150,8 +151,12 @@ export function normalizeBatchRequest(input) {
   return { bookmarks, categories };
 }
 
-export async function classifyBookmarksBatch(client, input, { model } = {}) {
+export async function classifyBookmarksBatch(client, input, { model, metadataFetch = fetchBookmarkMetadata } = {}) {
   const { bookmarks, categories } = normalizeBatchRequest(input);
+  const enrichedBookmarks = await Promise.all(bookmarks.map(async (bookmark) => ({
+    ...bookmark,
+    meta: await metadataFetch(bookmark.url),
+  })));
   const criteria = Object.fromEntries(
     categories.map((category, index) => [
       `category_${index}`,
@@ -161,15 +166,15 @@ export async function classifyBookmarksBatch(client, input, { model } = {}) {
   criteria.no_good_match = "None of the proposed categories reasonably fits this bookmark.";
 
   const questions = Object.fromEntries(
-    bookmarks.map((_, index) => [
+    enrichedBookmarks.map((_, index) => [
       `bookmark_${index}`,
       choice(
-        `Which proposed category best fits \`bookmarks[${index}]\`? Use its title, URL, and current folder as evidence. Choose no_good_match rather than forcing a misleading category.`,
+        `Which proposed category best fits \`bookmarks[${index}]\`? Use its bookmark title, URL, page metadata, and current folder as evidence. Choose no_good_match rather than forcing a misleading category.`,
         criteria,
       ),
     ]),
   );
-  const request = { state: { bookmarks }, questions };
+  const request = { state: { bookmarks: enrichedBookmarks }, questions };
   if (model) request.model = model;
 
   const response = await client.systemOne(request);

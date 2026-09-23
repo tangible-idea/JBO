@@ -178,18 +178,22 @@ async function analyzeAllBookmarks() {
 
     batchAnalysis = [];
     const batches = chunkItems(bookmarks, 20);
-    for (let index = 0; index < batches.length; index += 1) {
-      setBatchStatus(`${bookmarks.length}개 중 ${batchAnalysis.length}개 분석 완료…`);
+    let completed = 0;
+    setBatchStatus(`${bookmarks.length}개 북마크의 메타정보와 분류를 확인하는 중…`);
+    const results = await Promise.all(batches.map(async (batch) => {
       const response = await fetch(`${endpointValue}/api/classify-batch`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookmarks: batches[index], categories }),
+        body: JSON.stringify({ bookmarks: batch, categories }),
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error || `서버 오류 (${response.status})`);
-      batchAnalysis.push(...body.results);
-      batchProgress.style.width = `${Math.round(((index + 1) / batches.length) * 100)}%`;
-    }
+      completed += body.results.length;
+      setBatchStatus(`${bookmarks.length}개 중 ${completed}개 분석 완료…`);
+      batchProgress.style.width = `${Math.round((completed / bookmarks.length) * 100)}%`;
+      return body.results;
+    }));
+    batchAnalysis = results.flat();
     const savedThreshold = Number(threshold.value);
     renderBatchResults(savedThreshold);
     setBatchStatus("분석이 끝났습니다. 이동 예정 항목을 확인한 뒤 적용하세요.", "success");
