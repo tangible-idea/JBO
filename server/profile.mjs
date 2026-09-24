@@ -69,7 +69,7 @@ export async function enrichBookmarks(input, { metadataFetch = fetchBookmarkMeta
 export function normalizeProfileRequest(input) {
   const bookmarks = normalizeList(input?.bookmarks, MAX_PROFILE_BOOKMARKS);
   if (bookmarks.length < 3) throw new TypeError("관심사를 분석하려면 북마크가 3개 이상 필요합니다.");
-  return { bookmarks };
+  return { bookmarks, folderLanguage: input?.folderLanguage === "en" ? "en" : "ko" };
 }
 
 function hostOf(url) {
@@ -137,14 +137,16 @@ export function compactForLlm(bookmarks, budget = LLM_CHAR_BUDGET) {
   }
 }
 
-export function buildProfileMessages(bookmarks, compact) {
+export function buildProfileMessages(bookmarks, compact, folderLanguage = "ko") {
   const hosts = topCounts(bookmarks.map((bookmark) => hostOf(bookmark.url)), 25)
     .map(([host, count]) => `${host} (${count})`)
     .join(", ");
   const system = [
     "You are a meticulous librarian who studies a person's browser bookmarks.",
     "Infer what the person is genuinely interested in and design a bookmark folder structure that fits how they actually use the web.",
-    "Write every human-readable string in Korean. Respond with a single JSON object and nothing else.",
+    folderLanguage === "en"
+      ? "Write only folderStructure.rootName and every folderStructure.categories name and children name in natural English. Write the summary, interests, evidence, and folder descriptions in Korean. Respond with a single JSON object and nothing else."
+      : "Write every human-readable string in Korean. Respond with a single JSON object and nothing else.",
   ].join(" ");
   const user = `아래는 한 사람의 Chrome 북마크 ${bookmarks.length}개입니다${
     compact.included < bookmarks.length ? ` (웹 주소가 아니거나 분량 때문에 ${compact.included}개만 포함)` : ""
@@ -175,7 +177,8 @@ ${compact.text}
 - interests는 비중이 큰 순서로 5~10개.
 - categories는 6~10개. 북마크가 충분히 많은 분야만 children(최대 4개)을 둡니다. 전체 말단 폴더는 ${MAX_LEAF_CATEGORIES}개 이하.
 - 폴더 이름에는 "/" 문자를 쓰지 마세요. 짧고 구체적으로.
-- 어디에도 맞지 않는 북마크를 위한 "기타" 같은 폴더를 하나 둡니다.`;
+- 어디에도 맞지 않는 북마크를 위한 ${folderLanguage === "en" ? '"Other"' : '"기타"'} 같은 폴더를 하나 둡니다.
+- ${folderLanguage === "en" ? "최상위 폴더와 모든 상위·하위 폴더 이름은 영어로 쓰세요. 요약, 관심 분야, 근거, 폴더 설명은 한국어로 쓰세요." : "최상위 폴더와 모든 상위·하위 폴더 이름은 한국어로 쓰세요."}`;
   return [
     { role: "system", content: system },
     { role: "user", content: user },
@@ -260,7 +263,7 @@ async function saveJson(dataDir, relativePath, data) {
 }
 
 export async function analyzeBookmarkProfile(poe, input, { model, dataDir, now = new Date() } = {}) {
-  const { bookmarks } = normalizeProfileRequest(input);
+  const { bookmarks, folderLanguage } = normalizeProfileRequest(input);
   const snapshot = { createdAt: now.toISOString(), count: bookmarks.length, bookmarks };
   const snapshotFile = await saveJson(dataDir, `snapshots/bookmarks-${stamp(now)}.json`, snapshot);
   await saveJson(dataDir, "bookmarks-latest.json", snapshot);
@@ -272,7 +275,7 @@ export async function analyzeBookmarkProfile(poe, input, { model, dataDir, now =
   let profile;
   try {
     // The report is long Korean JSON; 4k tokens cut it off mid-structure.
-    answer = await poe.chat({ model, messages: buildProfileMessages(bookmarks, compact), maxTokens: 16_000 });
+    answer = await poe.chat({ model, messages: buildProfileMessages(bookmarks, compact, folderLanguage), maxTokens: 16_000 });
     profile = parseProfileResponse(answer.content);
   } catch (error) {
     error.message += ` (북마크 JSON은 ${savedAs}에 저장했습니다.)`;
@@ -281,6 +284,7 @@ export async function analyzeBookmarkProfile(poe, input, { model, dataDir, now =
   const result = {
     createdAt: now.toISOString(),
     model: answer.model,
+    folderLanguage,
     coverage: { total: bookmarks.length, included: compact.included, detailLevel: compact.level },
     snapshotFile: savedAs,
     ...profile,

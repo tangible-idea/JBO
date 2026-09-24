@@ -99,17 +99,7 @@
 
       /* 2. logo */
       #s-logo { background: var(--ink); color: var(--paper); }
-      .logo-mark {
-        display: grid;
-        place-items: center;
-        width: 150px;
-        height: 150px;
-        border-radius: 38px;
-        background: var(--lime);
-        color: var(--ink);
-        font-size: 96px;
-        font-weight: 900;
-      }
+      .logo-mark { display: block; width: 190px; height: 190px; }
       #logo-word { margin-top: 38px; font-size: 128px; font-weight: 900; letter-spacing: -0.06em; }
       #logo-tag { margin-top: 10px; font-size: 36px; font-weight: 600; color: #cfcabc; }
       #logo-tag b { color: var(--lime); }
@@ -290,7 +280,7 @@
       #s-end .headline span { color: var(--lime); }
       #s-end .sub { color: #cfcabc; }
       .end-brand { display: flex; align-items: center; gap: 22px; margin-bottom: 54px; }
-      .end-brand .logo-mark { width: 92px; height: 92px; border-radius: 24px; font-size: 58px; }
+      .end-brand .logo-mark { width: 104px; height: 104px; }
       .end-brand strong { font-size: 64px; font-weight: 900; letter-spacing: -0.05em; }
     </style>
   </head>
@@ -315,7 +305,7 @@
 
       <!-- 2. 로고 -->
       <section id="s-logo" class="clip scene" data-start="4" data-duration="3.5" data-track-index="0">
-        <div id="logo-mark" class="logo-mark">T</div>
+        <img id="logo-mark" class="logo-mark" src="assets/logo.svg" alt="" />
         <div id="logo-word">Tidymark</div>
         <div id="logo-tag">북마크가 <b>제자리</b>를 찾아요</div>
       </section>
@@ -404,7 +394,7 @@
 
       <!-- 8. 마무리 -->
       <section id="s-end" class="clip scene" data-start="29" data-duration="3" data-track-index="0">
-        <div class="end-brand" id="end-brand"><div class="logo-mark">T</div><strong>Tidymark</strong></div>
+        <div class="end-brand" id="end-brand"><img class="logo-mark" src="assets/logo.svg" alt="" /><strong>Tidymark</strong></div>
         <p class="headline" id="end-line">적용하기 전엔 <span>아무것도</span><br />바뀌지 않아요</p>
         <p class="sub" id="end-sub">미리보기로 확인하고, 마음에 안 들면 되돌리면 돼요.</p>
       </section>
@@ -433,7 +423,7 @@
       tl.to("#mess-copy", { opacity: 0, y: -30, duration: 0.35, ease: "power2.in" }, 3.6);
 
       // 2. logo
-      tl.fromTo("#logo-mark", { opacity: 0, scale: 0.3, rotation: -25 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.8, ease: "back.out(2)" }, 4.1);
+      tl.fromTo("#logo-mark", { opacity: 0, x: -420, rotation: -30, scale: 0.85 }, { opacity: 1, x: 0, rotation: 0, scale: 1, duration: 0.9, ease: "back.out(1.4)" }, 4.1);
       tl.fromTo("#logo-word", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease }, 4.5);
       tl.fromTo("#logo-tag", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease }, 4.9);
       tl.to(["#logo-mark", "#logo-word", "#logo-tag"], { opacity: 0, y: -30, duration: 0.4, ease: "power2.in", stagger: 0.05 }, 7.0);

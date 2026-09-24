@@ -41,6 +41,7 @@ const DEFAULT_SETTINGS = {
   autoClassify: true,
   autoSave: false,
   confidenceThreshold: 0.78,
+  folderLanguage: "ko",
   batchRootName: "Tidymark",
   batchCategories: DEFAULT_CATEGORIES,
 };
@@ -1510,6 +1511,7 @@ async function analyzeInterests() {
   const progress = $("#insight-progress");
   const button = $("#analyze-interests");
   const cancel = $("#cancel-interests");
+  const folderLanguage = $("#folder-language").value;
   if (allBookmarks.length < 3) {
     setStatus(status, "분석하려면 북마크가 3개 이상 필요해요.", "error");
     return;
@@ -1518,6 +1520,7 @@ async function analyzeInterests() {
   const { signal } = insightController;
   const feed = createReadFeed();
   button.disabled = true;
+  $("#folder-language").disabled = true;
   cancel.hidden = false;
   progress.style.width = "0%";
   document.body.classList.add("is-analyzing");
@@ -1549,7 +1552,7 @@ async function analyzeInterests() {
     setInsightStep("llm");
     progress.style.width = "90%";
     setStatus(status, `${serverHealth?.poeModel || "LLM"}이 관심사를 읽는 중… 1~2분 걸릴 수 있어요.`);
-    lastProfile = await postJson("/api/profile", { bookmarks: lastSnapshot }, signal);
+    lastProfile = await postJson("/api/profile", { bookmarks: lastSnapshot, folderLanguage }, signal);
     await chrome.storage.local.set({ lastProfile });
     setInsightStep("done");
     progress.style.width = "100%";
@@ -1568,6 +1571,7 @@ async function analyzeInterests() {
     feed.finish();
     insightController = null;
     button.disabled = false;
+    $("#folder-language").disabled = false;
     cancel.hidden = true;
     document.body.classList.remove("is-analyzing");
   }
@@ -1588,29 +1592,56 @@ function renderProfile(profile) {
 
   const list = $("#interest-list");
   list.replaceChildren();
+  $("#interest-count").textContent = `${profile.interests.length}개 주제`;
   profile.interests.forEach((interest, index) => {
     const item = document.createElement("li");
     item.style.setProperty("--w", `${interest.weight}%`);
     item.style.animationDelay = `${index * 50}ms`;
+    const rank = document.createElement("span");
+    rank.className = "interest-rank";
+    rank.textContent = String(index + 1).padStart(2, "0");
+    rank.setAttribute("aria-label", `${index + 1}위`);
+    const content = document.createElement("div");
+    content.className = "interest-content";
     const head = document.createElement("div");
     head.className = "interest-head";
     const name = document.createElement("strong");
     name.textContent = interest.name;
     const weight = document.createElement("span");
-    weight.textContent = interest.weight;
+    weight.className = "interest-score";
+    weight.innerHTML = `<small>관심도</small><b>${interest.weight}</b><em>/100</em>`;
+    weight.setAttribute("aria-label", `관심도 ${interest.weight}점`);
     head.append(name, weight);
     const bar = document.createElement("div");
     bar.className = "interest-bar";
+    bar.setAttribute("role", "progressbar");
+    bar.setAttribute("aria-label", `${interest.name} 관심도`);
+    bar.setAttribute("aria-valuemin", "0");
+    bar.setAttribute("aria-valuemax", "100");
+    bar.setAttribute("aria-valuenow", String(interest.weight));
     const description = document.createElement("p");
+    description.className = "interest-description";
     description.textContent = interest.description;
+    const evidenceDisclosure = document.createElement("details");
+    evidenceDisclosure.className = "evidence-disclosure";
+    const evidenceSummary = document.createElement("summary");
+    evidenceSummary.textContent = `근거 북마크 ${interest.evidence.length}개`;
     const evidence = document.createElement("div");
     evidence.className = "evidence";
+    if (interest.evidence.length) {
+      evidenceDisclosure.append(evidenceSummary);
+    }
     for (const example of interest.evidence) {
       const chip = document.createElement("span");
       chip.textContent = example;
       evidence.append(chip);
     }
-    item.append(head, bar, description, evidence);
+    content.append(head, bar, description);
+    if (interest.evidence.length) {
+      evidenceDisclosure.append(evidence);
+      content.append(evidenceDisclosure);
+    }
+    item.append(rank, content);
     list.append(item);
   });
 
@@ -1621,6 +1652,16 @@ function renderProfile(profile) {
   rootLine.innerHTML = '<span class="folder-glyph open"></span>';
   rootLine.append(structure.rootName);
   const categoriesList = document.createElement("ul");
+  const createFolderInfo = (folderName, description) => {
+    const info = document.createElement("button");
+    info.className = "folder-info";
+    info.type = "button";
+    info.textContent = "i";
+    const detail = description || "관련 자료 설명이 없어요.";
+    info.dataset.tooltip = detail;
+    info.setAttribute("aria-label", `${folderName} 관련 자료: ${detail}`);
+    return info;
+  };
   for (const category of structure.categories) {
     const item = document.createElement("li");
     const label = document.createElement("div");
@@ -1628,9 +1669,9 @@ function renderProfile(profile) {
     label.innerHTML = '<span class="folder-glyph"></span>';
     const name = document.createElement("strong");
     name.textContent = category.name;
-    const description = document.createElement("small");
-    description.textContent = category.description;
-    label.append(name, description);
+    label.append(name);
+    const categoryInfo = createFolderInfo(category.name, category.description);
+    label.append(categoryInfo);
     item.append(label);
     if (category.children.length) {
       const children = document.createElement("ul");
@@ -1641,7 +1682,8 @@ function renderProfile(profile) {
         const childName = document.createElement("span");
         childName.textContent = child.name;
         childItem.append(childName);
-        if (child.description) childItem.title = child.description;
+        const childInfo = createFolderInfo(child.name, child.description);
+        childItem.append(childInfo);
         children.append(childItem);
       }
       item.append(children);
@@ -1796,6 +1838,7 @@ async function initialize() {
   el.autoClassify.checked = settings.autoClassify;
   el.autoSave.checked = settings.autoSave;
   el.threshold.value = settings.confidenceThreshold;
+  $("#folder-language").value = settings.folderLanguage === "en" ? "en" : "ko";
   renderThreshold();
   el.rootName.value = settings.batchRootName || DEFAULT_SETTINGS.batchRootName;
   const savedCategories = Array.isArray(settings.batchCategories)
@@ -1923,6 +1966,10 @@ $("#targets-none").addEventListener("click", () => {
 
 el.analyze.addEventListener("click", analyze);
 $("#analyze-interests").addEventListener("click", analyzeInterests);
+$("#folder-language").addEventListener("change", (event) => {
+  settings.folderLanguage = event.target.value;
+  chrome.storage.sync.set({ folderLanguage: settings.folderLanguage });
+});
 $("#cancel-interests").addEventListener("click", () => insightController?.abort());
 $("#use-structure").addEventListener("click", useProfileStructure);
 $("#download-snapshot").addEventListener("click", downloadSnapshot);

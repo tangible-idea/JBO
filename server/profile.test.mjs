@@ -8,10 +8,12 @@ import { createMetadataCache } from "./metadata-cache.mjs";
 import { createPoeClient } from "./poe.mjs";
 import {
   analyzeBookmarkProfile,
+  buildProfileMessages,
   compactForLlm,
   enrichBookmarks,
   leafCategories,
   MAX_LEAF_CATEGORIES,
+  normalizeProfileRequest,
   parseProfileResponse,
 } from "./profile.mjs";
 
@@ -49,6 +51,16 @@ test("parseProfileResponse accepts fenced JSON and normalizes names and weights"
 test("parseProfileResponse rejects answers without a usable structure", () => {
   assert.throws(() => parseProfileResponse("죄송합니다"), SyntaxError);
   assert.throws(() => parseProfileResponse('{"folderStructure":{"categories":[{"name":"하나"}]}}'), SyntaxError);
+});
+
+test("folder language applies only to recommended folder names", () => {
+  assert.equal(normalizeProfileRequest({ bookmarks }).folderLanguage, "ko");
+  assert.equal(normalizeProfileRequest({ bookmarks, folderLanguage: "en" }).folderLanguage, "en");
+  const compact = compactForLlm(normalizeProfileRequest({ bookmarks }).bookmarks);
+  const messages = buildProfileMessages(bookmarks, compact, "en");
+  assert.match(messages[0].content, /rootName.*natural English/);
+  assert.match(messages[0].content, /summary, interests, evidence, and folder descriptions in Korean/);
+  assert.match(messages[1].content, /"Other"/);
 });
 
 test("leafCategories falls back to top-level folders when there are too many leaves", () => {

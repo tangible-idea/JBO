@@ -10,7 +10,7 @@
   <body class="studio">
     <header class="studio-top">
       <div class="studio-brand">
-        <div class="logo" aria-hidden="true">J</div>
+        <img class="logo" src="icons/logo.svg" alt="" />
         <div>
           <p class="eyebrow">TIDYMARK</p>
           <strong>북마크 정리 스튜디오</strong>
@@ -279,6 +279,13 @@
           <label class="inline-check" title="끄면 저장된 JSON에 있는 페이지는 다시 읽지 않아요.">
             <input id="refresh-meta" type="checkbox" /> 메타정보 새로 읽기
           </label>
+          <label class="folder-language-control" for="folder-language">
+            추천 폴더 이름
+            <select id="folder-language" aria-label="추천 폴더 이름 언어">
+              <option value="ko">한국어</option>
+              <option value="en">English</option>
+            </select>
+          </label>
           <div class="progress" aria-hidden="true"><span id="insight-progress"></span></div>
           <ol id="insight-steps" class="insight-steps">
             <li data-step="meta">페이지 메타정보 읽기 <small>(저장된 JSON 재사용)</small></li>
@@ -309,8 +316,12 @@
             <p id="insight-meta" class="panel-note"></p>
           </div>
           <div class="insight-grid">
-            <section class="panel">
-              <h2>관심 분야</h2>
+            <section class="panel interest-panel">
+              <div class="section-row interest-section-head">
+                <h2 class="grow">관심 분야</h2>
+                <span id="interest-count" class="muted"></span>
+              </div>
+              <p class="interest-intro">북마크에서 자주 반복되고 깊게 탐색한 주제예요.</p>
               <ol id="interest-list" class="interest-list"></ol>
             </section>
             <section class="panel">
