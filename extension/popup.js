@@ -138,9 +138,37 @@ function renderRecommendationMessage(message, { retry = false } = {}) {
   elements.recommendations.replaceChildren(box);
 }
 
+function renderNoMatch(result) {
+  const box = document.createElement("div");
+  box.className = "rec-nomatch";
+  const title = document.createElement("strong");
+  title.textContent = "딱 맞는 폴더가 없어 보여요";
+  const detail = document.createElement("p");
+  detail.textContent = result.recommendation
+    ? `가장 가까운 폴더도 확신도 ${Math.round((result.confidence || 0) * 100)}%예요. 새 폴더에 두는 게 더 깔끔해요.`
+    : "기존 폴더 중 어울리는 곳이 없어요. 새 폴더에 두는 게 더 깔끔해요.";
+  const action = document.createElement("button");
+  action.type = "button";
+  action.className = "rec-nomatch-action";
+  action.textContent = "새 폴더 만들기 →";
+  action.addEventListener("click", () => setMode("new"));
+  box.append(title, detail, action);
+  return box;
+}
+
 function renderRecommendations(result) {
   elements.recommendations.replaceChildren();
-  const recommendedId = result.recommendation?.id;
+  const noMatch = shouldSuggestNewFolder(result, settings.confidenceThreshold);
+  elements.recommendations.classList.toggle("is-nomatch", noMatch);
+  if (noMatch) elements.recommendations.append(renderNoMatch(result));
+  if (noMatch && result.candidates.length > 0) {
+    const label = document.createElement("p");
+    label.className = "rec-fallback-label";
+    label.textContent = "그래도 기존 폴더에 넣으려면";
+    elements.recommendations.append(label);
+  }
+
+  const recommendedId = noMatch ? null : result.recommendation?.id;
   result.candidates.forEach((candidate, index) => {
     const title = folderTitle(candidate.id) || candidate.path;
     const percent = Math.round(candidate.probability * 100);
@@ -178,16 +206,7 @@ function renderRecommendations(result) {
     elements.recommendations.append(row);
   });
 
-  if (result.candidates.length === 0) renderRecommendationMessage("맞는 기존 폴더를 찾지 못했어요.");
-
-  if (shouldSuggestNewFolder(result, settings.confidenceThreshold)) {
-    const nudge = document.createElement("button");
-    nudge.type = "button";
-    nudge.className = "rec-nudge";
-    nudge.innerHTML = "<span>딱 맞는 폴더가 없어 보여요</span><strong>새 폴더 만들기 →</strong>";
-    nudge.addEventListener("click", () => setMode("new"));
-    elements.recommendations.append(nudge);
-  }
+  if (!noMatch && result.candidates.length === 0) renderRecommendationMessage("맞는 기존 폴더를 찾지 못했어요.");
   highlightRecommendation();
 }
 
@@ -307,9 +326,11 @@ async function classify() {
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || `서버 오류 (${response.status})`);
-    if (result.recommendation && !existingBookmark) destinationPicker.setValue(result.recommendation.id);
+    // 확신이 낮으면 기존 폴더를 미리 고르지 않아, 저장 버튼이 약한 추천으로 이어지지 않게 합니다.
+    const noMatch = shouldSuggestNewFolder(result, settings.confidenceThreshold);
+    if (result.recommendation && !existingBookmark && !noMatch) destinationPicker.setValue(result.recommendation.id);
     renderRecommendations(result);
-    prepareNewFolder(shouldSuggestNewFolder(result, settings.confidenceThreshold) ? result : null);
+    prepareNewFolder(noMatch ? result : null);
     if (result.truncatedFolderCount > 0) {
       setStatus(`폴더가 많아 100개만 비교했어요. (${result.truncatedFolderCount}개 제외)`);
     }
@@ -381,7 +402,7 @@ async function initialize() {
   else {
     elements.classify.disabled = false;
     elements.classify.textContent = "추천 받기";
-    renderRecommendationMessage("‘추천 받기’를 누르면 JEV가 어울리는 폴더를 찾아요.");
+    renderRecommendationMessage("‘추천 받기’를 누르면 어울리는 폴더를 찾아요.");
   }
 }
 

@@ -1,5 +1,5 @@
 /* ============================================================
-   JEV Bookmarks — "filing cabinet" design system
+   Tidymark — "filing cabinet" design system
    paper + ink, lime for "new folders", sky for "existing folders"
    ============================================================ */
 
@@ -416,20 +416,36 @@ h1, h2, p { margin: 0; overflow-wrap: anywhere; }
   font-size: 12.5px;
   line-height: 1.45;
 }
-.rec-nudge {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  border: 1px dashed #9cc436;
+/* 딱 맞는 폴더가 없을 때: 안내를 맨 위에 두고 기존 후보는 한 단계 낮춥니다. */
+.rec-nomatch {
+  display: grid;
+  gap: 4px;
+  border: 1.5px solid var(--lime-ink);
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: var(--lime-soft);
   color: var(--lime-ink);
-  font-size: 12px;
-  text-align: left;
+  animation: rise 0.2s ease both;
+  word-break: keep-all;
 }
-.rec-nudge strong { white-space: nowrap; }
+.rec-nomatch strong { font-size: 15px; line-height: 1.3; }
+.rec-nomatch p { margin: 0; font-size: 12px; line-height: 1.45; opacity: 0.85; }
+.rec-nomatch-action {
+  justify-self: start;
+  margin-top: 6px;
+  border: 0;
+  border-radius: 9px;
+  padding: 7px 12px;
+  background: var(--ink);
+  color: var(--lime);
+  font-size: 12.5px;
+  font-weight: 800;
+}
+.rec-nomatch-action:hover { opacity: 0.9; }
+.rec-fallback-label { margin: 6px 2px 0; color: var(--muted); font-size: 11px; font-weight: 700; }
+.recommendations.is-nomatch .rec-row:not([aria-pressed="true"]) { background: transparent; color: var(--ink-2); }
+.recommendations.is-nomatch .rec-row::before { background: var(--faint); opacity: 0.6; }
+.recommendations.is-nomatch .rec-score { color: var(--muted); font-weight: 600; }
 
 .hint-banner {
   margin-top: 12px;

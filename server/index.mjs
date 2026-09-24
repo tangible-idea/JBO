@@ -104,7 +104,7 @@ const server = createServer(async (request, response) => {
   }
 
   if (request.method === "POST" && url.pathname === "/api/classify") {
-    await handle(response, "JEV 분류 요청에 실패했습니다. 서버 로그와 API 키를 확인하세요.", async () => {
+    await handle(response, "분류 요청에 실패했습니다. 서버 로그와 API 키를 확인하세요.", async () => {
       const body = await readJson(request);
       // Validate before constructing the SDK client so malformed requests remain
       // distinguishable from missing credentials or upstream failures.
@@ -117,7 +117,7 @@ const server = createServer(async (request, response) => {
   }
 
   if (request.method === "POST" && url.pathname === "/api/classify-batch") {
-    await handle(response, "JEV 일괄 분류 요청에 실패했습니다. 서버 로그와 API 키를 확인하세요.", async () => {
+    await handle(response, "일괄 분류 요청에 실패했습니다. 서버 로그와 API 키를 확인하세요.", async () => {
       const body = await readJson(request);
       normalizeBatchRequest(body);
       return classifyBookmarksBatch(getClient(), body, {
@@ -187,5 +187,5 @@ const server = createServer(async (request, response) => {
 });
 
 server.listen(port, "127.0.0.1", () => {
-  console.log(`JEV bookmark server listening on http://127.0.0.1:${port}`);
+  console.log(`Tidymark server listening on http://127.0.0.1:${port}`);
 });

@@ -27,9 +27,12 @@ const DEFAULT_SETTINGS = {
   autoClassify: true,
   autoSave: false,
   confidenceThreshold: 0.78,
-  batchRootName: "JEV 정리함",
+  batchRootName: "Tidymark 정리함",
   batchCategories: DEFAULT_CATEGORIES,
 };
+
+// 이름을 바꾸기 전에 만든 정리 폴더. 이미 있으면 새 폴더를 만들지 않고 이어서 씁니다.
+const LEGACY_ROOT_NAME = "JEV 정리함";
 
 const MAX_TARGET_FOLDERS = 100;
 const BATCH_SIZE = { new: 20, existing: 10 };
@@ -1047,11 +1050,11 @@ async function checkServer({ report = false } = {}) {
     serverHealth = body;
     renderPoeWarning();
     pill.dataset.state = body.configured ? "ok" : "warn";
-    label.textContent = body.configured ? "JEV 연결됨" : "API 키 없음";
+    label.textContent = body.configured ? "서버 연결됨" : "API 키 없음";
     if (report) {
       setStatus(
         el.endpointStatus,
-        body.configured ? "서버와 JEV API 키가 준비됐어요." : "서버는 켜져 있지만 TYPESAFE_API_KEY가 없어요.",
+        body.configured ? "서버와 API 키가 준비됐어요." : "서버는 켜져 있지만 TYPESAFE_API_KEY가 없어요.",
         body.configured ? "success" : "error",
       );
     }
@@ -1114,8 +1117,18 @@ async function loadBookmarks() {
   updateScopeCount();
 }
 
+async function migrateLegacyRootName() {
+  const { batchRootName } = await chrome.storage.sync.get("batchRootName");
+  if (batchRootName) return;
+  const legacy = (await chrome.bookmarks.search({ title: LEGACY_ROOT_NAME })).find((node) => !node.url);
+  if (!legacy) return;
+  settings.batchRootName = LEGACY_ROOT_NAME;
+  await chrome.storage.sync.set({ batchRootName: LEGACY_ROOT_NAME });
+}
+
 async function initialize() {
   settings = { ...DEFAULT_SETTINGS, ...(await chrome.storage.sync.get(DEFAULT_SETTINGS)) };
+  await migrateLegacyRootName();
   el.endpoint.value = settings.endpoint;
   el.autoClassify.checked = settings.autoClassify;
   el.autoSave.checked = settings.autoSave;

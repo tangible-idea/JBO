@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "JEV 북마크 분류기",
+  "name": "Tidymark",
   "version": "0.3.0",
-  "description": "현재 페이지를 JEV로 분류해 알맞은 Chrome 북마크 폴더에 저장합니다.",
+  "description": "현재 페이지를 알맞은 북마크 폴더에 저장하고, 쌓인 북마크를 한 번에 정리합니다.",
   "permissions": [
     "activeTab",
     "bookmarks",
@@ -19,7 +19,7 @@
     "http://*/*"
   ],
   "action": {
-    "default_title": "JEV로 북마크 분류",
+    "default_title": "Tidymark로 북마크 정리",
     "default_popup": "popup.html"
   },
   "options_page": "options.html"

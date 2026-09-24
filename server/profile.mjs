@@ -221,7 +221,7 @@ export function parseProfileResponse(text) {
   if (categories.length < 2) throw new SyntaxError("LLM이 폴더 구조를 충분히 제안하지 않았습니다.");
 
   const folderStructure = {
-    rootName: folderName(raw.folderStructure?.rootName) || "JEV 정리함",
+    rootName: folderName(raw.folderStructure?.rootName) || "Tidymark 정리함",
     categories,
   };
   return {

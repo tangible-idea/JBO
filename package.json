@@ -1,9 +1,9 @@
 {
-  "name": "jev-bookmark-sorter",
+  "name": "tidymark",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "A Chrome bookmark classifier powered by TypeSafe Jev.",
+  "description": "Tidymark: an AI Chrome bookmark organizer.",
   "engines": {
     "node": ">=20"
   },

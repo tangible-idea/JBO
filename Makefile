@@ -4,7 +4,7 @@ SHELL := /bin/zsh
 .PHONY: help setup install guard-key verify test check run dev stop restart status chrome doctor clean
 
 help: ## 사용 가능한 명령을 표시합니다.
-	@awk 'BEGIN {FS = ":.*## "; print "JEV 북마크 분류기\n"} /^[a-zA-Z_-]+:.*## / {printf "  make %-10s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*## "; print "Tidymark\n"} /^[a-zA-Z_-]+:.*## / {printf "  make %-10s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 setup: install .env ## 의존성과 로컬 환경파일을 준비합니다.
 	@echo "준비 완료. .env에 TYPESAFE_API_KEY가 있는지 확인하세요."
@@ -54,7 +54,7 @@ stop: ## 이 프로젝트가 8787 포트에서 실행 중이면 안전하게 종
 			exit 1; \
 		fi; \
 		kill "$$pid"; \
-		echo "기존 JEV 백엔드를 종료했습니다. (PID $$pid)"; \
+		echo "기존 Tidymark 백엔드를 종료했습니다. (PID $$pid)"; \
 	fi
 
 restart: stop run ## 기존 백엔드를 종료하고 새 .env로 다시 실행합니다.

@@ -88,7 +88,7 @@ test("enrichBookmarks attaches normalized page metadata", async () => {
 });
 
 test("analyzeBookmarkProfile saves the snapshot and the report as JSON", async () => {
-  const dataDir = await mkdtemp(path.join(tmpdir(), "jev-profile-"));
+  const dataDir = await mkdtemp(path.join(tmpdir(), "tidymark-profile-"));
   let prompt;
   const poe = {
     async chat({ messages }) {
@@ -124,7 +124,7 @@ test("createPoeClient calls the OpenAI-compatible endpoint with a bearer key", a
 });
 
 test("analyzeBookmarkProfile keeps the snapshot when the LLM call fails", async () => {
-  const dataDir = await mkdtemp(path.join(tmpdir(), "jev-profile-"));
+  const dataDir = await mkdtemp(path.join(tmpdir(), "tidymark-profile-"));
   const poe = { chat: async () => { throw new Error("Poe down"); } };
   await assert.rejects(analyzeBookmarkProfile(poe, { bookmarks }, { dataDir }), /Poe down.*저장했습니다/);
   const snapshot = JSON.parse(await readFile(path.join(dataDir, "bookmarks-latest.json"), "utf8"));
@@ -132,7 +132,7 @@ test("analyzeBookmarkProfile keeps the snapshot when the LLM call fails", async 
 });
 
 test("metadata cache reuses saved snapshot values and refetches empty or forced ones", async () => {
-  const dataDir = await mkdtemp(path.join(tmpdir(), "jev-cache-"));
+  const dataDir = await mkdtemp(path.join(tmpdir(), "tidymark-cache-"));
   const file = path.join(dataDir, "bookmarks-latest.json");
   await writeFile(file, JSON.stringify({ bookmarks: [
     { url: "https://saved.example", meta: { description: "저장된 설명" } },
@@ -161,7 +161,7 @@ test("metadata cache reuses saved snapshot values and refetches empty or forced 
 });
 
 test("metadata cache works before any snapshot exists", async () => {
-  const dataDir = await mkdtemp(path.join(tmpdir(), "jev-cache-"));
+  const dataDir = await mkdtemp(path.join(tmpdir(), "tidymark-cache-"));
   const cache = createMetadataCache(path.join(dataDir, "missing.json"), { fetchMetadata: async () => ({ siteName: "A" }) });
   assert.deepEqual(await cache.fetch("https://a.example"), { meta: { siteName: "A" }, cached: false });
 });
