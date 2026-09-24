@@ -1578,7 +1578,8 @@ async function analyzeInterests() {
 }
 
 function renderProfile(profile) {
-  $("#insight-result").hidden = false;
+  $("#insight-result").classList.remove("is-empty");
+  $("#folder-language").value = profile.folderLanguage === "en" ? "en" : "ko";
   $("#insight-summary-text").textContent = profile.summary || "요약이 없어요.";
   const created = new Date(profile.createdAt);
   const coverage = profile.coverage?.included < profile.coverage?.total
@@ -1645,6 +1646,10 @@ function renderProfile(profile) {
     list.append(item);
   });
 
+  renderFolderStructure(profile);
+}
+
+function renderFolderStructure(profile) {
   const structure = profile.folderStructure;
   const tree = $("#structure-tree");
   const rootLine = document.createElement("p");
@@ -1682,8 +1687,6 @@ function renderProfile(profile) {
         const childName = document.createElement("span");
         childName.textContent = child.name;
         childItem.append(childName);
-        const childInfo = createFolderInfo(child.name, child.description);
-        childItem.append(childInfo);
         children.append(childItem);
       }
       item.append(children);
@@ -1733,6 +1736,55 @@ async function loadLatestProfile() {
     }
   }
   if (lastProfile?.folderStructure) renderProfile(lastProfile);
+}
+
+async function changeFolderLanguage(event) {
+  const select = event.target;
+  const target = select.value;
+  const status = $("#structure-language-status");
+  status.hidden = true;
+  if (!lastProfile?.folderStructure) {
+    settings.folderLanguage = target;
+    await chrome.storage.sync.set({ folderLanguage: target });
+    return;
+  }
+  const current = lastProfile.folderLanguage === "en" ? "en" : "ko";
+  if (target === current) return;
+  const variants = {
+    ...lastProfile.folderVariants,
+    [current]: {
+      folderStructure: lastProfile.folderStructure,
+      leafCategories: lastProfile.leafCategories,
+    },
+  };
+  select.disabled = true;
+  $("#analyze-interests").disabled = true;
+  status.textContent = "폴더 이름 변경 중…";
+  status.classList.remove("error");
+  status.hidden = false;
+  try {
+    if (!variants[target]) {
+      if (!(await ensureOriginPermission(settings.endpoint))) throw new Error("백엔드 접근 권한이 필요해요.");
+      variants[target] = await postJson("/api/profile/folder-language", {
+        folderStructure: lastProfile.folderStructure,
+        folderLanguage: target,
+      });
+    }
+    const nextProfile = { ...lastProfile, ...variants[target], folderLanguage: target, folderVariants: variants };
+    await chrome.storage.local.set({ lastProfile: nextProfile });
+    await chrome.storage.sync.set({ folderLanguage: target });
+    lastProfile = nextProfile;
+    settings.folderLanguage = target;
+    renderFolderStructure(lastProfile);
+    status.hidden = true;
+  } catch (error) {
+    select.value = current;
+    status.textContent = error.message;
+    status.classList.add("error");
+  } finally {
+    select.disabled = false;
+    $("#analyze-interests").disabled = false;
+  }
 }
 
 /* ---------- settings ---------- */
@@ -1966,10 +2018,7 @@ $("#targets-none").addEventListener("click", () => {
 
 el.analyze.addEventListener("click", analyze);
 $("#analyze-interests").addEventListener("click", analyzeInterests);
-$("#folder-language").addEventListener("change", (event) => {
-  settings.folderLanguage = event.target.value;
-  chrome.storage.sync.set({ folderLanguage: settings.folderLanguage });
-});
+$("#folder-language").addEventListener("change", changeFolderLanguage);
 $("#cancel-interests").addEventListener("click", () => insightController?.abort());
 $("#use-structure").addEventListener("click", useProfileStructure);
 $("#download-snapshot").addEventListener("click", downloadSnapshot);

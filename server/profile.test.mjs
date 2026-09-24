@@ -14,7 +14,9 @@ import {
   leafCategories,
   MAX_LEAF_CATEGORIES,
   normalizeProfileRequest,
+  normalizeFolderLanguageRequest,
   parseProfileResponse,
+  translateFolderStructure,
 } from "./profile.mjs";
 
 const bookmarks = [
@@ -61,6 +63,26 @@ test("folder language applies only to recommended folder names", () => {
   assert.match(messages[0].content, /rootName.*natural English/);
   assert.match(messages[0].content, /summary, interests, evidence, and folder descriptions in Korean/);
   assert.match(messages[1].content, /"Other"/);
+});
+
+test("changing folder language preserves the folder tree and descriptions", async () => {
+  const original = parseProfileResponse(JSON.stringify(llmAnswer)).folderStructure;
+  const seen = [];
+  const poe = { async chat(request) {
+    seen.push(request);
+    return { content: JSON.stringify({ names: ["My Library", "Development", "Languages", "Travel"] }) };
+  } };
+  const result = await translateFolderStructure(poe, { folderStructure: original, folderLanguage: "en" }, { model: "Claude-Test" });
+  assert.deepEqual(result.leafCategories, ["Development / Languages", "Travel"]);
+  assert.equal(result.folderStructure.categories[0].description, "개발");
+  assert.equal(result.folderStructure.categories[0].children[0].description, "");
+  assert.match(seen[0].messages[0].content, /English/);
+  assert.equal(seen[0].model, "Claude-Test");
+  assert.throws(() => normalizeFolderLanguageRequest({ folderStructure: original, folderLanguage: "fr" }), TypeError);
+  await assert.rejects(
+    translateFolderStructure({ chat: async () => ({ content: '{"names":["Only one"]}' }) }, { folderStructure: original, folderLanguage: "en" }),
+    /개수가 맞지/,
+  );
 });
 
 test("leafCategories falls back to top-level folders when there are too many leaves", () => {

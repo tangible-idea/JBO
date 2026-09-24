@@ -279,13 +279,6 @@
           <label class="inline-check" title="끄면 저장된 JSON에 있는 페이지는 다시 읽지 않아요.">
             <input id="refresh-meta" type="checkbox" /> 메타정보 새로 읽기
           </label>
-          <label class="folder-language-control" for="folder-language">
-            추천 폴더 이름
-            <select id="folder-language" aria-label="추천 폴더 이름 언어">
-              <option value="ko">한국어</option>
-              <option value="en">English</option>
-            </select>
-          </label>
           <div class="progress" aria-hidden="true"><span id="insight-progress"></span></div>
           <ol id="insight-steps" class="insight-steps">
             <li data-step="meta">페이지 메타정보 읽기 <small>(저장된 JSON 재사용)</small></li>
@@ -309,7 +302,7 @@
           </div>
         </div>
 
-        <section id="insight-result" class="insight-result" hidden>
+        <section id="insight-result" class="insight-result is-empty">
           <div class="insight-summary panel">
             <p class="eyebrow">SUMMARY</p>
             <p id="insight-summary-text" class="insight-quote"></p>
@@ -325,11 +318,23 @@
               <ol id="interest-list" class="interest-list"></ol>
             </section>
             <section class="panel">
-              <div class="section-row">
-                <h2 class="grow">추천 폴더 구조</h2>
-                <span id="structure-count" class="muted"></span>
+              <div class="structure-header">
+                <div class="section-row structure-title-row">
+                  <h2 class="grow">추천 폴더 구조</h2>
+                  <span id="structure-count" class="structure-count"></span>
+                </div>
+                <div class="structure-controls">
+                  <span id="structure-language-status" class="structure-language-status" role="status" hidden></span>
+                  <label class="folder-language-control" for="folder-language">
+                    <span>폴더 이름</span>
+                    <select id="folder-language" aria-label="추천 폴더 이름 언어">
+                      <option value="ko">한국어</option>
+                      <option value="en">English</option>
+                    </select>
+                  </label>
+                </div>
               </div>
-              <div id="structure-tree" class="structure-tree"></div>
+              <div id="structure-tree" class="structure-tree"><p class="structure-empty">분석하면 추천 폴더가 여기에 표시돼요.</p></div>
               <div class="insight-actions">
                 <button id="use-structure" class="action-button" type="button">이 구조로 정리하기 →</button>
                 <button id="download-snapshot" class="ghost-button" type="button">JSON 다운로드</button>

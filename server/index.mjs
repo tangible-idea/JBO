@@ -17,6 +17,8 @@ import {
   enrichBookmarks,
   normalizeMetadataRequest,
   normalizeProfileRequest,
+  normalizeFolderLanguageRequest,
+  translateFolderStructure,
 } from "./profile.mjs";
 import { nameProjects, normalizeProjectsRequest } from "./projects.mjs";
 
@@ -172,6 +174,16 @@ const server = createServer(async (request, response) => {
       // Create the client lazily so the snapshot is saved even without POE_API_KEY.
       const poe = { chat: (args) => createPoeClient().chat(args) };
       return analyzeBookmarkProfile(poe, body, { model: poeModel(), dataDir });
+    });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/profile/folder-language") {
+    await handle(response, "폴더 이름을 변경하지 못했습니다. 서버 로그와 POE_API_KEY를 확인하세요.", async () => {
+      const body = await readJson(request);
+      normalizeFolderLanguageRequest(body);
+      const poe = { chat: (args) => createPoeClient().chat(args) };
+      return translateFolderStructure(poe, body, { model: poeModel() });
     });
     return;
   }

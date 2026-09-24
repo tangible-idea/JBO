@@ -206,6 +206,73 @@ export function leafCategories(structure) {
   return leaves.length <= MAX_LEAF_CATEGORIES ? leaves : structure.categories.map((category) => category.name);
 }
 
+export function normalizeFolderLanguageRequest(input) {
+  if (!['ko', 'en'].includes(input?.folderLanguage)) throw new TypeError('폴더 이름 언어를 선택하세요.');
+  const source = input?.folderStructure;
+  const rootName = folderName(source?.rootName);
+  const categories = Array.isArray(source?.categories) ? source.categories : [];
+  if (!rootName || categories.length < 2 || categories.length > 16) throw new TypeError('변경할 폴더 구조가 올바르지 않습니다.');
+  const structure = {
+    rootName,
+    categories: categories.map((category) => {
+      const name = folderName(category?.name);
+      const children = Array.isArray(category?.children) ? category.children : [];
+      if (!name || children.length > 6) throw new TypeError('변경할 폴더 구조가 올바르지 않습니다.');
+      return {
+        name,
+        description: cleanText(category?.description, 200),
+        children: children.map((child) => {
+          const childName = folderName(child?.name);
+          if (!childName) throw new TypeError('변경할 폴더 구조가 올바르지 않습니다.');
+          return { name: childName, description: cleanText(child?.description, 200) };
+        }),
+      };
+    }),
+  };
+  return { folderLanguage: input.folderLanguage, folderStructure: structure };
+}
+
+export async function translateFolderStructure(poe, input, { model } = {}) {
+  const { folderLanguage, folderStructure } = normalizeFolderLanguageRequest(input);
+  const originalNames = [folderStructure.rootName];
+  for (const category of folderStructure.categories) {
+    originalNames.push(category.name);
+    for (const child of category.children) originalNames.push(child.name);
+  }
+  const target = folderLanguage === 'en' ? 'English' : 'Korean';
+  const answer = await poe.chat({
+    model,
+    maxTokens: 4_000,
+    temperature: 0.1,
+    messages: [
+      { role: 'system', content: `Translate bookmark folder names into concise, natural ${target}. Preserve their meaning and order. Use the descriptions and hierarchy for context. Do not translate descriptions. Return only a JSON object with a names array of exactly ${originalNames.length} strings, ordered as root name first, then each category name immediately followed by its child names. Do not add, remove, or merge folders.` },
+      { role: 'user', content: JSON.stringify({ folderStructure, output: { names: originalNames.map(() => '') } }) },
+    ],
+  });
+  const translated = extractJson(answer.content).names;
+  if (!Array.isArray(translated) || translated.length !== originalNames.length) {
+    throw new SyntaxError('번역된 폴더 이름의 개수가 맞지 않습니다.');
+  }
+  const names = translated.map(folderName);
+  if (names.some((name) => !name) || (folderLanguage === 'en' && names.some((name) => /[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(name)))) {
+    throw new SyntaxError('폴더 이름을 선택한 언어로 변환하지 못했습니다.');
+  }
+  let index = 0;
+  const translatedStructure = {
+    rootName: names[index++],
+    categories: folderStructure.categories.map((category) => ({
+      ...category,
+      name: names[index++],
+      children: category.children.map((child) => ({ ...child, name: names[index++] })),
+    })),
+  };
+  const categoryNames = translatedStructure.categories.map((category) => category.name);
+  if (new Set(categoryNames).size !== categoryNames.length || translatedStructure.categories.some((category) =>
+    new Set(category.children.map((child) => child.name)).size !== category.children.length
+  )) throw new SyntaxError('번역된 폴더 이름이 중복됩니다.');
+  return { folderStructure: translatedStructure, leafCategories: leafCategories(translatedStructure) };
+}
+
 export function parseProfileResponse(text) {
   const raw = extractJson(text);
   const interests = (Array.isArray(raw.interests) ? raw.interests : [])
