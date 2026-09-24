@@ -39,6 +39,9 @@ export function collectBookmarks(nodes, parentPath = "") {
         title: node.title,
         url: node.url,
         currentPath: parentPath,
+        dateAdded: node.dateAdded,
+        dateLastUsed: node.dateLastUsed,
+        unmodifiable: Boolean(node.unmodifiable),
       });
     }
     if (node.children) bookmarks.push(...collectBookmarks(node.children, path));

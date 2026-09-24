@@ -8,18 +8,32 @@ import {
   toPlanItem,
 } from "./options-utils.js";
 import { buildFolderTree, flattenFolderTree } from "./popup-utils.js";
+import {
+  DAY,
+  PROJECTS_FOLDER,
+  USAGE_FOLDERS,
+  USAGE_RULES,
+  daysAgoLabel,
+  findBursts,
+  findDuplicates,
+  findFolderIssues,
+  monthLabel,
+  normalizeUrl,
+  toUsagePlanItem,
+  usageBucket,
+} from "./rules.js";
 
 const DEFAULT_CATEGORIES = [
-  "개발 및 기술",
-  "AI 및 데이터",
-  "디자인",
-  "비즈니스 및 커리어",
-  "학습 및 참고",
-  "뉴스 및 읽을거리",
-  "쇼핑",
-  "엔터테인먼트",
-  "여행",
-  "금융",
+  "Dev & Tech",
+  "AI & Data",
+  "Design",
+  "Business & Career",
+  "Learning",
+  "News & Reading",
+  "Shopping",
+  "Entertainment",
+  "Travel",
+  "Finance",
 ];
 
 const DEFAULT_SETTINGS = {
@@ -27,7 +41,7 @@ const DEFAULT_SETTINGS = {
   autoClassify: true,
   autoSave: false,
   confidenceThreshold: 0.78,
-  batchRootName: "Tidymark 정리함",
+  batchRootName: "Tidymark",
   batchCategories: DEFAULT_CATEGORIES,
 };
 
@@ -37,6 +51,16 @@ const LEGACY_ROOT_NAME = "JEV 정리함";
 const MAX_TARGET_FOLDERS = 100;
 const BATCH_SIZE = { new: 20, existing: 10 };
 const CONCURRENCY = 3;
+const HISTORY_DAYS = 90;
+const PROJECT_CLUSTERS_PER_REQUEST = 6;
+const LINK_BATCH = 25;
+
+const ANALYZE_LABELS = {
+  new: "새 폴더 구조로 분석하기",
+  existing: "기존 폴더 기준으로 분석하기",
+  usage: "쓰임새로 나눠 보기",
+  projects: "프로젝트 묶음 찾기",
+};
 
 const $ = (selector) => document.querySelector(selector);
 const el = {
@@ -71,6 +95,13 @@ const el = {
   undoBanner: $("#undo-banner"),
   undoButton: $("#undo-batch"),
   undoText: $("#undo-text"),
+  usageBuckets: $("#usage-buckets"),
+  usageTopics: $("#usage-topics"),
+  usageTopicsNote: $("#usage-topics-note"),
+  historyNote: $("#history-note"),
+  grantHistory: $("#grant-history"),
+  burstPreview: $("#burst-preview"),
+  inboxNote: $("#inbox-note"),
 };
 
 let settings = DEFAULT_SETTINGS;
@@ -89,9 +120,16 @@ let serverHealth = null;
 let insightController = null;
 let lastSnapshot = null; // enriched bookmarks from the latest interest analysis
 let lastProfile = null;
+let rawTree = [];
+let inboxParentIds = new Set(); // Chrome's own root folders: bookmarks directly inside are unsorted
+let historyGranted = false;
+let visitsByUrl = new Map();
+let deadLinks = []; // { id, url, reason } from the last link check
+let linkController = null;
+let checkupItems = [];
 
 const scopePicker = createFolderPicker($("#scope-picker"), { onChange: updateScopeCount });
-const rootParentPicker = createFolderPicker($("#root-parent-picker"));
+const rootParentPicker = createFolderPicker($("#root-parent-picker"), { onChange: renderRootNotes });
 
 function setStatus(target, message, kind = "") {
   target.textContent = message;
@@ -137,8 +175,9 @@ function setMode(nextMode) {
   document.querySelectorAll("[data-for-mode]").forEach((panel) => {
     panel.hidden = panel.dataset.forMode !== mode;
   });
-  el.analyzeLabel.textContent = mode === "new" ? "새 폴더 구조로 분석하기" : "기존 폴더 기준으로 분석하기";
+  el.analyzeLabel.textContent = ANALYZE_LABELS[mode];
   chrome.storage.local.set({ organizeMode: mode });
+  renderModePreview();
 }
 
 function setScope(nextScope) {
@@ -147,6 +186,7 @@ function setScope(nextScope) {
     button.setAttribute("aria-checked", String(button.dataset.scope === scope));
   });
   $("#scope-picker").hidden = scope !== "folder";
+  el.inboxNote.hidden = scope !== "inbox";
   updateScopeCount();
 }
 
@@ -161,16 +201,157 @@ function descendantFolderIds(id) {
   return ids;
 }
 
+// Bookmarks the user can actually move; managed (admin) bookmarks are left alone.
+function movableBookmarks() {
+  return allBookmarks.filter((bookmark) => !bookmark.unmodifiable);
+}
+
 function scopedBookmarks() {
-  if (scope === "all" || !scopePicker.value) return allBookmarks;
+  const bookmarks = movableBookmarks();
+  if (scope === "inbox") return bookmarks.filter((bookmark) => inboxParentIds.has(bookmark.parentId));
+  if (scope === "all" || !scopePicker.value) return bookmarks;
   const ids = descendantFolderIds(scopePicker.value);
-  return allBookmarks.filter((bookmark) => ids.has(bookmark.parentId));
+  return bookmarks.filter((bookmark) => ids.has(bookmark.parentId));
 }
 
 function updateScopeCount() {
   const count = scopedBookmarks().length;
-  const where = scope === "folder" && scopePicker.selected ? `‘${scopePicker.selected.title}’ 안의 ` : "";
+  const where = scope === "folder" && scopePicker.selected
+    ? `‘${scopePicker.selected.title}’ 안의 `
+    : scope === "inbox"
+      ? "정리 안 된 "
+      : "";
   el.scopeCount.textContent = `${where}북마크 ${count.toLocaleString()}개를 분석해요.`;
+  renderModePreview();
+}
+
+/* ---------- where new folders go (modes A, C, D) ---------- */
+
+function rootName() {
+  return el.rootName.value.trim() || DEFAULT_SETTINGS.batchRootName;
+}
+
+function rootFullPath() {
+  const parent = folderById.get(rootParentPicker.value)?.path;
+  return parent ? `${parent} / ${rootName()}` : rootName();
+}
+
+function renderRootNotes() {
+  document.querySelectorAll(".root-note").forEach((note) => {
+    note.textContent = `‘${rootFullPath()}’ 아래에 폴더를 만들어요. 이름과 위치는 A 방식에서 바꿀 수 있어요.`;
+  });
+  document.querySelectorAll(".archive-path").forEach((node) => {
+    node.textContent = `‘${rootName()} / ${USAGE_FOLDERS.archive}’`;
+  });
+}
+
+/* ---------- usage buckets (mode C) ---------- */
+
+const BUCKET_INFO = [
+  ["active", USAGE_FOLDERS.active, `최근 ${USAGE_RULES.activeDays}일 안에 연 것`],
+  ["occasional", USAGE_FOLDERS.occasional, `${USAGE_RULES.activeDays}~${USAGE_RULES.archiveDays}일 전에 연 것`],
+  ["someday", USAGE_FOLDERS.someday, "저장만 하고 한 번도 안 연 것"],
+  ["archive", USAGE_FOLDERS.archive, `${USAGE_RULES.archiveDays}일 넘게 안 연 것`],
+  ["unknown", "기록 없음", "2023년 이전에 저장해 사용 기록이 없는 것 · 검토 후 Archive로"],
+  ["recent", "그대로 둠", `최근 ${USAGE_RULES.recentDays}일 안에 저장한 것`],
+];
+
+function usageFor(bookmark) {
+  return usageBucket(bookmark, {
+    visit: visitsByUrl.get(normalizeUrl(bookmark.url)),
+    historyChecked: historyGranted,
+  });
+}
+
+function renderUsagePreview() {
+  const counts = {};
+  for (const bookmark of scopedBookmarks()) {
+    const { bucket } = usageFor(bookmark);
+    counts[bucket] = (counts[bucket] || 0) + 1;
+  }
+  const total = scopedBookmarks().length || 1;
+  el.usageBuckets.replaceChildren(
+    ...BUCKET_INFO.filter(([bucket]) => bucket !== "unknown" || counts.unknown).map(([bucket, name, rule]) => {
+      const item = document.createElement("li");
+      item.dataset.bucket = bucket;
+      item.style.setProperty("--w", `${Math.round(((counts[bucket] || 0) / total) * 100)}%`);
+      const label = document.createElement("span");
+      const title = document.createElement("strong");
+      title.textContent = name;
+      const detail = document.createElement("small");
+      detail.textContent = rule;
+      label.append(title, detail);
+      const count = document.createElement("b");
+      count.textContent = (counts[bucket] || 0).toLocaleString();
+      item.append(label, count);
+      return item;
+    }),
+  );
+  el.usageTopicsNote.textContent = el.usageTopics.checked
+    ? `A 방식의 카테고리 ${categories.length}개로 한 번 더 나눠요. 끄면 AI 없이 바로 끝나요.`
+    : "구간 폴더에만 넣어요. AI를 쓰지 않아 바로 끝나요.";
+}
+
+function renderHistoryNote() {
+  el.grantHistory.hidden = historyGranted;
+  el.historyNote.textContent = historyGranted
+    ? `최근 ${HISTORY_DAYS}일 방문 기록 ${visitsByUrl.size.toLocaleString()}건을 함께 봐요. 주소창에 직접 입력해 연 페이지도 ‘사용’으로 쳐요.`
+    : "북마크를 눌러 연 기록만으로는 주소창으로 연 경우를 놓쳐요. 권한은 이 기능에만 쓰고 서버로 보내지 않아요.";
+}
+
+async function loadVisits() {
+  historyGranted = await chrome.permissions.contains({ permissions: ["history"] });
+  visitsByUrl = new Map();
+  if (!historyGranted) return;
+  const items = await chrome.history.search({
+    text: "",
+    startTime: Date.now() - HISTORY_DAYS * DAY,
+    maxResults: 100_000,
+  });
+  for (const item of items) {
+    const key = normalizeUrl(item.url);
+    const known = visitsByUrl.get(key);
+    if (!known || (item.lastVisitTime || 0) > (known.lastVisitTime || 0)) visitsByUrl.set(key, item);
+  }
+}
+
+async function grantHistory() {
+  const granted = await chrome.permissions.request({ permissions: ["history"] });
+  if (!granted) return;
+  await loadVisits();
+  renderHistoryNote();
+  renderUsagePreview();
+}
+
+/* ---------- save-time bursts (mode D) ---------- */
+
+function renderBurstPreview() {
+  const bursts = findBursts(scopedBookmarks(), { inboxParentIds });
+  const bookmarkCount = bursts.reduce((sum, burst) => sum + burst.bookmarks.length, 0);
+  const summary = document.createElement("li");
+  summary.className = "burst-summary";
+  summary.textContent = bursts.length
+    ? `후보 ${bursts.length}묶음 · 북마크 ${bookmarkCount.toLocaleString()}개`
+    : "몰아서 저장한 묶음이 없어요.";
+  const recent = [...bursts].sort((a, b) => b.startedAt - a.startedAt).slice(0, 5);
+  el.burstPreview.replaceChildren(
+    summary,
+    ...recent.map((burst) => {
+      const item = document.createElement("li");
+      const when = document.createElement("strong");
+      when.textContent = `${new Date(burst.startedAt).toLocaleDateString("ko-KR")} · ${burst.bookmarks.length}개`;
+      const sample = document.createElement("small");
+      sample.textContent = burst.bookmarks.slice(0, 3).map((bookmark) => bookmark.title || hostOf(bookmark.url)).join(", ");
+      item.append(when, sample);
+      return item;
+    }),
+  );
+  $("#projects-poe-warning").hidden = !serverHealth || serverHealth.poeConfigured !== false;
+}
+
+function renderModePreview() {
+  if (mode === "usage") renderUsagePreview();
+  if (mode === "projects") renderBurstPreview();
 }
 
 /* ---------- categories (mode A) ---------- */
@@ -198,6 +379,7 @@ function renderCategories() {
     el.categoryChips.insertBefore(chip, el.categoryInput);
   }
   el.categoryCount.textContent = `${categories.length}개`;
+  renderModePreview();
 }
 
 function addCategoriesFromInput() {
@@ -259,33 +441,160 @@ function updateTargetCount() {
 /* ---------- analysis ---------- */
 
 function destinationLabel(key) {
-  if (!key) return "분류 보류";
+  if (!key) return plan?.mode === "usage" ? "그대로 두기" : "분류 보류";
   if (key.startsWith("category:")) return key.slice("category:".length);
   return folderById.get(key.slice("folder:".length))?.path || "삭제된 폴더";
 }
 
+// Sends bookmarks to the classifier in parallel batches; resolves to id -> result.
+async function classifyInBatches(bookmarks, request, batchSize, signal, onProgress) {
+  const batches = chunkItems(bookmarks, batchSize);
+  const results = await mapWithConcurrency(batches, CONCURRENCY, async (batch) => {
+    const body = await postJson("/api/classify-batch", { ...request, bookmarks: batch }, signal);
+    onProgress(batch.length);
+    return body.results;
+  });
+  return new Map(results.flat().map((result) => [result.id, result]));
+}
+
+/*
+ * Each mode prepares a run: it validates its inputs up front and returns
+ * { total, message, destinations, execute(signal, onProgress) -> plan items }.
+ */
+const prepareRun = {
+  new(bookmarks) {
+    if (categories.length < 2) throw new Error("카테고리를 두 개 이상 만들어 주세요.");
+    return {
+      total: bookmarks.length,
+      message: `북마크 ${bookmarks.length.toLocaleString()}개의 페이지 정보를 읽는 중…`,
+      destinations: categories.map((category) => ({ key: `category:${category}`, label: category })),
+      async execute(signal, onProgress) {
+        const results = await classifyInBatches(bookmarks, { categories }, BATCH_SIZE.new, signal, onProgress);
+        return bookmarks.map((bookmark) => toPlanItem(bookmark, results.get(bookmark.id), settings.confidenceThreshold));
+      },
+    };
+  },
+
+  existing(bookmarks) {
+    const targets = [...targetIds]
+      .map((id) => folderById.get(id))
+      .filter(Boolean)
+      .map((folder) => ({ id: folder.id, path: folder.path }));
+    if (targets.length === 0) throw new Error("넣을 수 있는 폴더를 하나 이상 체크해 주세요.");
+    if (targets.length > MAX_TARGET_FOLDERS) throw new Error(`대상 폴더는 ${MAX_TARGET_FOLDERS}개까지 고를 수 있어요.`);
+    return {
+      total: bookmarks.length,
+      message: `북마크 ${bookmarks.length.toLocaleString()}개의 페이지 정보를 읽는 중…`,
+      destinations: targets.map((folder) => ({ key: `folder:${folder.id}`, label: folder.path })),
+      async execute(signal, onProgress) {
+        const results = await classifyInBatches(bookmarks, { folders: targets }, BATCH_SIZE.existing, signal, onProgress);
+        return bookmarks.map((bookmark) => toPlanItem(bookmark, results.get(bookmark.id), settings.confidenceThreshold));
+      },
+    };
+  },
+
+  usage(bookmarks) {
+    const useTopics = el.usageTopics.checked;
+    if (useTopics && categories.length < 2) throw new Error("주제로 나누려면 A 방식의 카테고리가 두 개 이상 필요해요.");
+    const judged = bookmarks.map((bookmark) => ({ bookmark, usage: usageFor(bookmark) }));
+    const toClassify = useTopics ? judged.filter(({ usage }) => usage.bucket !== "recent").map(({ bookmark }) => bookmark) : [];
+    const destinations = Object.values(USAGE_FOLDERS).flatMap((folder) => [
+      { key: `category:${folder}`, label: folder },
+      ...(useTopics ? categories.map((category) => ({ key: `category:${folder} / ${category}`, label: `${folder} / ${category}` })) : []),
+    ]);
+    return {
+      total: toClassify.length,
+      needsServer: toClassify.length > 0,
+      message: `구간을 나눴어요. 북마크 ${toClassify.length.toLocaleString()}개의 주제를 읽는 중…`,
+      destinations,
+      async execute(signal, onProgress) {
+        const results = toClassify.length
+          ? await classifyInBatches(toClassify, { categories }, BATCH_SIZE.new, signal, onProgress)
+          : new Map();
+        return judged.map(({ bookmark, usage }) =>
+          toUsagePlanItem(bookmark, usage, results.get(bookmark.id), settings.confidenceThreshold),
+        );
+      },
+    };
+  },
+
+  projects(bookmarks) {
+    if (serverHealth?.poeConfigured === false) throw new Error("프로젝트 이름을 지으려면 서버에 POE_API_KEY가 필요해요.");
+    const bursts = findBursts(bookmarks, { inboxParentIds });
+    if (bursts.length === 0) throw new Error("몰아서 저장한 묶음을 찾지 못했어요. 범위를 ‘전체 북마크’로 넓혀 보세요.");
+    const total = bursts.reduce((sum, burst) => sum + burst.bookmarks.length, 0);
+    const destinations = [];
+    return {
+      total,
+      message: `묶음 ${bursts.length}개를 LLM이 살펴보는 중…`,
+      emptyMessage: "같은 목적으로 묶이는 북마크가 없었어요. 지금 정리 상태가 괜찮다는 뜻이에요.",
+      destinations,
+      async execute(signal, onProgress) {
+        const burstById = new Map(bursts.map((burst) => [burst.id, burst]));
+        const chunks = chunkItems(bursts, PROJECT_CLUSTERS_PER_REQUEST);
+        const answers = await mapWithConcurrency(chunks, 2, async (chunk) => {
+          const clusters = chunk.map((burst) => ({
+            id: burst.id,
+            bookmarks: burst.bookmarks.map(({ id, title, url, currentPath }) => ({ id, title, url, folder: currentPath })),
+          }));
+          const body = await postJson("/api/projects", { clusters }, signal);
+          onProgress(chunk.reduce((sum, burst) => sum + burst.bookmarks.length, 0));
+          return body.projects;
+        });
+        const items = [];
+        const usedLabels = new Set();
+        for (const project of answers.flat()) {
+          const burst = burstById.get(project.clusterId);
+          const members = new Map(burst.bookmarks.map((bookmark) => [bookmark.id, bookmark]));
+          let label = `${monthLabel(burst.startedAt)} · ${project.name}`;
+          for (let n = 2; usedLabels.has(label); n += 1) label = `${monthLabel(burst.startedAt)} · ${project.name} ${n}`;
+          usedLabels.add(label);
+          const key = `category:${PROJECTS_FOLDER} / ${label}`;
+          destinations.push({ key, label: `${PROJECTS_FOLDER} / ${label}` });
+          for (const id of project.memberIds) {
+            const bookmark = members.get(id);
+            if (!bookmark) continue;
+            const saved = new Date(bookmark.dateAdded);
+            items.push({
+              ...bookmark,
+              destination: key,
+              confidence: 1,
+              alreadyThere: false,
+              needsReview: false,
+              checked: true,
+              note: `${saved.toLocaleDateString("ko-KR")} 저장`,
+              scoreLabel: `${saved.getMonth() + 1}/${saved.getDate()}`,
+              scoreLevel: "high",
+            });
+          }
+        }
+        return items;
+      },
+    };
+  },
+};
+
+// Target path of a category key, so bookmarks already sitting there are not "moved".
+function categoryPath(key) {
+  return `${rootFullPath()} / ${key.slice("category:".length)}`;
+}
+
+function isAlreadyThere(item, key) {
+  if (!key) return false;
+  if (key.startsWith("folder:")) return key === `folder:${item.parentId}`;
+  return item.currentPath === categoryPath(key);
+}
+
 async function analyze() {
   const bookmarks = scopedBookmarks();
-  let request;
-  let destinations;
+  let run;
   try {
     if (bookmarks.length === 0) throw new Error("정리할 북마크가 없어요.");
-    if (mode === "new") {
-      if (categories.length < 2) throw new Error("카테고리를 두 개 이상 만들어 주세요.");
-      if (!el.rootName.value.trim()) throw new Error("정리 폴더 이름을 입력해 주세요.");
-      destinations = categories.map((category) => ({ key: `category:${category}`, label: category }));
-      request = { categories };
-    } else {
-      const targets = [...targetIds]
-        .map((id) => folderById.get(id))
-        .filter(Boolean)
-        .map((folder) => ({ id: folder.id, path: folder.path }));
-      if (targets.length === 0) throw new Error("넣을 수 있는 폴더를 하나 이상 체크해 주세요.");
-      if (targets.length > MAX_TARGET_FOLDERS) throw new Error(`대상 폴더는 ${MAX_TARGET_FOLDERS}개까지 고를 수 있어요.`);
-      destinations = targets.map((folder) => ({ key: `folder:${folder.id}`, label: folder.path }));
-      request = { folders: targets };
+    if (mode !== "existing" && !el.rootName.value.trim()) throw new Error("정리 폴더 이름을 입력해 주세요.");
+    run = prepareRun[mode](bookmarks);
+    if (run.needsServer !== false && !(await ensureOriginPermission(settings.endpoint))) {
+      throw new Error("백엔드 접근 권한이 필요해요.");
     }
-    if (!(await ensureOriginPermission(settings.endpoint))) throw new Error("백엔드 접근 권한이 필요해요.");
   } catch (error) {
     setStatus(el.batchStatus, error.message, "error");
     return;
@@ -293,39 +602,39 @@ async function analyze() {
 
   abortController = new AbortController();
   const { signal } = abortController;
+  const runMode = mode;
   el.analyze.disabled = true;
   el.cancel.hidden = false;
   el.plan.hidden = true;
   el.batchProgress.style.width = "0%";
   document.body.classList.add("is-analyzing");
   let completed = 0;
-  setStatus(el.batchStatus, `북마크 ${bookmarks.length.toLocaleString()}개의 페이지 정보를 읽는 중…`);
+  setStatus(el.batchStatus, run.message);
+  const onProgress = (count) => {
+    completed += count;
+    el.batchProgress.style.width = `${Math.round((completed / Math.max(run.total, 1)) * 100)}%`;
+    setStatus(el.batchStatus, `${run.total.toLocaleString()}개 중 ${completed.toLocaleString()}개 분석 완료…`);
+  };
 
   try {
-    const batches = chunkItems(bookmarks, BATCH_SIZE[mode]);
-    const results = await mapWithConcurrency(batches, CONCURRENCY, async (batch) => {
-      const response = await fetch(`${endpointBase()}/api/classify-batch`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...request, bookmarks: batch }),
-        signal,
-      });
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(body.error || `서버 오류 (${response.status})`);
-      completed += batch.length;
-      el.batchProgress.style.width = `${Math.round((completed / bookmarks.length) * 100)}%`;
-      setStatus(el.batchStatus, `${bookmarks.length.toLocaleString()}개 중 ${completed.toLocaleString()}개 분석 완료…`);
-      return body.results;
-    });
-    const resultById = new Map(results.flat().map((result) => [result.id, result]));
+    const items = await run.execute(signal, onProgress);
+    el.batchProgress.style.width = "100%";
+    if (items.length === 0) {
+      setStatus(el.batchStatus, run.emptyMessage || "옮길 북마크가 없어요.", "success");
+      return;
+    }
+    for (const item of items) {
+      if (item.destination && isAlreadyThere(item, item.destination)) {
+        item.alreadyThere = true;
+        item.checked = false;
+      }
+    }
     plan = {
-      mode,
-      rootName: el.rootName.value.trim(),
+      mode: runMode,
+      rootName: rootName(),
       rootParentId: rootParentPicker.value,
-      destinations,
-      items: bookmarks.map((bookmark) =>
-        toPlanItem(bookmark, resultById.get(bookmark.id), settings.confidenceThreshold),
-      ),
+      destinations: run.destinations,
+      items,
     };
     filter = "all";
     collapsedGroups.clear();
@@ -376,11 +685,12 @@ function visibleItems() {
 function renderStats() {
   const items = plan.items;
   const checked = items.filter((item) => item.checked).length;
+  const holdLabel = destinationLabel("").replace(/두기$/, "둠");
   const stats = [
     ["분석", items.length],
     ["옮길 항목", checked],
     ["검토 필요", items.filter((item) => item.needsReview).length],
-    ["분류 보류", items.filter((item) => !item.destination).length],
+    [holdLabel, items.filter((item) => !item.destination).length],
   ];
   if (plan.mode === "existing") stats.push(["이미 제자리", items.filter((item) => item.alreadyThere).length]);
   el.planStats.replaceChildren(
@@ -401,6 +711,7 @@ function renderStats() {
   document.querySelectorAll("[data-filter]").forEach((button) => {
     button.setAttribute("aria-checked", String(button.dataset.filter === filter));
   });
+  $('[data-filter="unassigned"]').textContent = holdLabel;
 }
 
 function destinationSelect(item) {
@@ -408,7 +719,7 @@ function destinationSelect(item) {
   select.className = "dest-select";
   select.dataset.itemId = item.id;
   select.setAttribute("aria-label", `${item.title || item.url} 옮길 곳`);
-  const none = new Option("분류 보류 (그대로 두기)", "");
+  const none = new Option(plan.mode === "usage" ? "그대로 두기" : "분류 보류 (그대로 두기)", "");
   select.append(none);
   for (const destination of plan.destinations) {
     select.append(new Option(destination.label, destination.key));
@@ -453,7 +764,7 @@ function renderPlan() {
     const name = document.createElement("span");
     name.className = "group-name";
     const folder = folderById.get(group.destination.slice("folder:".length));
-    const prefixText = plan.mode === "new" && group.destination
+    const prefixText = group.destination.startsWith("category:")
       ? plan.rootName
       : folder?.path.slice(0, -folder.title.length).replace(/\s\/\s$/, "");
     if (prefixText) {
@@ -499,17 +810,19 @@ function renderPlan() {
         title.rel = "noreferrer";
         title.textContent = item.title || item.url;
         const meta = document.createElement("small");
-        meta.textContent = `${hostOf(item.url)} · 지금: ${item.currentPath || "최상위"}`;
+        meta.textContent = [hostOf(item.url), item.note, `지금: ${item.currentPath || "최상위"}`]
+          .filter(Boolean)
+          .join(" · ");
         copy.append(title, meta);
 
         const score = document.createElement("span");
         score.className = "score";
         score.dataset.level = item.alreadyThere
           ? "same"
-          : item.confidence > settings.confidenceThreshold
-            ? "high"
-            : "low";
-        score.textContent = item.alreadyThere ? "제자리" : `${Math.round(item.confidence * 100)}%`;
+          : item.scoreLevel || (item.confidence > settings.confidenceThreshold ? "high" : "low");
+        score.textContent = item.alreadyThere
+          ? "제자리"
+          : item.scoreLabel || `${Math.round(item.confidence * 100)}%`;
 
         row.append(check, icon, copy, score, destinationSelect(item));
         list.append(row);
@@ -555,35 +868,27 @@ async function applyPlan() {
   const selected = plan.items.filter((item) => item.checked && item.destination);
   if (selected.length === 0) return;
   const destinationCount = new Set(selected.map((item) => item.destination)).size;
-  const message = plan.mode === "new"
-    ? `북마크 ${selected.length}개를 ‘${plan.rootName}’ 아래 ${destinationCount}개 카테고리 폴더로 옮겨요.`
-    : `북마크 ${selected.length}개를 기존 폴더 ${destinationCount}곳으로 옮겨요.`;
+  const message = plan.mode === "existing"
+    ? `북마크 ${selected.length}개를 기존 폴더 ${destinationCount}곳으로 옮겨요.`
+    : `북마크 ${selected.length}개를 ‘${plan.rootName}’ 아래 ${destinationCount}개 폴더로 옮겨요.`;
   if (!(await confirmApply(message))) return;
 
   el.apply.disabled = true;
-  const undoMoves = [];
-  const createdFolderIds = [];
-  const saveUndo = () =>
-    chrome.storage.local.set({
-      lastBatchUndo: { moves: undoMoves, createdFolderIds, createdAt: Date.now() },
-    });
+  const undo = createUndoRecord();
+  const undoMoves = undo.moves;
   try {
     const folderIdFor = new Map();
-    if (plan.mode === "new") {
+    const categoryKeys = [...new Set(selected.map((item) => item.destination))].filter((key) => key.startsWith("category:"));
+    if (categoryKeys.length) {
       const root = await findOrCreateFolder(plan.rootParentId, plan.rootName);
-      if (root.created) createdFolderIds.push(root.folder.id);
-      for (const key of new Set(selected.map((item) => item.destination))) {
-        // "개발 / 프론트엔드" becomes a nested folder pair under the root.
-        let parentId = root.folder.id;
-        for (const title of key.slice("category:".length).split(" / ")) {
-          const result = await findOrCreateFolder(parentId, title);
-          if (result.created) createdFolderIds.push(result.folder.id);
-          parentId = result.folder.id;
-        }
-        folderIdFor.set(key, parentId);
+      if (root.created) undo.createdFolderIds.push(root.folder.id);
+      for (const key of categoryKeys) {
+        // "Active / Design" becomes a nested folder pair under the root.
+        folderIdFor.set(key, await ensureFolderPath(root.folder.id, key.slice("category:".length).split(" / "), undo));
       }
-    } else {
-      for (const item of selected) folderIdFor.set(item.destination, item.destination.slice("folder:".length));
+    }
+    for (const item of selected) {
+      if (item.destination.startsWith("folder:")) folderIdFor.set(item.destination, item.destination.slice("folder:".length));
     }
 
     for (let index = 0; index < selected.length; index += 1) {
@@ -595,16 +900,18 @@ async function applyPlan() {
       await chrome.bookmarks.move(item.id, { parentId });
       if (index % 10 === 0) setStatus(el.batchStatus, `${selected.length}개 중 ${index + 1}개 옮기는 중…`);
     }
-    await saveUndo();
+    undo.summary = `북마크 ${undoMoves.length}개를 정리했어요.`;
+    await saveUndo(undo);
     plan = null;
     el.plan.hidden = true;
     await loadBookmarks();
     await renderUndoBanner();
-    setStatus(el.batchStatus, `북마크 ${undoMoves.length}개를 정리했어요.`, "success");
+    setStatus(el.batchStatus, undo.summary, "success");
     window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (error) {
-    if (undoMoves.length > 0 || createdFolderIds.length > 0) {
-      await saveUndo();
+    if (undoMoves.length > 0 || undo.createdFolderIds.length > 0) {
+      undo.summary = `북마크 ${undoMoves.length}개를 옮기다 멈췄어요.`;
+      await saveUndo(undo);
       await renderUndoBanner();
     }
     el.apply.disabled = false;
@@ -621,25 +928,68 @@ function timeAgo(timestamp) {
   return `${Math.round(hours / 24)}일 전`;
 }
 
+async function ensureFolderPath(parentId, titles, undo) {
+  for (const title of titles) {
+    const result = await findOrCreateFolder(parentId, title);
+    if (result.created) undo.createdFolderIds.push(result.folder.id);
+    parentId = result.folder.id;
+  }
+  return parentId;
+}
+
+// One undo record covers moves, created folders and deletions (checkup).
+function createUndoRecord() {
+  return { moves: [], createdFolderIds: [], removed: [], removedFolders: [], summary: "", createdAt: Date.now() };
+}
+
+function saveUndo(undo) {
+  return chrome.storage.local.set({ lastBatchUndo: { ...undo, createdAt: Date.now() } });
+}
+
+function undoCount(undo) {
+  return (undo?.moves?.length || 0) + (undo?.removed?.length || 0) + (undo?.removedFolders?.length || 0);
+}
+
 async function renderUndoBanner() {
   const { lastBatchUndo } = await chrome.storage.local.get("lastBatchUndo");
-  const count = lastBatchUndo?.moves?.length || 0;
+  const count = undoCount(lastBatchUndo);
   el.undoBanner.hidden = count === 0;
-  if (count) el.undoText.textContent = `${timeAgo(lastBatchUndo.createdAt)} 북마크 ${count}개를 정리했어요.`;
+  if (count) {
+    el.undoText.textContent = `${timeAgo(lastBatchUndo.createdAt)} ${lastBatchUndo.summary || `북마크 ${count}개를 정리했어요.`}`;
+  }
+}
+
+async function recreate(node) {
+  const { title, url, parentId, index } = node;
+  try {
+    return await chrome.bookmarks.create({ parentId, index, title, ...(url ? { url } : {}) });
+  } catch {
+    // The index may no longer exist; fall back to the end of the folder.
+    return chrome.bookmarks.create({ parentId, title, ...(url ? { url } : {}) });
+  }
 }
 
 async function undoLastBatch() {
   const { lastBatchUndo } = await chrome.storage.local.get("lastBatchUndo");
-  const moves = lastBatchUndo?.moves || [];
-  if (moves.length === 0) return;
+  const total = undoCount(lastBatchUndo);
+  if (total === 0) return;
   el.undoButton.disabled = true;
   let restored = 0;
-  for (const move of [...moves].reverse()) {
+  for (const move of [...(lastBatchUndo.moves || [])].reverse()) {
     try {
       await chrome.bookmarks.move(move.id, { parentId: move.parentId, index: move.index });
       restored += 1;
     } catch {
       // Continue restoring the remaining bookmarks if one parent was deleted.
+    }
+  }
+  const byIndex = (a, b) => a.index - b.index;
+  for (const node of [...(lastBatchUndo.removedFolders || []), ...(lastBatchUndo.removed || [])].sort(byIndex)) {
+    try {
+      await recreate(node);
+      restored += 1;
+    } catch {
+      // The parent folder may be gone; skip this one.
     }
   }
   for (const folderId of [...(lastBatchUndo.createdFolderIds || [])].reverse()) {
@@ -654,11 +1004,316 @@ async function undoLastBatch() {
   el.undoButton.disabled = false;
   await loadBookmarks();
   await renderUndoBanner();
-  setStatus(
-    el.batchStatus,
-    `북마크 ${restored}개를 원래 위치로 되돌렸어요.`,
-    restored === moves.length ? "success" : "error",
+  const message = `${restored}개 항목을 원래대로 되돌렸어요.`;
+  const kind = restored === total ? "success" : "error";
+  setStatus(el.batchStatus, message, kind);
+  setStatus($("#links-status"), message, kind);
+}
+
+/* ---------- checkup (F) ---------- */
+
+const CHECKUP_KINDS = [
+  ["dead", "끊긴 링크", "#dead-list"],
+  ["duplicate", "중복", "#duplicate-list"],
+  ["empty", "빈 폴더", "#empty-list"],
+  ["stale", "방치된 폴더", "#stale-list"],
+];
+const ACTION_LABELS = { remove: "삭제", removeFolder: "삭제", archive: "보관" };
+let deadCheckedAt = 0;
+let staleDays = 365;
+
+function buildCheckupItems() {
+  const wasChecked = new Map(checkupItems.map((item) => [item.key, item.checked]));
+  const byId = new Map(movableBookmarks().map((bookmark) => [bookmark.id, bookmark]));
+  const items = [];
+  const deadIds = new Set();
+  for (const link of deadLinks) {
+    const bookmark = byId.get(link.id);
+    if (!bookmark) continue;
+    deadIds.add(bookmark.id);
+    items.push({
+      key: `dead:${bookmark.id}`,
+      kind: "dead",
+      action: "remove",
+      id: bookmark.id,
+      title: bookmark.title || bookmark.url,
+      url: bookmark.url,
+      detail: `${link.reason} · ${bookmark.currentPath || "최상위"}`,
+      checked: true,
+    });
+  }
+  for (const group of findDuplicates(movableBookmarks(), { inboxParentIds })) {
+    for (const bookmark of group.remove) {
+      if (deadIds.has(bookmark.id)) continue;
+      items.push({
+        key: `duplicate:${bookmark.id}`,
+        kind: "duplicate",
+        action: "remove",
+        id: bookmark.id,
+        title: bookmark.title || bookmark.url,
+        url: bookmark.url,
+        detail: `${bookmark.currentPath || "최상위"}에서 삭제 · 남는 곳: ${group.keep.currentPath || "최상위"}`,
+        checked: true,
+      });
+    }
+  }
+  const archiveRoot = rootFullPath();
+  // A folder counts as stale when it was neither changed nor opened for the chosen period.
+  const { empty, stale } = findFolderIssues(rawTree, {
+    staleDays,
+    unusedDays: staleDays,
+    protectedIds: new Set(folderTree.map((folder) => folder.id)),
+  });
+  for (const folder of empty) {
+    items.push({
+      key: `empty:${folder.id}`,
+      kind: "empty",
+      action: "removeFolder",
+      id: folder.id,
+      title: folder.title || "(이름 없음)",
+      detail: folder.path,
+      checked: true,
+    });
+  }
+  for (const folder of stale) {
+    if (folder.path === archiveRoot || folder.path.startsWith(`${archiveRoot} / `)) continue;
+    items.push({
+      key: `stale:${folder.id}`,
+      kind: "stale",
+      action: "archive",
+      id: folder.id,
+      title: folder.title,
+      detail: [
+        folder.path,
+        `북마크 ${folder.count}개`,
+        `마지막 변경 ${daysAgoLabel(folder.modified)}`,
+        folder.lastUsed ? `마지막 사용 ${daysAgoLabel(folder.lastUsed)}` : "연 기록 없음",
+      ].join(" · "),
+      checked: false,
+    });
+  }
+  for (const item of items) if (wasChecked.has(item.key)) item.checked = wasChecked.get(item.key);
+  checkupItems = items;
+  renderCheckup();
+}
+
+function checkupRow(item) {
+  const row = document.createElement("li");
+  row.className = "checkup-item";
+  const check = document.createElement("input");
+  check.type = "checkbox";
+  check.dataset.key = item.key;
+  check.checked = item.checked;
+  check.setAttribute("aria-label", `${item.title} ${ACTION_LABELS[item.action]}`);
+  let icon;
+  if (item.url) {
+    icon = document.createElement("img");
+    icon.className = "favicon";
+    icon.alt = "";
+    icon.loading = "lazy";
+    icon.src = faviconUrl(item.url);
+  } else {
+    icon = document.createElement("span");
+    icon.className = "folder-glyph";
+  }
+  const copy = document.createElement("div");
+  copy.className = "plan-copy";
+  const title = document.createElement(item.url ? "a" : "strong");
+  title.textContent = item.title;
+  if (item.url) {
+    title.href = item.url;
+    title.target = "_blank";
+    title.rel = "noreferrer";
+  }
+  const detail = document.createElement("small");
+  detail.textContent = item.detail;
+  detail.title = item.detail;
+  copy.append(title, detail);
+  const tag = document.createElement("span");
+  tag.className = "action-tag";
+  tag.dataset.action = item.action;
+  tag.textContent = ACTION_LABELS[item.action];
+  row.append(check, icon, copy, tag);
+  return row;
+}
+
+function emptyRow(text) {
+  const row = document.createElement("li");
+  row.className = "checkup-empty";
+  row.textContent = text;
+  return row;
+}
+
+function renderCheckup() {
+  const stats = $("#checkup-stats");
+  stats.replaceChildren(
+    ...CHECKUP_KINDS.map(([kind, label]) => {
+      const count = checkupItems.filter((item) => item.kind === kind).length;
+      const stat = document.createElement("button");
+      stat.type = "button";
+      stat.dataset.kind = kind;
+      const value = document.createElement("b");
+      value.textContent = kind === "dead" && !deadCheckedAt ? "–" : count.toLocaleString();
+      const name = document.createElement("small");
+      name.textContent = kind === "dead" && !deadCheckedAt ? `${label} · 확인 전` : label;
+      stat.append(value, name);
+      stat.classList.toggle("has-items", count > 0);
+      return stat;
+    }),
   );
+  for (const [kind, , selector] of CHECKUP_KINDS) {
+    const items = checkupItems.filter((item) => item.kind === kind);
+    const list = $(selector);
+    if (items.length) {
+      list.replaceChildren(...items.map(checkupRow));
+    } else if (kind === "dead" && !deadCheckedAt) {
+      list.replaceChildren(emptyRow("‘링크 확인하기’를 누르면 모든 북마크 주소에 접속해 봐요. 북마크가 많으면 몇 분 걸려요."));
+    } else {
+      list.replaceChildren(emptyRow(kind === "dead" ? "끊긴 링크가 없어요." : "찾은 항목이 없어요."));
+    }
+  }
+  if (deadCheckedAt) {
+    $("#check-links").textContent = "다시 확인하기";
+  }
+  renderStaleControls();
+  renderCheckupSummary();
+}
+
+function renderStaleControls() {
+  const select = $("#stale-period");
+  select.value = String(staleDays);
+  $("#stale-period-label").textContent = select.selectedOptions[0]?.textContent || "";
+  const stale = checkupItems.filter((item) => item.kind === "stale");
+  const allChecked = stale.length > 0 && stale.every((item) => item.checked);
+  const toggle = $("#stale-toggle-all");
+  toggle.hidden = stale.length === 0;
+  toggle.textContent = allChecked ? "전체 해제" : `전체 선택 (${stale.length})`;
+}
+
+function renderCheckupSummary() {
+  const selected = checkupItems.filter((item) => item.checked);
+  const removeCount = selected.filter((item) => item.action === "remove").length;
+  const folderCount = selected.filter((item) => item.action === "removeFolder").length;
+  const archiveCount = selected.filter((item) => item.action === "archive").length;
+  const parts = [
+    removeCount && `북마크 ${removeCount}개 삭제`,
+    folderCount && `빈 폴더 ${folderCount}개 삭제`,
+    archiveCount && `폴더 ${archiveCount}개 보관`,
+  ].filter(Boolean);
+  $("#checkup-summary").textContent = parts.length ? parts.join(" · ") : "처리할 항목을 선택하세요";
+  const apply = $("#apply-checkup");
+  apply.disabled = selected.length === 0;
+  apply.textContent = selected.length ? `${selected.length}개 처리하기` : "적용하기";
+  return parts.join(", ");
+}
+
+async function checkDeadLinks() {
+  const status = $("#links-status");
+  const progress = $("#links-progress");
+  const targets = movableBookmarks().filter((bookmark) => /^https?:/i.test(bookmark.url));
+  if (targets.length === 0) {
+    setStatus(status, "확인할 웹 주소가 없어요.", "error");
+    return;
+  }
+  if (!(await ensureOriginPermission(settings.endpoint))) {
+    setStatus(status, "백엔드 접근 권한이 필요해요.", "error");
+    return;
+  }
+  linkController = new AbortController();
+  const { signal } = linkController;
+  const button = $("#check-links");
+  const cancel = $("#cancel-links");
+  button.disabled = true;
+  cancel.hidden = false;
+  progress.style.width = "0%";
+  document.body.classList.add("is-analyzing");
+  const found = [];
+  let done = 0;
+  let finished = false;
+  try {
+    await mapWithConcurrency(chunkItems(targets, LINK_BATCH), CONCURRENCY, async (chunk) => {
+      const body = await postJson("/api/check-links", { bookmarks: chunk.map(({ id, url }) => ({ id, url })) }, signal);
+      for (const result of body.results) {
+        if (result.state === "dead") found.push({ id: result.id, url: result.url, reason: result.reason });
+      }
+      done += chunk.length;
+      progress.style.width = `${Math.round((done / targets.length) * 100)}%`;
+      setStatus(status, `${targets.length.toLocaleString()}개 중 ${done.toLocaleString()}개 확인 · 끊긴 링크 ${found.length}개`);
+    });
+    finished = true;
+    setStatus(status, `다 확인했어요. 끊긴 링크 ${found.length}개를 찾았어요.`, "success");
+  } catch (error) {
+    setStatus(status, signal.aborted ? `중지했어요. 확인한 ${done.toLocaleString()}개 중 끊긴 링크 ${found.length}개를 보여 줘요.` : error.message, signal.aborted ? "" : "error");
+  } finally {
+    linkController = null;
+    button.disabled = false;
+    cancel.hidden = true;
+    document.body.classList.remove("is-analyzing");
+  }
+  if (finished || found.length) {
+    deadLinks = found;
+    deadCheckedAt = Date.now();
+    await chrome.storage.local.set({ deadLinks: { checkedAt: deadCheckedAt, results: found } });
+    buildCheckupItems();
+  }
+}
+
+async function nodeById(id) {
+  try {
+    return (await chrome.bookmarks.get(id))[0] || null;
+  } catch {
+    return null;
+  }
+}
+
+async function applyCheckup() {
+  const selected = checkupItems.filter((item) => item.checked);
+  if (selected.length === 0) return;
+  const summary = renderCheckupSummary();
+  if (!(await confirmApply(`${summary}할게요.`))) return;
+
+  const status = $("#links-status");
+  const apply = $("#apply-checkup");
+  apply.disabled = true;
+  const undo = createUndoRecord();
+  let archiveId = null;
+  let processed = 0;
+  try {
+    for (const item of selected) {
+      const node = await nodeById(item.id);
+      if (!node) continue;
+      if (item.action === "remove") {
+        undo.removed.push({ title: node.title, url: node.url, parentId: node.parentId, index: node.index });
+        await chrome.bookmarks.remove(node.id);
+      } else if (item.action === "removeFolder") {
+        if ((await chrome.bookmarks.getChildren(node.id)).length) continue;
+        undo.removedFolders.push({ title: node.title, parentId: node.parentId, index: node.index });
+        await chrome.bookmarks.remove(node.id);
+      } else if (item.action === "archive") {
+        if (!archiveId) {
+          const root = await findOrCreateFolder(rootParentPicker.value, rootName());
+          if (root.created) undo.createdFolderIds.push(root.folder.id);
+          archiveId = await ensureFolderPath(root.folder.id, [USAGE_FOLDERS.archive], undo);
+        }
+        if (node.parentId === archiveId) continue;
+        undo.moves.push({ id: node.id, parentId: node.parentId, index: node.index });
+        await chrome.bookmarks.move(node.id, { parentId: archiveId });
+      }
+      processed += 1;
+    }
+    undo.summary = `점검 항목 ${processed}개를 처리했어요.`;
+    setStatus(status, undo.summary, "success");
+  } catch (error) {
+    undo.summary = `점검 항목 ${processed}개를 처리하다 멈췄어요.`;
+    setStatus(status, `${error.message || "처리에 실패했어요."} 처리한 항목은 되돌릴 수 있어요.`, "error");
+  }
+  if (undoCount(undo) > 0) await saveUndo(undo);
+  const removedIds = new Set(selected.filter((item) => item.action === "remove").map((item) => item.id));
+  deadLinks = deadLinks.filter((link) => !removedIds.has(link.id));
+  await chrome.storage.local.set({ deadLinks: { checkedAt: deadCheckedAt, results: deadLinks } });
+  await loadBookmarks();
+  await renderUndoBanner();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 /* ---------- interests (Poe LLM) ---------- */
@@ -1099,6 +1754,12 @@ function renderThreshold() {
 
 async function loadBookmarks() {
   const tree = await chrome.bookmarks.getTree();
+  rawTree = tree;
+  inboxParentIds = new Set(
+    (tree[0]?.children || [])
+      .filter((folder) => !folder.url && folder.folderType !== "managed" && !folder.unmodifiable)
+      .map((folder) => folder.id),
+  );
   folderTree = buildFolderTree(tree);
   folderById.clear();
   const walk = (nodes) => nodes.forEach((node) => {
@@ -1114,7 +1775,9 @@ async function loadBookmarks() {
   }
   targetIds = new Set([...targetIds].filter((id) => folderById.has(id)));
   renderTargetTree();
+  renderRootNotes();
   updateScopeCount();
+  buildCheckupItems();
 }
 
 async function migrateLegacyRootName() {
@@ -1141,7 +1804,13 @@ async function initialize() {
   categories = savedCategories.length >= 2 ? savedCategories : [...DEFAULT_CATEGORIES];
   renderCategories();
 
-  const local = await chrome.storage.local.get(["organizeMode", "existingTargetIds"]);
+  const local = await chrome.storage.local.get(["organizeMode", "existingTargetIds", "usageTopics", "deadLinks", "staleDays"]);
+  if ([180, 365, 730, 1095, 1460, 1825].includes(local.staleDays)) staleDays = local.staleDays;
+  el.usageTopics.checked = local.usageTopics !== false;
+  deadLinks = local.deadLinks?.results || [];
+  deadCheckedAt = local.deadLinks?.checkedAt || 0;
+  await loadVisits().catch(() => {});
+  renderHistoryNote();
   const hadTargets = Array.isArray(local.existingTargetIds);
   targetIds = new Set(local.existingTargetIds || []);
   await loadBookmarks();
@@ -1156,13 +1825,14 @@ async function initialize() {
     );
     renderTargetTree();
   }
-  setMode(local.organizeMode === "existing" ? "existing" : "new");
+  setMode(Object.hasOwn(ANALYZE_LABELS, local.organizeMode) ? local.organizeMode : "new");
   setScope("all");
   const initialView = location.hash.slice(1);
-  showView(["settings", "insights"].includes(initialView) ? initialView : "organize");
+  showView(["settings", "insights", "checkup"].includes(initialView) ? initialView : "organize");
   await renderUndoBanner();
   $("#insight-count").textContent = allBookmarks.length.toLocaleString();
   await checkServer();
+  renderModePreview();
   await loadLatestProfile();
 }
 
@@ -1176,7 +1846,43 @@ document.querySelectorAll("[data-scope]").forEach((button) => {
   button.addEventListener("click", () => setScope(button.dataset.scope));
 });
 el.rootName.addEventListener("change", () => {
-  chrome.storage.sync.set({ batchRootName: el.rootName.value.trim() || DEFAULT_SETTINGS.batchRootName });
+  chrome.storage.sync.set({ batchRootName: rootName() });
+  renderRootNotes();
+  buildCheckupItems();
+});
+el.usageTopics.addEventListener("change", () => {
+  chrome.storage.local.set({ usageTopics: el.usageTopics.checked });
+  renderUsagePreview();
+});
+el.grantHistory.addEventListener("click", () => {
+  grantHistory().catch((error) => setStatus(el.batchStatus, error.message, "error"));
+});
+
+$("#check-links").addEventListener("click", checkDeadLinks);
+$("#cancel-links").addEventListener("click", () => linkController?.abort());
+$("#apply-checkup").addEventListener("click", () => applyCheckup());
+$("#view-checkup").addEventListener("change", (event) => {
+  const key = event.target.dataset.key;
+  if (!key) return;
+  const item = checkupItems.find((candidate) => candidate.key === key);
+  if (item) item.checked = event.target.checked;
+  renderStaleControls();
+  renderCheckupSummary();
+});
+$("#stale-period").addEventListener("change", (event) => {
+  staleDays = Number(event.target.value);
+  chrome.storage.local.set({ staleDays });
+  buildCheckupItems();
+});
+$("#stale-toggle-all").addEventListener("click", () => {
+  const stale = checkupItems.filter((item) => item.kind === "stale");
+  const check = !stale.every((item) => item.checked);
+  for (const item of stale) item.checked = check;
+  renderCheckup();
+});
+$("#checkup-stats").addEventListener("click", (event) => {
+  const kind = event.target.closest("[data-kind]")?.dataset.kind;
+  if (kind) document.querySelector(`.checkup-section[data-kind="${kind}"]`).scrollIntoView({ behavior: "smooth", block: "start" });
 });
 el.categoryInput.addEventListener("keydown", (event) => {
   if ((event.key === "Enter" || event.key === ",") && !event.isComposing) {
@@ -1258,7 +1964,7 @@ el.planGroups.addEventListener("change", (event) => {
     item.destination = target.value;
     item.checked = Boolean(target.value);
     item.needsReview = false;
-    item.alreadyThere = target.value === `folder:${item.parentId}`;
+    item.alreadyThere = isAlreadyThere(item, target.value);
     if (item.alreadyThere) item.checked = false;
   } else {
     return;

@@ -35,6 +35,10 @@ export function createPoeClient({ apiKey = process.env.POE_API_KEY, fetchImpl = 
       if (typeof content !== "string" || !content.trim()) {
         throw new PoeError("Poe API가 빈 응답을 반환했습니다.", 502);
       }
+      // A cut-off answer is broken JSON; say so instead of failing to parse it later.
+      if (body.choices[0].finish_reason === "length") {
+        throw new PoeError(`LLM 응답이 길이 한도(${maxTokens} 토큰)에서 잘렸습니다.`, 502);
+      }
       return { content, model: body.model || model, usage: body.usage || null };
     },
   };

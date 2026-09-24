@@ -60,6 +60,22 @@ test("leafCategories falls back to top-level folders when there are too many lea
   assert.deepEqual(leafCategories({ categories }), categories.map((category) => category.name));
 });
 
+test("compactForLlm groups by folder and describes only short titles", () => {
+  const bookmarks = [
+    { title: "Settings", url: "https://a.example/s", folder: "Work", meta: { description: "Account settings page" } },
+    { title: "A descriptive long bookmark title", url: "https://b.example", folder: "Work", meta: { description: "unused" } },
+    { title: "Home", url: "chrome://newtab/", folder: "Work", meta: { description: "" } },
+    { title: "Docs", url: "https://c.example", folder: "Dev", meta: { description: "" } },
+  ];
+  const { text, level, included } = compactForLlm(bookmarks, 1_000_000);
+  assert.equal(level, 0);
+  assert.equal(included, 3);
+  assert.equal(text.match(/## Work/g).length, 1);
+  assert.match(text, /Settings \(a\.example\) — Account settings page/);
+  assert.doesNotMatch(text, /unused/);
+  assert.doesNotMatch(text, /chrome:/);
+});
+
 test("compactForLlm drops detail, then samples, to stay within budget", () => {
   const many = Array.from({ length: 400 }, (_, index) => ({
     title: `Bookmark ${index}`,
@@ -70,11 +86,11 @@ test("compactForLlm drops detail, then samples, to stay within budget", () => {
   const full = compactForLlm(many, 1_000_000);
   assert.equal(full.level, 0);
   assert.equal(full.included, 400);
-  const bare = compactForLlm(many, 25_000);
-  assert.equal(bare.level, 2);
-  assert.ok(bare.text.length <= 25_000);
+  const bare = compactForLlm(many, 15_000);
+  assert.equal(bare.level, 1);
+  assert.ok(bare.text.length <= 15_000);
   const sampled = compactForLlm(many, 5_000);
-  assert.equal(sampled.level, 3);
+  assert.equal(sampled.level, 2);
   assert.ok(sampled.included < 400 && sampled.text.length <= 5_000);
 });
 
@@ -181,4 +197,12 @@ test("enrichBookmarks reports each bookmark as soon as it is read", async () => 
   );
   assert.deepEqual(seen, [["2", false], ["1", false]]);
   assert.deepEqual(results.map((result) => result.id), ["1", "2"]);
+});
+
+test("createPoeClient reports answers cut off by the token limit", async () => {
+  const poe = createPoeClient({
+    apiKey: "key",
+    fetchImpl: async () => Response.json({ choices: [{ message: { content: "{\"a\":" }, finish_reason: "length" }] }),
+  });
+  await assert.rejects(poe.chat({ model: "m", messages: [], maxTokens: 10 }), /잘렸습니다/);
 });

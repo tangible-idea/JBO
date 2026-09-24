@@ -145,7 +145,7 @@ function renderNoMatch(result) {
   title.textContent = "딱 맞는 폴더가 없어 보여요";
   const detail = document.createElement("p");
   detail.textContent = result.recommendation
-    ? `가장 가까운 폴더도 확신도 ${Math.round((result.confidence || 0) * 100)}%예요. 새 폴더에 두는 게 더 깔끔해요.`
+    ? `확신도 ${Math.round((result.confidence || 0) * 100)}%예요. 새 폴더에 두는 게 더 깔끔할까요?`
     : "기존 폴더 중 어울리는 곳이 없어요. 새 폴더에 두는 게 더 깔끔해요.";
   const action = document.createElement("button");
   action.type = "button";

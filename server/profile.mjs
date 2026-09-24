@@ -86,43 +86,60 @@ function topCounts(values, limit) {
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit);
 }
 
-// Each level drops detail so large collections still fit the model's context.
-const COMPACT_LEVELS = [
-  { description: 200, keywords: 80 },
-  { description: 100, keywords: 0 },
-  { description: 0, keywords: 0 },
-];
+// Only what the model needs: title, site, and the folder the person chose.
+// Folder paths are written once as headings instead of on every line, and page
+// descriptions are added only when the title alone says too little.
+const SHORT_TITLE = 15;
+const COMPACT_LEVELS = [{ description: 80 }, { description: 0 }];
 
-function compactLine(bookmark, level) {
-  const title = bookmark.title || bookmark.meta.pageTitle || bookmark.url;
-  const row = [cleanText(title, 120), hostOf(bookmark.url), bookmark.folder];
-  if (level.description) row.push(cleanText(bookmark.meta.description, level.description));
-  if (level.keywords) row.push(cleanText(bookmark.meta.keywords, level.keywords));
-  while (row.length > 3 && !row.at(-1)) row.pop();
-  return JSON.stringify(row);
+function isWebBookmark(bookmark) {
+  return /^https?:\/\//i.test(bookmark.url);
+}
+
+function compactItem(bookmark, level) {
+  const title = cleanText(bookmark.title || bookmark.meta.pageTitle, 80);
+  const host = hostOf(bookmark.url);
+  let line = title ? `${title} (${host})` : host;
+  if (level.description && title.length < SHORT_TITLE) {
+    const description = cleanText(bookmark.meta.description, level.description);
+    if (description) line += ` — ${description}`;
+  }
+  return line;
+}
+
+function groupByFolder(bookmarks, level) {
+  const groups = new Map();
+  for (const bookmark of bookmarks) {
+    const folder = bookmark.folder || "(최상위)";
+    if (!groups.has(folder)) groups.set(folder, []);
+    groups.get(folder).push(compactItem(bookmark, level));
+  }
+  return [...groups].map(([folder, lines]) => `## ${folder}\n${lines.join("\n")}`).join("\n");
 }
 
 export function compactForLlm(bookmarks, budget = LLM_CHAR_BUDGET) {
+  const web = bookmarks.filter(isWebBookmark);
   for (const [index, level] of COMPACT_LEVELS.entries()) {
-    const lines = bookmarks.map((bookmark) => compactLine(bookmark, level));
-    const size = lines.reduce((sum, line) => sum + line.length + 1, 0);
-    if (size <= budget) return { text: lines.join("\n"), level: index, included: bookmarks.length };
+    const text = groupByFolder(web, level);
+    if (text.length <= budget) return { text, level: index, included: web.length };
   }
   // Still too large: keep an evenly spaced sample of the barest lines.
-  const lines = bookmarks.map((bookmark) => compactLine(bookmark, COMPACT_LEVELS.at(-1)));
-  const average = lines.reduce((sum, line) => sum + line.length + 1, 0) / lines.length;
-  const keep = Math.max(1, Math.floor(budget / average));
-  const step = lines.length / keep;
-  const sample = Array.from({ length: keep }, (_, index) => lines[Math.floor(index * step)]);
-  return { text: sample.join("\n"), level: COMPACT_LEVELS.length, included: sample.length };
+  const bare = COMPACT_LEVELS.at(-1);
+  let keep = Math.max(1, Math.floor((web.length * budget) / groupByFolder(web, bare).length));
+  for (;;) {
+    const step = web.length / keep;
+    const sample = Array.from({ length: keep }, (_, index) => web[Math.floor(index * step)]);
+    const text = groupByFolder(sample, bare);
+    if (text.length <= budget || keep === 1) {
+      return { text, level: COMPACT_LEVELS.length, included: sample.length };
+    }
+    keep = Math.max(1, Math.floor(keep * 0.9));
+  }
 }
 
 export function buildProfileMessages(bookmarks, compact) {
   const hosts = topCounts(bookmarks.map((bookmark) => hostOf(bookmark.url)), 25)
     .map(([host, count]) => `${host} (${count})`)
-    .join(", ");
-  const folders = topCounts(bookmarks.map((bookmark) => bookmark.folder), 25)
-    .map(([folder, count]) => `${folder} (${count})`)
     .join(", ");
   const system = [
     "You are a meticulous librarian who studies a person's browser bookmarks.",
@@ -130,12 +147,11 @@ export function buildProfileMessages(bookmarks, compact) {
     "Write every human-readable string in Korean. Respond with a single JSON object and nothing else.",
   ].join(" ");
   const user = `아래는 한 사람의 Chrome 북마크 ${bookmarks.length}개입니다${
-    compact.included < bookmarks.length ? ` (분량 때문에 ${compact.included}개만 균등 추출)` : ""
+    compact.included < bookmarks.length ? ` (웹 주소가 아니거나 분량 때문에 ${compact.included}개만 포함)` : ""
   }.
-각 줄은 JSON 배열 [제목, 도메인, 현재 폴더, 페이지 설명?, 키워드?] 입니다.
+"## 폴더 경로" 아래에 그 폴더의 북마크가 "제목 (도메인)" 형식으로 한 줄씩 있습니다. 제목이 짧으면 " — 페이지 설명"이 붙습니다.
 
 자주 나오는 도메인: ${hosts || "(없음)"}
-현재 폴더 분포: ${folders || "(없음)"}
 
 <bookmarks>
 ${compact.text}
@@ -221,7 +237,7 @@ export function parseProfileResponse(text) {
   if (categories.length < 2) throw new SyntaxError("LLM이 폴더 구조를 충분히 제안하지 않았습니다.");
 
   const folderStructure = {
-    rootName: folderName(raw.folderStructure?.rootName) || "Tidymark 정리함",
+    rootName: folderName(raw.folderStructure?.rootName) || "Tidymark",
     categories,
   };
   return {
@@ -255,7 +271,8 @@ export async function analyzeBookmarkProfile(poe, input, { model, dataDir, now =
   let answer;
   let profile;
   try {
-    answer = await poe.chat({ model, messages: buildProfileMessages(bookmarks, compact) });
+    // The report is long Korean JSON; 4k tokens cut it off mid-structure.
+    answer = await poe.chat({ model, messages: buildProfileMessages(bookmarks, compact), maxTokens: 16_000 });
     profile = parseProfileResponse(answer.content);
   } catch (error) {
     error.message += ` (북마크 JSON은 ${savedAs}에 저장했습니다.)`;

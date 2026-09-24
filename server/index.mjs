@@ -9,6 +9,7 @@ import {
   normalizeBatchRequest,
   normalizeRequest,
 } from "./classifier.mjs";
+import { checkLinks, normalizeLinkRequest } from "./links.mjs";
 import { createMetadataCache } from "./metadata-cache.mjs";
 import { createPoeClient, DEFAULT_POE_MODEL, PoeError } from "./poe.mjs";
 import {
@@ -17,6 +18,7 @@ import {
   normalizeMetadataRequest,
   normalizeProfileRequest,
 } from "./profile.mjs";
+import { nameProjects, normalizeProjectsRequest } from "./projects.mjs";
 
 // Load .env so `npm start` works without `make`. Variables already set in the
 // shell take precedence over the file.
@@ -170,6 +172,25 @@ const server = createServer(async (request, response) => {
       // Create the client lazily so the snapshot is saved even without POE_API_KEY.
       const poe = { chat: (args) => createPoeClient().chat(args) };
       return analyzeBookmarkProfile(poe, body, { model: poeModel(), dataDir });
+    });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/projects") {
+    await handle(response, "프로젝트 묶음 분석에 실패했습니다. 서버 로그와 POE_API_KEY를 확인하세요.", async () => {
+      const body = await readJson(request);
+      normalizeProjectsRequest(body);
+      const poe = { chat: (args) => createPoeClient().chat(args) };
+      return nameProjects(poe, body, { model: poeModel(), metadataFetch: cachedMetadataFetch });
+    });
+    return;
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/check-links") {
+    await handle(response, "링크를 확인하지 못했습니다.", async () => {
+      const body = await readJson(request);
+      normalizeLinkRequest(body);
+      return checkLinks(body);
     });
     return;
   }

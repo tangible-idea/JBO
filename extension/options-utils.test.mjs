@@ -27,11 +27,20 @@ test("batch moves require a category above the saved threshold", () => {
 test("collectBookmarks keeps parent ids and readable paths", () => {
   const bookmarks = collectBookmarks([{ id: "0", title: "", children: [
     { id: "1", title: "북마크바", children: [
-      { id: "5", parentId: "1", title: "Docs", url: "https://docs.example.com" },
+      { id: "5", parentId: "1", title: "Docs", url: "https://docs.example.com", dateAdded: 10, dateLastUsed: 20 },
     ] },
   ] }]);
   assert.deepEqual(bookmarks, [
-    { id: "5", parentId: "1", title: "Docs", url: "https://docs.example.com", currentPath: "북마크바" },
+    {
+      id: "5",
+      parentId: "1",
+      title: "Docs",
+      url: "https://docs.example.com",
+      currentPath: "북마크바",
+      dateAdded: 10,
+      dateLastUsed: 20,
+      unmodifiable: false,
+    },
   ]);
 });
 

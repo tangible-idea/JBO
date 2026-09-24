@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="ko" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Pretendard Variable";
+        src: url("assets/fonts/PretendardVariable.woff2") format("woff2");
+        font-weight: 45 920;
+        font-display: block;
+      }
+      :root {
+        --paper: #f3f0e7;
+        --paper-2: #ebe7db;
+        --card: #fffdf7;
+        --ink: #18181a;
+        --ink-2: #3a3935;
+        --muted: #5c5850;
+        --line: #dcd7c9;
+        --lime: #c8f25a;
+        --lime-soft: #eef9cf;
+        --lime-ink: #283a06;
+        --sky: #a9d8ff;
+        --sky-soft: #e3f2ff;
+        --sky-ink: #0d3656;
+        --amber: #f5c451;
+        --amber-soft: #fbf0d4;
+        --amber-ink: #7a5406;
+        --violet: #cbb6ff;
+        --violet-soft: #f0eaff;
+        --violet-ink: #3b2470;
+        --danger: #b42318;
+        --mono: ui-monospace, "SF Mono", Menlo, monospace;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: "Pretendard Variable", ui-sans-serif, system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root { position: relative; width: 100%; height: 100%; }
+      .clip { position: absolute; inset: 0; }
+      .scene { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      .kicker { font-family: var(--mono); font-size: 22px; font-weight: 700; letter-spacing: 0.18em; color: var(--muted); }
+      .headline { font-size: 76px; font-weight: 850; letter-spacing: -0.045em; line-height: 1.12; text-align: center; }
+      .sub { margin-top: 22px; font-size: 30px; font-weight: 500; color: var(--ink-2); letter-spacing: -0.02em; text-align: center; }
+      .folder-glyph {
+        position: relative;
+        display: inline-block;
+        width: 34px;
+        height: 26px;
+        border-radius: 3px 6px 6px 6px;
+        background: var(--amber);
+        flex: none;
+      }
+      .folder-glyph::before {
+        content: "";
+        position: absolute;
+        top: -6px;
+        left: 0;
+        width: 15px;
+        height: 8px;
+        border-radius: 3px 3px 0 0;
+        background: var(--amber);
+      }
+
+      /* 1. messy bookmarks */
+      #s-mess { overflow: hidden; }
+      .chip {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border: 2px solid var(--line);
+        border-radius: 14px;
+        padding: 14px 20px;
+        background: var(--card);
+        font-size: 24px;
+        font-weight: 650;
+        white-space: nowrap;
+        box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.45);
+      }
+      .chip i { width: 18px; height: 18px; border-radius: 5px; background: var(--c, var(--sky)); }
+      #mess-copy {
+        position: relative;
+        z-index: 2;
+        border-radius: 28px;
+        padding: 40px 64px;
+        background: var(--ink);
+        color: var(--paper);
+      }
+      #mess-copy .headline span { color: var(--lime); }
+
+      /* 2. logo */
+      #s-logo { background: var(--ink); color: var(--paper); }
+      .logo-mark {
+        display: grid;
+        place-items: center;
+        width: 150px;
+        height: 150px;
+        border-radius: 38px;
+        background: var(--lime);
+        color: var(--ink);
+        font-size: 96px;
+        font-weight: 900;
+      }
+      #logo-word { margin-top: 38px; font-size: 128px; font-weight: 900; letter-spacing: -0.06em; }
+      #logo-tag { margin-top: 10px; font-size: 36px; font-weight: 600; color: #cfcabc; }
+      #logo-tag b { color: var(--lime); }
+
+      /* shared layout: copy on the left, UI on the right */
+      .split { display: grid; grid-template-columns: 700px 820px; gap: 110px; align-items: center; justify-content: center; }
+      .split .headline { text-align: left; font-size: 68px; }
+      .split .sub { text-align: left; }
+
+      /* 3. popup */
+      .popup {
+        border: 2px solid var(--line);
+        border-radius: 30px;
+        padding: 36px;
+        background: var(--card);
+        box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.45);
+      }
+      .page-card { display: flex; align-items: center; gap: 18px; border-radius: 18px; padding: 20px 24px; background: var(--paper-2); }
+      .page-card .fav { width: 44px; height: 44px; border-radius: 12px; background: var(--sky); }
+      .page-card strong { display: block; font-size: 28px; font-weight: 800; }
+      .page-card small { font-size: 21px; color: var(--muted); }
+      .label { margin: 30px 4px 14px; font-family: var(--mono); font-size: 19px; font-weight: 700; letter-spacing: 0.14em; color: var(--muted); }
+      .rec {
+        position: relative;
+        display: grid;
+        grid-template-columns: 40px 1fr auto;
+        gap: 18px;
+        align-items: center;
+        overflow: hidden;
+        margin-top: 12px;
+        border: 2px solid var(--line);
+        border-radius: 18px;
+        padding: 20px 24px;
+        background: var(--card);
+      }
+      .rec.top { border-color: var(--ink); background: var(--sky-soft); }
+      .rec strong { font-size: 27px; font-weight: 800; }
+      .rec small { display: block; font-size: 19px; color: var(--muted); }
+      .rec .pct { font-family: var(--mono); font-size: 26px; font-weight: 800; }
+      .rec .bar { position: absolute; left: 0; bottom: 0; height: 6px; width: 100%; background: var(--sky); transform-origin: left center; }
+      .tag {
+        margin-left: 10px;
+        border-radius: 8px;
+        padding: 3px 10px;
+        background: var(--ink);
+        color: var(--lime);
+        font-size: 17px;
+        font-weight: 800;
+        vertical-align: 4px;
+      }
+      .save-btn {
+        display: flex;
+        justify-content: center;
+        margin-top: 26px;
+        border-radius: 18px;
+        padding: 22px;
+        background: var(--ink);
+        color: var(--paper);
+        font-size: 26px;
+        font-weight: 800;
+      }
+      .save-btn b { color: var(--lime); margin-right: 10px; }
+
+      /* 4. no match */
+      .nomatch {
+        border: 3px solid var(--lime-ink);
+        border-radius: 22px;
+        padding: 30px 32px;
+        background: var(--lime-soft);
+        color: var(--lime-ink);
+      }
+      .nomatch strong { display: block; font-size: 36px; font-weight: 850; letter-spacing: -0.03em; }
+      .nomatch p { margin-top: 10px; font-size: 22px; line-height: 1.45; }
+      .nomatch .cta {
+        display: inline-block;
+        margin-top: 20px;
+        border-radius: 14px;
+        padding: 14px 24px;
+        background: var(--ink);
+        color: var(--lime);
+        font-size: 24px;
+        font-weight: 850;
+      }
+      .fallback { margin: 24px 6px 4px; font-size: 19px; font-weight: 700; color: var(--muted); }
+      .rec.dim { background: transparent; color: var(--ink-2); }
+      .rec.dim .bar { background: #c9c4b6; }
+      .rec.dim .pct { color: var(--muted); font-weight: 600; }
+
+      /* 5. mode cards */
+      .modes { display: grid; grid-template-columns: repeat(4, 380px); gap: 34px; margin-top: 70px; }
+      .mode {
+        position: relative;
+        min-height: 330px;
+        border: 3px solid var(--ink);
+        border-radius: 6px 26px 26px 26px;
+        padding: 40px 30px 28px;
+        background: linear-gradient(180deg, var(--soft), var(--card) 70%);
+        box-shadow: 10px 10px 0 var(--accent);
+      }
+      .mode .tab {
+        position: absolute;
+        top: -26px;
+        left: -3px;
+        width: 110px;
+        height: 26px;
+        border: 3px solid var(--ink);
+        border-bottom: 0;
+        border-radius: 12px 16px 0 0;
+        background: var(--accent);
+        font-family: var(--mono);
+        font-size: 17px;
+        font-weight: 800;
+        text-align: center;
+        line-height: 22px;
+      }
+      .mode strong { display: block; font-size: 34px; font-weight: 850; letter-spacing: -0.04em; }
+      .mode p { margin-top: 12px; font-size: 21px; line-height: 1.5; color: var(--ink-2); }
+      .mode .tree { margin-top: 22px; font-family: var(--mono); font-size: 18px; line-height: 1.6; color: var(--ink-2); }
+
+      /* 6. usage buckets */
+      .buckets { display: grid; gap: 16px; }
+      .bucket {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        overflow: hidden;
+        border: 2px solid var(--line);
+        border-radius: 18px;
+        padding: 22px 28px;
+        background: var(--card);
+      }
+      .bucket .fill { position: absolute; inset: 0; background: var(--amber-soft); transform-origin: left center; }
+      .bucket > span { position: relative; }
+      .bucket strong { display: block; font-size: 30px; font-weight: 850; }
+      .bucket small { font-size: 20px; color: var(--muted); }
+      .bucket b { position: relative; font-family: var(--mono); font-size: 36px; }
+
+      /* 7. checkup */
+      .stats { display: grid; grid-template-columns: repeat(4, 360px); gap: 28px; margin-top: 70px; }
+      .stat {
+        border: 3px solid var(--amber);
+        border-radius: 26px;
+        padding: 34px 32px;
+        background: var(--amber-soft);
+        color: var(--amber-ink);
+      }
+      .stat b { display: block; font-family: var(--mono); font-size: 84px; line-height: 1; }
+      .stat span { display: block; margin-top: 14px; font-size: 28px; font-weight: 800; }
+      .stat small { display: block; margin-top: 8px; font-size: 20px; font-weight: 600; opacity: 0.8; }
+      .stat .act {
+        display: inline-block;
+        margin-top: 18px;
+        border-radius: 10px;
+        padding: 6px 14px;
+        background: rgba(180, 35, 24, 0.12);
+        color: var(--danger);
+        font-size: 19px;
+        font-weight: 800;
+      }
+      .stat .act.keep { background: rgba(24, 24, 26, 0.08); color: var(--ink-2); }
+      #undo-bar {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        margin-top: 56px;
+        border-radius: 18px;
+        padding: 20px 34px;
+        background: var(--ink);
+        color: var(--paper);
+        font-size: 26px;
+        font-weight: 700;
+      }
+      #undo-bar b { color: var(--lime); text-decoration: underline; }
+
+      /* 8. end card */
+      #s-end { background: var(--ink); color: var(--paper); }
+      #s-end .headline span { color: var(--lime); }
+      #s-end .sub { color: #cfcabc; }
+      .end-brand { display: flex; align-items: center; gap: 22px; margin-bottom: 54px; }
+      .end-brand .logo-mark { width: 92px; height: 92px; border-radius: 24px; font-size: 58px; }
+      .end-brand strong { font-size: 64px; font-weight: 900; letter-spacing: -0.05em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="32" data-width="1920" data-height="1080">
+      <!-- 1. 뒤엉킨 북마크 -->
+      <section id="s-mess" class="clip scene" data-start="0" data-duration="4" data-track-index="0">
+        <div class="chip" style="left:120px;top:110px;--c:var(--sky)"><i></i>Jetpack Compose 가이드</div>
+        <div class="chip" style="left:760px;top:70px;--c:var(--lime)"><i></i>교토 숙소 예약</div>
+        <div class="chip" style="left:1330px;top:140px;--c:var(--violet)"><i></i>React 공식 문서</div>
+        <div class="chip" style="left:60px;top:430px;--c:var(--amber)"><i></i>3D 프린터 노즐 교체</div>
+        <div class="chip" style="left:1440px;top:420px;--c:var(--sky)"><i></i>Figma 디자인 시스템</div>
+        <div class="chip" style="left:180px;top:780px;--c:var(--lime)"><i></i>석사 입학 요강</div>
+        <div class="chip" style="left:720px;top:900px;--c:var(--violet)"><i></i>새 탭</div>
+        <div class="chip" style="left:1260px;top:810px;--c:var(--amber)"><i></i>결제 API 문서</div>
+        <div class="chip" style="left:560px;top:240px;--c:var(--amber)"><i></i>Untitled</div>
+        <div class="chip" style="left:1180px;top:620px;--c:var(--sky)"><i></i>Settings</div>
+        <div id="mess-copy">
+          <p class="headline">북마크 <span id="mess-count">0</span>개.<br />그거 어디 뒀더라?</p>
+        </div>
+      </section>
+
+      <!-- 2. 로고 -->
+      <section id="s-logo" class="clip scene" data-start="4" data-duration="3.5" data-track-index="0">
+        <div id="logo-mark" class="logo-mark">T</div>
+        <div id="logo-word">Tidymark</div>
+        <div id="logo-tag">북마크가 <b>제자리</b>를 찾아요</div>
+      </section>
+
+      <!-- 3. 팝업 추천 -->
+      <section id="s-popup" class="clip scene" data-start="7.5" data-duration="5" data-track-index="0">
+        <div class="split">
+          <div id="popup-copy">
+            <p class="kicker">01 · 지금 보는 페이지</p>
+            <p class="headline" style="margin-top:24px">누르면 바로,<br />들어갈 폴더를<br />골라 줘요</p>
+            <p class="sub">제목·주소·페이지 설명을 읽고<br />기존 폴더 중 가장 잘 맞는 곳을 추천해요.</p>
+          </div>
+          <div id="popup-ui" class="popup">
+            <div class="page-card"><div class="fav"></div><div><strong>Jetpack Compose 가이드</strong><small>developer.android.com</small></div></div>
+            <p class="label">추천 폴더</p>
+            <div class="rec top"><span class="folder-glyph"></span><span><strong>Compose<em class="tag">추천</em></strong><small>개발 / Android</small></span><span class="pct"><span id="p1">0</span>%</span><div class="bar" id="b1"></div></div>
+            <div class="rec"><span class="folder-glyph"></span><span><strong>Android</strong><small>개발</small></span><span class="pct"><span id="p2">0</span>%</span><div class="bar" id="b2"></div></div>
+            <div class="rec"><span class="folder-glyph"></span><span><strong>Flutter</strong><small>개발</small></span><span class="pct"><span id="p3">0</span>%</span><div class="bar" id="b3"></div></div>
+            <div class="save-btn" id="save-btn"><b>✦</b>‘Compose’에 저장</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. 딱 맞는 폴더가 없을 때 -->
+      <section id="s-nomatch" class="clip scene" data-start="12.5" data-duration="4.5" data-track-index="0">
+        <div class="split">
+          <div id="nomatch-copy">
+            <p class="kicker">02 · 확신이 없으면</p>
+            <p class="headline" style="margin-top:24px">억지로 넣지 않고<br />새 폴더를<br />제안해요</p>
+            <p class="sub">이름은 사이트에서, 위치는<br />가장 가까운 폴더 옆으로.</p>
+          </div>
+          <div id="nomatch-ui" class="popup">
+            <div class="page-card"><div class="fav" style="background:var(--violet)"></div><div><strong>교토 숙소 예약</strong><small>travel.example.com</small></div></div>
+            <div class="nomatch" id="nomatch-card" style="margin-top:28px">
+              <strong>딱 맞는 폴더가 없어 보여요</strong>
+              <p>가장 가까운 폴더도 확신도 34%예요.<br />새 폴더에 두는 게 더 깔끔해요.</p>
+              <span class="cta" id="nomatch-cta">새 폴더 만들기 →</span>
+            </div>
+            <p class="fallback">그래도 기존 폴더에 넣으려면</p>
+            <div class="rec dim"><span class="folder-glyph"></span><span><strong>여행</strong><small>생활</small></span><span class="pct">34%</span><div class="bar" style="transform:scaleX(0.34)"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. 정리 방식 -->
+      <section id="s-modes" class="clip scene" data-start="17" data-duration="4.5" data-track-index="0">
+        <p class="kicker">03 · 쌓인 북마크를 한 번에</p>
+        <p class="headline" style="margin-top:20px">네 가지 방식으로 정리해요</p>
+        <div class="modes">
+          <div class="mode" style="--accent:var(--lime);--soft:var(--lime-soft)"><span class="tab">A</span><strong>새 폴더로</strong><p>카테고리만 정하면<br />구조를 새로 만들어요</p><div class="tree">Tidymark<br />├ Dev &amp; Tech<br />└ Design</div></div>
+          <div class="mode" style="--accent:var(--sky);--soft:var(--sky-soft)"><span class="tab">B</span><strong>기존 폴더로</strong><p>지금 구조 그대로,<br />흩어진 것만 제자리로</p><div class="tree">→ 개발 / Android<br />→ 여행 / 일본</div></div>
+          <div class="mode" style="--accent:var(--amber);--soft:var(--amber-soft)"><span class="tab">C</span><strong>쓰임새로</strong><p>자주 여는 것과<br />묵혀 둔 것을 나눠요</p><div class="tree">Active<br />Someday<br />Archive</div></div>
+          <div class="mode" style="--accent:var(--violet);--soft:var(--violet-soft)"><span class="tab">D</span><strong>프로젝트로</strong><p>몰아서 저장한 북마크를<br />목적별로 묶어요</p><div class="tree">Projects<br />└ 2025-03 · 교토 여행</div></div>
+        </div>
+      </section>
+
+      <!-- 6. 쓰임새 구간 -->
+      <section id="s-usage" class="clip scene" data-start="21.5" data-duration="4" data-track-index="0">
+        <div class="split">
+          <div id="usage-copy">
+            <p class="kicker">04 · 쓰임새로 나누기</p>
+            <p class="headline" style="margin-top:24px">마지막으로<br />연 날짜를 보고<br />나눠요</p>
+            <p class="sub">AI 없이 규칙만으로 바로 끝나요.</p>
+          </div>
+          <div class="buckets" id="usage-ui">
+            <div class="bucket"><div class="fill" id="f1"></div><span><strong>Active</strong><small>최근 30일 안에 연 것</small></span><b id="c1">0</b></div>
+            <div class="bucket"><div class="fill" id="f2"></div><span><strong>Occasional</strong><small>30~180일 전에 연 것</small></span><b id="c2">0</b></div>
+            <div class="bucket"><div class="fill" id="f3"></div><span><strong>Someday</strong><small>저장만 하고 안 연 것</small></span><b id="c3">0</b></div>
+            <div class="bucket"><div class="fill" id="f4"></div><span><strong>Archive</strong><small>180일 넘게 안 연 것</small></span><b id="c4">0</b></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. 점검 -->
+      <section id="s-check" class="clip scene" data-start="25.5" data-duration="3.5" data-track-index="0">
+        <p class="kicker">05 · 점검</p>
+        <p class="headline" style="margin-top:20px">지울 것, 치울 것도 찾아요</p>
+        <div class="stats">
+          <div class="stat"><b id="k1">0</b><span>끊긴 링크</span><small>404 · 사라진 도메인</small><em class="act">삭제</em></div>
+          <div class="stat"><b id="k2">0</b><span>중복 북마크</span><small>정리된 쪽만 남겨요</small><em class="act">삭제</em></div>
+          <div class="stat"><b id="k3">0</b><span>빈 폴더</span><small>아무것도 없는 폴더</small><em class="act">삭제</em></div>
+          <div class="stat"><b id="k4">0</b><span>방치된 폴더</span><small>1년 넘게 손 안 댄 폴더</small><em class="act keep">Archive로</em></div>
+        </div>
+        <div id="undo-bar">방금 점검 항목 128개를 처리했어요. <b>되돌리기</b></div>
+      </section>
+
+      <!-- 8. 마무리 -->
+      <section id="s-end" class="clip scene" data-start="29" data-duration="3" data-track-index="0">
+        <div class="end-brand" id="end-brand"><div class="logo-mark">T</div><strong>Tidymark</strong></div>
+        <p class="headline" id="end-line">적용하기 전엔 <span>아무것도</span><br />바뀌지 않아요</p>
+        <p class="sub" id="end-sub">미리보기로 확인하고, 마음에 안 들면 되돌리면 돼요.</p>
+      </section>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const ease = "power3.out";
+      const count = (sel, to, at, dur = 1.2) =>
+        tl.fromTo(sel, { innerText: 0 }, { innerText: to, duration: dur, ease: "power2.out", snap: { innerText: 1 } }, at);
+
+      // 1. messy bookmarks drift in from everywhere, then the question lands
+      gsap.utils.toArray("#s-mess .chip").forEach((chip, i) => {
+        const angle = (i * 137.5 * Math.PI) / 180;
+        tl.fromTo(
+          chip,
+          { opacity: 0, x: Math.cos(angle) * 260, y: Math.sin(angle) * 200, rotation: (i % 2 ? 1 : -1) * (8 + (i % 4) * 3) },
+          { opacity: 1, x: 0, y: 0, rotation: (i % 2 ? 1 : -1) * (2 + (i % 3) * 2), duration: 1.1, ease },
+          0.05 * i,
+        );
+        tl.to(chip, { y: (i % 2 ? -1 : 1) * 18, duration: 2.6, ease: "sine.inOut" }, 1.2);
+      });
+      tl.fromTo("#mess-copy", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.6)" }, 0.9);
+      count("#mess-count", 1730, 1.0, 1.4);
+      tl.to("#s-mess .chip", { opacity: 0, scale: 0.6, duration: 0.4, ease: "power2.in", stagger: 0.02 }, 3.4);
+      tl.to("#mess-copy", { opacity: 0, y: -30, duration: 0.35, ease: "power2.in" }, 3.6);
+
+      // 2. logo
+      tl.fromTo("#logo-mark", { opacity: 0, scale: 0.3, rotation: -25 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.8, ease: "back.out(2)" }, 4.1);
+      tl.fromTo("#logo-word", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease }, 4.5);
+      tl.fromTo("#logo-tag", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease }, 4.9);
+      tl.to(["#logo-mark", "#logo-word", "#logo-tag"], { opacity: 0, y: -30, duration: 0.4, ease: "power2.in", stagger: 0.05 }, 7.0);
+
+      // 3. popup recommendation
+      tl.fromTo("#popup-copy", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.7, ease }, 7.6);
+      tl.fromTo("#popup-ui", { opacity: 0, y: 80, rotation: 2 }, { opacity: 1, y: 0, rotation: 0, duration: 0.8, ease }, 7.8);
+      tl.fromTo("#s-popup .rec", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.5, ease, stagger: 0.12 }, 8.5);
+      [["#b1", 0.92], ["#b2", 0.41], ["#b3", 0.18]].forEach(([bar, v], i) => {
+        tl.fromTo(bar, { scaleX: 0 }, { scaleX: v, duration: 1, ease: "power2.out" }, 8.8 + i * 0.12);
+      });
+      count("#p1", 92, 8.8, 1);
+      count("#p2", 41, 8.92, 1);
+      count("#p3", 18, 9.04, 1);
+      tl.fromTo("#save-btn", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease }, 9.9);
+      tl.to("#save-btn", { scale: 0.96, duration: 0.12, ease: "power1.inOut", yoyo: true, repeat: 1 }, 10.9);
+      tl.to(["#popup-copy", "#popup-ui"], { opacity: 0, y: -40, duration: 0.4, ease: "power2.in" }, 12.0);
+
+      // 4. no match
+      tl.fromTo("#nomatch-copy", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.7, ease }, 12.6);
+      tl.fromTo("#nomatch-ui", { opacity: 0, y: 80 }, { opacity: 1, y: 0, duration: 0.8, ease }, 12.8);
+      tl.fromTo("#nomatch-card", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.8)" }, 13.4);
+      tl.fromTo("#s-nomatch .fallback, #s-nomatch .rec", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 14.0);
+      tl.to("#nomatch-cta", { scale: 1.08, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 3 }, 14.4);
+      tl.to(["#nomatch-copy", "#nomatch-ui"], { opacity: 0, y: -40, duration: 0.4, ease: "power2.in" }, 16.5);
+
+      // 5. four modes deal out like index cards
+      tl.fromTo("#s-modes .kicker, #s-modes .headline", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease, stagger: 0.1 }, 17.1);
+      tl.fromTo("#s-modes .mode", { opacity: 0, y: 140, rotation: (i) => [-6, -2, 2, 6][i] }, { opacity: 1, y: 0, rotation: 0, duration: 0.8, ease, stagger: 0.14 }, 17.5);
+      tl.to("#s-modes .mode", { y: -12, duration: 0.25, ease: "sine.out", yoyo: true, repeat: 1, stagger: 0.18 }, 19.2);
+      tl.to("#s-modes > *", { opacity: 0, y: -40, duration: 0.4, ease: "power2.in" }, 21.0);
+
+      // 6. usage buckets fill and count
+      tl.fromTo("#usage-copy", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.7, ease }, 21.6);
+      tl.fromTo("#s-usage .bucket", { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.5, ease, stagger: 0.1 }, 21.8);
+      [["#f1", 0.22, "#c1", 381], ["#f2", 0.31, "#c2", 536], ["#f3", 0.18, "#c3", 312], ["#f4", 0.29, "#c4", 501]].forEach(([fill, v, num, n], i) => {
+        tl.fromTo(fill, { scaleX: 0 }, { scaleX: v, duration: 1.1, ease: "power2.out" }, 22.3 + i * 0.1);
+        count(num, n, 22.3 + i * 0.1, 1.1);
+      });
+      tl.to(["#usage-copy", "#usage-ui"], { opacity: 0, y: -40, duration: 0.4, ease: "power2.in" }, 25.0);
+
+      // 7. checkup
+      tl.fromTo("#s-check .kicker, #s-check .headline", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease, stagger: 0.1 }, 25.6);
+      tl.fromTo("#s-check .stat", { opacity: 0, y: 60, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease, stagger: 0.1 }, 25.9);
+      count("#k1", 37, 26.2, 1);
+      count("#k2", 64, 26.3, 1);
+      count("#k3", 12, 26.4, 1);
+      count("#k4", 15, 26.5, 1);
+      tl.fromTo("#undo-bar", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease }, 27.5);
+      tl.to("#s-check > *", { opacity: 0, y: -40, duration: 0.4, ease: "power2.in" }, 28.5);
+
+      // 8. end card
+      tl.fromTo("#end-brand", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease }, 29.1);
+      tl.fromTo("#end-line", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease }, 29.4);
+      tl.fromTo("#end-sub", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease }, 29.8);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

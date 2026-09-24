@@ -18,6 +18,7 @@
       </div>
       <nav class="studio-nav" role="tablist" aria-label="화면">
         <button class="nav-tab" role="tab" type="button" data-view="organize" aria-selected="true">정리하기</button>
+        <button class="nav-tab" role="tab" type="button" data-view="checkup" aria-selected="false">점검</button>
         <button class="nav-tab" role="tab" type="button" data-view="insights" aria-selected="false">관심사 분석</button>
         <button class="nav-tab" role="tab" type="button" data-view="settings" aria-selected="false">설정</button>
       </nav>
@@ -26,11 +27,12 @@
 
     <main class="studio-main">
       <!-- 정리하기 -->
+      <div id="undo-banner" class="undo-banner" hidden>
+        <span id="undo-text"></span>
+        <button id="undo-batch" class="text-button" type="button">되돌리기</button>
+      </div>
+
       <section id="view-organize" class="view" data-view="organize">
-        <div id="undo-banner" class="undo-banner" hidden>
-          <span id="undo-text"></span>
-          <button id="undo-batch" class="text-button" type="button">되돌리기</button>
-        </div>
 
         <div class="hero">
           <h1>북마크, 어떻게 정리할까요?</h1>
@@ -43,10 +45,10 @@
             <strong>새 폴더 만들어서 정리</strong>
             <span class="mode-card-desc">카테고리만 정하면 새 폴더 구조를 만들고 북마크를 나눠 담아요. 처음부터 깔끔하게 시작할 때 좋아요.</span>
             <span class="mode-card-diagram" aria-hidden="true">
-              <span class="tree-line root">Tidymark 정리함</span>
-              <span class="tree-line">개발 및 기술</span>
-              <span class="tree-line">디자인</span>
-              <span class="tree-line">읽을거리</span>
+              <span class="tree-line root">Tidymark</span>
+              <span class="tree-line">Dev &amp; Tech</span>
+              <span class="tree-line">Design</span>
+              <span class="tree-line">News &amp; Reading</span>
             </span>
           </button>
           <button class="mode-card" type="button" role="radio" data-mode="existing" aria-checked="false">
@@ -60,13 +62,35 @@
               <span class="tree-line arrow">→ 여행 / 일본</span>
             </span>
           </button>
+          <button class="mode-card" type="button" role="radio" data-mode="usage" aria-checked="false">
+            <span class="mode-card-tab">C</span>
+            <strong>쓰임새로 나누기</strong>
+            <span class="mode-card-desc">자주 여는 것, 저장만 해 둔 것, 오래 안 연 것을 먼저 나누고 그 안에서 주제로 정리해요.</span>
+            <span class="mode-card-diagram" aria-hidden="true">
+              <span class="tree-line root">Tidymark</span>
+              <span class="tree-line">Active / Dev &amp; Tech</span>
+              <span class="tree-line">Someday</span>
+              <span class="tree-line">Archive</span>
+            </span>
+          </button>
+          <button class="mode-card" type="button" role="radio" data-mode="projects" aria-checked="false">
+            <span class="mode-card-tab">D</span>
+            <strong>프로젝트로 묶기</strong>
+            <span class="mode-card-desc">며칠 사이에 몰아서 저장한 북마크를 찾아, 같은 목적이면 이름 붙인 폴더로 묶어요.</span>
+            <span class="mode-card-diagram" aria-hidden="true">
+              <span class="tree-line root">Tidymark / Projects</span>
+              <span class="tree-line">2025-03 · 교토 여행 준비</span>
+              <span class="tree-line">2025-06 · 이직 준비</span>
+            </span>
+          </button>
         </div>
 
         <div class="setup-grid">
           <section class="panel">
             <p class="step">1</p>
             <h2>어떤 북마크를 정리할까요?</h2>
-            <div class="segmented" role="radiogroup" aria-label="정리 범위">
+            <div class="segmented three" role="radiogroup" aria-label="정리 범위">
+              <button type="button" role="radio" data-scope="inbox" aria-checked="false">정리 안 된 것만</button>
               <button type="button" role="radio" data-scope="all" aria-checked="true">전체 북마크</button>
               <button type="button" role="radio" data-scope="folder" aria-checked="false">특정 폴더 안만</button>
             </div>
@@ -82,13 +106,14 @@
               </div>
             </div>
             <p id="scope-count" class="panel-note"></p>
+            <p id="inbox-note" class="panel-note" hidden>북마크바·기타 북마크·모바일 북마크에 폴더 없이 바로 들어 있는 북마크만 정리해요. 이미 폴더에 넣어 둔 건 건드리지 않아요.</p>
           </section>
 
           <section class="panel" data-for-mode="new">
             <p class="step">2</p>
             <h2>새 폴더 구조</h2>
             <label class="section-label" for="batch-root-name">정리 폴더 이름</label>
-            <input id="batch-root-name" class="text-input" type="text" maxlength="120" />
+            <input id="batch-root-name" class="text-input" type="text" maxlength="120" placeholder="Tidymark" />
             <p class="section-label">만들 위치</p>
             <div id="root-parent-picker" class="folder-picker">
               <button class="folder-picker-toggle" type="button" aria-haspopup="tree" aria-expanded="false" disabled>
@@ -123,6 +148,32 @@
             <ul id="target-tree" class="check-tree" aria-label="대상 폴더"></ul>
             <p id="target-count" class="panel-note"></p>
           </section>
+
+          <section class="panel" data-for-mode="usage" hidden>
+            <p class="step">2</p>
+            <h2>쓰임새 구간</h2>
+            <ul id="usage-buckets" class="bucket-list" aria-label="구간별 북마크 수"></ul>
+            <label class="switch-row">
+              <span><strong>구간 안에서 주제별로 나누기</strong><small id="usage-topics-note"></small></span>
+              <input id="usage-topics" type="checkbox" role="switch" checked />
+            </label>
+            <div class="switch-row">
+              <span><strong>방문 기록으로 더 정확하게</strong><small id="history-note"></small></span>
+              <button id="grant-history" class="ghost-button" type="button">방문 기록 사용하기</button>
+            </div>
+            <p class="panel-note root-note"></p>
+          </section>
+
+          <section class="panel" data-for-mode="projects" hidden>
+            <p class="step">2</p>
+            <h2>몰아서 저장한 묶음</h2>
+            <p class="panel-note">며칠 사이에 4개 이상 몰아서 저장했는데 아직 한 폴더에 모여 있지 않은 북마크를 찾아요. LLM이 같은 목적인지 확인하고 이름을 지어요.</p>
+            <p id="projects-poe-warning" class="hint-banner warn" hidden>
+              이름을 지으려면 서버에 <code>POE_API_KEY</code>가 필요해요.
+            </p>
+            <ol id="burst-preview" class="burst-preview" aria-label="묶음 후보"></ol>
+            <p class="panel-note root-note"></p>
+          </section>
         </div>
 
         <div class="run-row">
@@ -154,6 +205,61 @@
             <button id="apply-batch" class="action-button" type="button" disabled>적용하기</button>
           </div>
         </section>
+      </section>
+
+      <!-- 점검 -->
+      <section id="view-checkup" class="view" data-view="checkup" hidden>
+        <div class="hero">
+          <h1>북마크 점검</h1>
+          <p>옮기는 대신 지우거나 치울 만한 것을 찾아요. 선택한 것만 처리하고, 처리한 뒤에도 되돌릴 수 있어요.</p>
+        </div>
+        <div id="checkup-stats" class="checkup-stats"></div>
+
+        <section class="panel checkup-section" data-kind="dead">
+          <div class="section-row">
+            <h2 class="grow">끊긴 링크</h2>
+            <button id="cancel-links" class="ghost-button" type="button" hidden>중지</button>
+            <button id="check-links" class="action-button" type="button">링크 확인하기</button>
+          </div>
+          <p class="panel-note">페이지가 없다는 응답(404·410)을 받았거나 도메인이 사라진 주소만 끊긴 것으로 봐요. 로그인이 필요하거나 접근을 막은 사이트는 건드리지 않아요.</p>
+          <div class="progress" aria-hidden="true"><span id="links-progress"></span></div>
+          <p id="links-status" class="status left" role="status" aria-live="polite"></p>
+          <ul id="dead-list" class="checkup-list"></ul>
+        </section>
+
+        <section class="panel checkup-section" data-kind="duplicate">
+          <h2>중복 북마크</h2>
+          <p class="panel-note">같은 주소가 여러 곳에 있어요. 폴더에 정리된 것, 최근에 연 것을 남기고 나머지를 지워요.</p>
+          <ul id="duplicate-list" class="checkup-list"></ul>
+        </section>
+
+        <section class="panel checkup-section" data-kind="empty">
+          <h2>빈 폴더</h2>
+          <ul id="empty-list" class="checkup-list"></ul>
+        </section>
+
+        <section class="panel checkup-section" data-kind="stale">
+          <div class="section-row">
+            <h2 class="grow">방치된 폴더</h2>
+            <label class="inline-check" for="stale-period">기준</label>
+            <select id="stale-period" class="dest-select compact-select" aria-label="방치 기준 기간">
+              <option value="180">6개월</option>
+              <option value="365">1년</option>
+              <option value="730">2년</option>
+              <option value="1095">3년</option>
+              <option value="1460">4년</option>
+              <option value="1825">5년</option>
+            </select>
+            <button id="stale-toggle-all" class="text-button" type="button">전체 선택</button>
+          </div>
+          <p class="panel-note"><span id="stale-period-label">1년</span> 넘게 바뀌지 않았고 안의 북마크도 그동안 열지 않은 폴더예요. 지우지 않고 <span class="archive-path"></span>로 옮겨요.</p>
+          <ul id="stale-list" class="checkup-list"></ul>
+        </section>
+
+        <div class="apply-bar">
+          <span id="checkup-summary">처리할 항목을 선택하세요</span>
+          <button id="apply-checkup" class="action-button" type="button" disabled>적용하기</button>
+        </div>
       </section>
 
       <!-- 관심사 분석 -->
