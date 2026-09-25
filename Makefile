@@ -1,7 +1,7 @@
 SHELL := /bin/zsh
 .DEFAULT_GOAL := run
 
-.PHONY: help setup install guard-key verify test check run dev stop restart status chrome doctor clean package cws-status release
+.PHONY: help setup install guard-key verify test check run dev stop restart status chrome doctor clean package cws-status release site site-build
 
 help: ## 사용 가능한 명령을 표시합니다.
 	@awk 'BEGIN {FS = ":.*## "; print "Tidymark\n"} /^[a-zA-Z_-]+:.*## / {printf "  make %-10s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -97,3 +97,12 @@ cws-status: .env ## Chrome Web Store 항목 상태를 조회합니다.
 
 release: verify .env ## 테스트 후 zip을 업로드하고 스토어 검토에 제출합니다.
 	@set -a; source .env; set +a; node scripts/cws.mjs release
+
+site/node_modules/.package-lock.json: site/package.json site/package-lock.json
+	@cd site && npm ci
+
+site: site/node_modules/.package-lock.json ## 소개 웹사이트(React)를 개발 서버로 띄웁니다.
+	@cd site && npm run dev
+
+site-build: site/node_modules/.package-lock.json ## 소개 웹사이트를 site/dist에 정적 파일로 빌드합니다.
+	@cd site && npm run build
