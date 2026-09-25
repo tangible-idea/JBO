@@ -16,6 +16,18 @@
 - 같은 날 사용자가 대시보드에서 zip을 직접 업로드했습니다.
 - 대안: 아래의 Chrome Web Store API v2 경로(`scripts/cws.mjs`).
 
+### 2026-09-25 — Orca 내장 브라우저(`orca` CLI) 성공
+
+Orca 브라우저는 CDP로 페이지를 제어하므로 스토어 도메인 차단을 받지 않습니다. 개인정보처리방침 탭을 이 방법으로 입력하고 저장했습니다.
+
+1. `orca tab create --url <대시보드 URL> --json`으로 탭을 엽니다. 탭은 현재 작업 공간(JBO / master)에 생기므로, 사용자에게 Orca에서 그 작업 공간을 선택하라고 안내합니다.
+2. Orca 브라우저는 Chrome과 로그인을 공유하지 않습니다. 사용자가 그 탭에서 직접 Google 로그인을 해야 합니다. 로그인한 상태는 Default 프로필에 남습니다.
+3. `orca snapshot`으로 ref를 얻고, `orca fill --element @eNN --value ...`로 텍스트 칸을, `orca check --element @eNN`로 체크박스를 채웁니다.
+4. **라디오 버튼(Remote code)은 `orca click`이 먹히지 않습니다.** `orca eval`로 `input[type=radio][value=false]`의 좌표를 구한 뒤, `orca mouse move --x --y` → `mouse down` → `mouse up`으로 실제 마우스 클릭을 해야 바뀝니다.
+5. 상단의 `Save draft`를 누르고, `orca reload` 후 다시 snapshot해서 글자 수와 체크 상태가 유지되는지 확인합니다.
+6. `Why can't I submit?` 버튼을 누르면 남은 차단 사유가 대화상자로 나옵니다.
+7. `Submit for review`는 사용자 확인을 받은 뒤에만 누릅니다.
+
 ## 최초 1회 설정: API 인증 정보
 
 1. Google Cloud Console에서 프로젝트를 만들고 **Chrome Web Store API**를 사용 설정합니다.
