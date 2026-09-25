@@ -83,10 +83,10 @@ export const SUPPORT_URL = "https://github.com/tangible-idea/JBO/issues";
 export const PRIVACY_UPDATED = "September 25, 2026";
 
 export const privacy = [
-  ["Where classification happens", <>Tidymark sends pages to a Tidymark server for classification. By default that server runs on your own computer at <code>http://127.0.0.1:8787</code>. You can point the extension at a different HTTPS server in its settings, and Chrome asks for your permission before it can reach that address.</>],
+  ["Where classification happens", <>Tidymark sends pages to the Tidymark server for classification. It runs on Google Cloud Run in Seoul, South Korea. You can instead run your own server and point the extension at it in Settings; Chrome asks for your permission before the extension can reach a new address.</>],
   ["What is sent", "For each bookmark or page being classified: its title, address, and page description (or text you have selected on the page). For folder matching, the names of your folders. To read descriptions and check links, the server visits the bookmarked addresses."],
-  ["The interest report", "When you run it, bookmark titles and descriptions are sent from the server to a large language model through the Poe API to produce the report. Nothing is sent unless you start the report."],
+  ["The interest report", "When you run the interest report or project grouping, bookmark titles, addresses and descriptions are sent from the server to a large language model through the Poe API. Classification uses the TypeSafe API. Nothing goes to these services unless you start that feature."],
   ["Browsing history", "Optional, and only asked for when you turn it on in the sort-by-usage mode. History is read inside your browser to decide how recently you used a page. It is never sent to any server."],
-  ["What is stored", "Your settings live in Chrome's extension storage. The server keeps a cache of page titles and descriptions so it doesn't have to fetch them again."],
+  ["What is stored", "Your settings live in Chrome's extension storage. The Tidymark server writes nothing to disk: it keeps page titles and descriptions only in a short-lived memory cache so it doesn't fetch the same page twice, and forgets them when it restarts. Nothing is tied to you, because there are no accounts."],
   ["What we don't do", "No accounts, no ads, no analytics, no selling or sharing of your data. Data is used only to organize your bookmarks."],
 ];

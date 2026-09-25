@@ -209,7 +209,7 @@ export const en = {
   "서버와 API 키가 준비됐어요.": "Server and API key are ready.",
   "서버는 켜져 있지만 TYPESAFE_API_KEY가 없어요.": "The server is running but TYPESAFE_API_KEY is missing.",
   "서버 꺼짐": "Server offline",
-  "서버에 연결할 수 없어요. `make`로 서버를 켜 주세요.": "Can't reach the server. Check the address or start it with `make`.",
+  "서버에 연결할 수 없어요. 주소를 확인하거나 로컬 서버라면 `make`로 켜 주세요.": "Can't reach the server. Check the address, or start your local server with `make`.",
   "해당 주소에 접근 권한이 필요해요.": "Permission to reach that address is required.",
   "저장했어요. 연결을 확인하는 중…": "Saved. Checking the connection…",
   "저장했어요.": "Saved.",

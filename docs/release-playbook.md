@@ -114,3 +114,22 @@ API는 zip 업로드와 검토 제출만 합니다. 아래는 대시보드에서
   - Privacy → Privacy policy URL: `https://tidy.tmtt.link/privacypolicy`
 - URL 칸에는 반드시 `https://`까지 넣습니다. `tidy.tmtt.link`만 넣었을 때 "not reachable" 오류가 났습니다.
 - 모든 항목을 채운 뒤 "Why can't I submit?" 버튼이 사라지고 `Submit for review`가 활성화되는 것을 확인했습니다.
+
+## 공개 API 서버 (Cloud Run, 2026-09-25)
+
+- 서비스: `tidymark-api` / 프로젝트 `tangibly-1f5ab` / 리전 `asia-northeast3`
+- URL: `https://tidymark-api-133930666159.asia-northeast3.run.app` (확장의 기본 endpoint이자 manifest `host_permissions`)
+- 배포: `make deploy-api` (`.env`의 `GCP_PROJECT`, `GCP_REGION`, API 키를 사용). 처음 한 번은 `gcloud auth login`이 필요하고, 결제 계정이 **열린(open) 상태**로 프로젝트에 연결되어 있어야 합니다. 닫힌 결제 계정에 연결하면 `billingEnabled: false`로 남습니다.
+- 컨테이너는 `TIDYMARK_PUBLIC=1`로 실행됩니다:
+  - 사용자 URL fetch 시 사설망과 메타데이터 서버를 차단합니다(`server/safe-fetch.mjs`).
+  - CORS는 스토어 확장 ID만 허용합니다(`ALLOWED_ORIGINS`).
+  - IP당 분당 120회로 요청을 제한합니다(`RATE_LIMIT_PER_MIN`).
+  - 디스크에 쓰지 않고, `/api/profile/latest`는 끕니다.
+- 비용 상한: 인스턴스 최대 2개, 요청이 없으면 0으로 줄어듭니다. 실제 비용은 대부분 TypeSafe와 Poe 호출입니다.
+- 서버 주소가 바뀌면 `extension/popup.js`와 `extension/options.js`의 `DEFAULT_SETTINGS.endpoint`, `manifest.json`의 `host_permissions`, `dist/store-assets/privacy-practices.txt`, 사이트 개인정보처리방침을 함께 고칩니다.
+
+## 다국어 (0.3.1부터)
+
+- 확장 UI: 한국어 원문 문장을 키로 쓰고, 영어는 `extension/i18n-en.js`에 둡니다(`t("‘{0}’에 저장", name)`). 브라우저 언어가 `ko`가 아니면 영어로 나옵니다. manifest 이름과 설명은 `_locales/{en,ko}`에 있습니다.
+- 문구를 추가하면 `i18n-en.js`에도 넣습니다. 빠진 키는 한국어로 그대로 보입니다.
+- 스토어 등록정보: 한국어는 `dist/store-assets/`, 영어는 `dist/store-assets/en/`에 있습니다. 영어 스크린샷은 가짜 Chrome API로 영어 UI를 띄워 1280×800으로 찍은 것입니다.

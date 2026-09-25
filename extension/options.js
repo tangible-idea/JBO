@@ -42,7 +42,7 @@ const DEFAULT_CATEGORIES = [
 ];
 
 const DEFAULT_SETTINGS = {
-  endpoint: "http://127.0.0.1:8787",
+  endpoint: "https://tidymark-api-133930666159.asia-northeast3.run.app",
   autoClassify: true,
   autoSave: false,
   confidenceThreshold: 0.78,
@@ -1834,7 +1834,7 @@ async function checkServer({ report = false } = {}) {
   } catch {
     pill.dataset.state = "error";
     label.textContent = t("서버 꺼짐");
-    if (report) setStatus(el.endpointStatus, t("서버에 연결할 수 없어요. `make`로 서버를 켜 주세요."), "error");
+    if (report) setStatus(el.endpointStatus, t("서버에 연결할 수 없어요. 주소를 확인하거나 로컬 서버라면 `make`로 켜 주세요."), "error");
   }
 }
 

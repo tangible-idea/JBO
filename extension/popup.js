@@ -11,7 +11,7 @@ import {
 localizeDocument();
 
 const DEFAULT_SETTINGS = {
-  endpoint: "http://127.0.0.1:8787",
+  endpoint: "https://tidymark-api-133930666159.asia-northeast3.run.app",
   autoClassify: true,
   autoSave: false,
   confidenceThreshold: 0.78,
