@@ -51,6 +51,27 @@ API는 zip 업로드와 검토 제출만 합니다. 아래는 대시보드에서
 - **배포 탭**: 공개 범위(공개/비공개/그룹), 지역
 - **계정**: 개발자 이메일 인증
 
+### 등록정보 입력값 (2026-09-25 v0.3.0 기준)
+
+파일은 `dist/store-assets/`에 있습니다(`dist/`는 git 제외).
+
+| 대시보드 항목 | 값 / 파일 |
+|---|---|
+| Description | `description.txt` 내용 전체 붙여넣기 |
+| Category | Productivity → Tools (없으면 Productivity) |
+| Language | 한국어 (Korean) |
+| Store icon | `store-icon-128.png` (= `extension/icons/icon128.png`) |
+| Global promo video | 선택. `promo/tidymark-promo.mp4`를 YouTube에 올린 뒤 URL |
+| Screenshots | `screenshot-1.png` ~ `screenshot-5.png` (1280×800, 알파 없음) |
+| Small promo tile | `promo-small.png` (440×280) |
+| Marquee promo tile | `promo-marquee.png` (1400×560) |
+
+재생성 방법:
+- 스크린샷: 홍보 영상 `promo/tidymark-promo.mp4`의 11 / 15.5 / 19.5 / 23 / 27초 프레임을 씁니다. 가운데 기준으로 1728×1080 크롭 후 1280×800으로 줄이고, `-pix_fmt rgb24`로 알파를 없앱니다. 19.5초 프레임은 좌우가 잘리므로 1280×720으로 줄이고 위아래를 `#efeee4`로 40px씩 채웁니다.
+  `ffmpeg -ss 11 -i promo/tidymark-promo.mp4 -frames:v 1 -vf "crop=1728:1080,scale=1280:800" -pix_fmt rgb24 screenshot-1.png`
+- 프로모션 타일: 로고 SVG와 Pretendard로 HTML을 만들고, 헤드리스 Chrome으로 캡처한 뒤 ffmpeg로 rgb24 변환합니다.
+  `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --hide-scrollbars --window-size=440,280 --screenshot=out.png file://…/small.html`
+
 ## 매 출시 절차
 
 1. `extension/manifest.json`의 `version`을 올립니다. 스토어는 같거나 낮은 버전을 거부합니다.
