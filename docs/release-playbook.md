@@ -66,6 +66,13 @@ API는 zip 업로드와 검토 제출만 합니다. 아래는 대시보드에서
 | Small promo tile | `promo-small.png` (440×280) |
 | Marquee promo tile | `promo-marquee.png` (1400×560) |
 
+### 개인정보처리방침 탭 입력값
+
+`dist/store-assets/privacy-practices.txt`에 칸별로 정리했습니다. 권한 사유는 코드 기준입니다. 권한이 바뀌면 이 파일도 고쳐야 합니다.
+- Remote code는 **"No"** 를 선택합니다. "Yes"를 고르면 사유를 요구하는 오류가 납니다.
+- Homepage / Support URL은 **실제로 열리는 주소**여야 합니다. 열리지 않으면 "not reachable" 오류가 납니다. 소개 사이트(`site/`)를 배포한 주소를 쓰고, Support에는 공개 저장소의 Issues 페이지를 써도 됩니다.
+- 첫 제출(2026-09-25)에서 난 오류: 권한 8개의 사유 누락, 단일 목적 설명 누락, 데이터 사용 인증 누락, Homepage/Support URL 접속 불가.
+
 재생성 방법:
 - 스크린샷: 홍보 영상 `promo/tidymark-promo.mp4`의 11 / 15.5 / 19.5 / 23 / 27초 프레임을 씁니다. 가운데 기준으로 1728×1080 크롭 후 1280×800으로 줄이고, `-pix_fmt rgb24`로 알파를 없앱니다. 19.5초 프레임은 좌우가 잘리므로 1280×720으로 줄이고 위아래를 `#efeee4`로 40px씩 채웁니다.
   `ffmpeg -ss 11 -i promo/tidymark-promo.mp4 -frames:v 1 -vf "crop=1728:1080,scale=1280:800" -pix_fmt rgb24 screenshot-1.png`
