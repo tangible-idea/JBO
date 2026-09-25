@@ -1,6 +1,6 @@
 import Logo from "./components/Logo.jsx";
 import PopupDemo from "./components/PopupDemo.jsx";
-import { STORE_URL, buckets, checks, movePlan, privacy, savePoints, ways } from "./content.jsx";
+import { PRIVACY_UPDATED, STORE_URL, buckets, checks, movePlan, privacy, savePoints, ways } from "./content.jsx";
 
 const maxBucket = Math.max(...buckets.map((b) => b.count));
 
@@ -24,7 +24,7 @@ function Header() {
           <a href="#save">Save a page</a>
           <a href="#tidy">Tidy everything</a>
           <a href="#checkup">Checkup</a>
-          <a href="#privacy">Privacy</a>
+          <a href="./privacypolicy/">Privacy</a>
         </nav>
         <StoreButton />
       </div>
@@ -223,7 +223,8 @@ function Privacy() {
         <div style={{ display: "grid", gap: 12, alignContent: "start" }}>
           <p className="eyebrow">Privacy</p>
           <h2 style={{ fontSize: 40 }}>What leaves your browser.</h2>
-          <p className="updated">Last updated September 25, 2026</p>
+          <p className="updated">Last updated {PRIVACY_UPDATED}</p>
+          <a className="policy-link" href="./privacypolicy/">Read the full privacy policy →</a>
         </div>
         <dl>
           {privacy.map(([term, detail]) => (

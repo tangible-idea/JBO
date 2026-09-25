@@ -164,3 +164,13 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;
   @keyframes grow{from{width:0}}
 }
 @media (prefers-reduced-motion: reduce){ .rec .meter{transition:none} }
+
+/* privacy policy page */
+.policy{max-width:760px;padding-block:64px 88px;display:grid;gap:18px}
+.policy h1{font-size:clamp(36px,5vw,56px);font-weight:800}
+.policy dl{margin:24px 0 0;display:grid;gap:28px}
+.policy dt{font-weight:700;font-size:18px;margin-bottom:6px}
+.policy dd{margin:0;color:var(--ink-2)}
+.policy code{font-family:var(--mono);font-size:.86em;background:var(--paper-2);padding:1px 6px;border-radius:5px}
+.policy dd a{text-underline-offset:3px}
+.policy-link{font-weight:600;text-underline-offset:3px}
