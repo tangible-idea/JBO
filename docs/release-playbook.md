@@ -143,3 +143,17 @@ API는 zip 업로드와 검토 제출만 합니다. 아래는 대시보드에서
 - **이미지 삭제**: `Remove image …` 버튼은 `orca click`으로는 반응하지 않습니다. `orca focus`로 포커스를 준 뒤 `document.activeElement` 좌표를 구해 `orca mouse` 클릭을 하면 페이지 안에 "Remove Image" 확인 창이 뜨고, 거기서 `Remove`를 누릅니다.
 - **주의**: `orca reload` 뒤에는 ref가 바뀝니다. 예전 ref로 클릭하면 엉뚱한 링크(Ratings 등)가 눌립니다. 새로고침 후에는 항상 snapshot을 다시 찍습니다.
 - 0.3.1 상태: 영어·한국어 등록정보, Privacy 탭(Cloud Run 호스트 권한 사유 포함)을 모두 저장했고 `Submit for review`가 활성화된 것을 확인했습니다.
+
+## 방식 설명 영상 (0.3.2부터)
+
+- 정리 스튜디오의 방식 카드 A~D 오른쪽 아래 (?) 버튼을 누르면 `extension/videos/mode-{a,b,c,d}-{ko,en}.mp4`가 오버레이(`#mode-video-dialog`)로 반복 재생됩니다. 언어는 UI 언어를 따릅니다.
+- 원본은 `promo/tidymark-modes/clip.html` 한 파일이고, 변수 `mode`(a~d)와 `lang`(ko/en)으로 렌더링합니다. 1280×720, 4.5초입니다.
+  ```bash
+  cd promo/tidymark-modes
+  for l in ko en; do for m in a b c d; do
+    npx --yes hyperframes@0.8.72 render -c clip.html --strict-variables --variables "{\"mode\":\"$m\",\"lang\":\"$l\"}" -o renders/mode-$m-$l.mp4
+    ffmpeg -y -i renders/mode-$m-$l.mp4 -an -c:v libx264 -preset slow -tune animation -crf 30 -pix_fmt yuv420p -movflags +faststart ../../extension/videos/mode-$m-$l.mp4
+  done; done
+  ```
+- `npm run check`는 `index.html`만 검사합니다. 클립은 렌더링한 뒤 프레임을 뽑아 직접 확인합니다.
+- 확장과 사이트 모두 다크 모드를 쓰지 않습니다(`color-scheme: only light`). Chrome의 자동 다크 모드도 적용되지 않습니다.

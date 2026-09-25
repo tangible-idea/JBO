@@ -1961,6 +1961,28 @@ document.querySelectorAll(".nav-tab").forEach((tab) => {
 document.querySelectorAll(".mode-card").forEach((card) => {
   card.addEventListener("click", () => setMode(card.dataset.mode));
 });
+
+// (?) on each mode card plays a short looping explainer clip in an overlay.
+const MODE_VIDEOS = { new: "a", existing: "b", usage: "c", projects: "d" };
+const videoDialog = $("#mode-video-dialog");
+const modeVideo = $("#mode-video");
+document.querySelectorAll(".mode-help").forEach((button) => {
+  button.addEventListener("click", () => {
+    const card = button.parentElement.querySelector(".mode-card");
+    $("#mode-video-title").textContent = card.querySelector("strong").textContent;
+    modeVideo.src = `videos/mode-${MODE_VIDEOS[button.dataset.help]}-${lang}.mp4`;
+    videoDialog.showModal();
+    modeVideo.play().catch(() => {});
+  });
+});
+videoDialog.addEventListener("click", (event) => {
+  if (event.target === videoDialog) videoDialog.close();
+});
+videoDialog.addEventListener("close", () => {
+  modeVideo.pause();
+  modeVideo.removeAttribute("src");
+  modeVideo.load();
+});
 document.querySelectorAll("[data-scope]").forEach((button) => {
   button.addEventListener("click", () => setScope(button.dataset.scope));
 });

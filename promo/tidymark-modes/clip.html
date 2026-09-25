@@ -1,0 +1,229 @@
+<!doctype html>
+<html
+  lang="ko"
+  data-resolution="landscape"
+  data-composition-variables='[
+    {"id":"mode","type":"string","label":"Mode (a, b, c, d)","default":"a"},
+    {"id":"lang","type":"string","label":"Language (ko, en)","default":"ko"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Pretendard Variable";
+        src: url("assets/fonts/PretendardVariable.woff2") format("woff2");
+        font-weight: 45 920;
+        font-display: block;
+      }
+      :root {
+        --paper: #f3f0e7;
+        --paper-2: #ebe7db;
+        --card: #fffdf7;
+        --ink: #18181a;
+        --ink-2: #3a3935;
+        --muted: #5c5850;
+        --line: #dcd7c9;
+        --lime: #c8f25a;
+        --lime-soft: #eef9cf;
+        --sky: #a9d8ff;
+        --sky-soft: #e3f2ff;
+        --amber: #f5c451;
+        --amber-soft: #fbf0d4;
+        --violet: #cbb6ff;
+        --violet-soft: #f0eaff;
+        --mono: ui-monospace, "SF Mono", Menlo, monospace;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1280px;
+        height: 720px;
+        overflow: hidden;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: "Pretendard Variable", ui-sans-serif, system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root { position: relative; width: 100%; height: 100%; }
+      .clip { position: absolute; inset: 0; }
+      .abs { position: absolute; }
+
+      .col {
+        top: 175px; width: 280px; height: 370px; border: 3px solid var(--ink); border-radius: 6px 20px 20px 20px;
+        background: linear-gradient(180deg, var(--soft), var(--card) 60%); box-shadow: 7px 7px 0 var(--accent); padding: 20px 16px;
+      }
+      .tab {
+        position: absolute; top: -20px; left: -3px; width: 96px; height: 20px; border: 3px solid var(--ink); border-bottom: 0;
+        border-radius: 9px 12px 0 0; background: var(--accent);
+      }
+      .path { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+      .name { display: block; margin-top: 4px; font-size: 30px; font-weight: 850; letter-spacing: -0.035em; white-space: nowrap; }
+      .badge {
+        position: absolute; top: -15px; right: 14px; border-radius: 999px; padding: 5px 10px; border: 2px solid var(--ink);
+        background: var(--ink); color: var(--lime); font-size: 14px; font-weight: 800; white-space: nowrap;
+      }
+      .badge.keep { background: var(--paper-2); color: var(--ink-2); }
+      .ghost {
+        position: absolute; left: 13px; width: 250px; height: 52px; border: 2px dashed #c9c4b6; border-radius: 12px;
+        display: flex; align-items: center; gap: 10px; padding: 0 14px; font-size: 19px; font-weight: 650; color: #8c877b; white-space: nowrap;
+      }
+      .ghost::before { content: ""; width: 12px; height: 12px; border-radius: 4px; background: #d8d3c4; flex: none; }
+
+      #axis { left: 60px; top: 630px; width: 1160px; height: 4px; background: var(--ink); transform-origin: left center; }
+      .tick { top: 646px; width: 80px; margin-left: -40px; text-align: center; font-family: var(--mono); font-size: 17px; font-weight: 700; color: var(--muted); }
+      #cluster { left: 1036px; top: 426px; width: 230px; height: 176px; border: 3px dashed #6a4bc4; border-radius: 18px; background: rgba(203, 182, 255, 0.18); }
+      #cluster-label { left: 866px; top: 390px; width: 400px; text-align: right; font-size: 21px; font-weight: 800; color: #3b2470; }
+      #project {
+        left: 640px; top: 70px; width: 600px; height: 256px; border: 3px solid var(--ink); border-radius: 6px 20px 20px 20px;
+        background: linear-gradient(180deg, var(--violet-soft), var(--card) 70%); box-shadow: 7px 7px 0 var(--violet); padding: 18px 22px;
+        --accent: var(--violet);
+      }
+
+      .chip {
+        left: 0; top: 0; width: 250px; height: 52px; z-index: 4; border: 2px solid var(--line); border-radius: 12px;
+        display: flex; align-items: center; gap: 10px; padding: 0 14px; background: var(--card);
+        font-size: 20px; font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden;
+        box-shadow: 0 8px 20px -14px rgba(0, 0, 0, 0.5); transform-origin: left top;
+      }
+      .chip i { width: 13px; height: 13px; border-radius: 4px; background: var(--c); flex: none; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="clip" data-start="0" data-duration="4.5" data-width="1280" data-height="720">
+      <section id="stage" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="cols"></div>
+        <div id="timeline"></div>
+        <div id="chips"></div>
+      </section>
+    </div>
+
+    <script>
+      const { mode, lang } = window.__hyperframes?.getVariables?.() ?? { mode: "a", lang: "ko" };
+      const en = lang === "en";
+      document.documentElement.lang = en ? "en" : "ko";
+
+      const COL_X = [38, 346, 654, 962];
+      const SLOT_Y = (slot) => 275 + slot * 64;
+      const MONTH_X = (m) => 150 + ((m - 1) / 8) * 1000;
+      const TOPIC = { food: "var(--amber)", fit: "var(--sky)", trip: "var(--lime)", home: "var(--violet)" };
+
+      // [ko title, en title, topic, A column, B column, C column, D month]
+      const chips = [
+        ["라자냐 레시피", "Weeknight lasagna", "food", 0, 0, 0, 5],
+        ["바나나 브레드", "Banana bread", "food", 0, 0, 2, 2],
+        ["러닝화 리뷰", "Running shoe review", "fit", 1, 1, 1, 3],
+        ["10K 훈련 계획", "10K training plan", "fit", 1, 1, 0, 6],
+        ["리스본 3일 일정", "Lisbon in 3 days", "trip", 2, 2, 0, 9],
+        ["리스본 맛집 지도", "Lisbon food map", "trip", 2, 2, 0, 9],
+        ["리스본 숙소 비교", "Lisbon hotels", "trip", 2, 2, 2, 9],
+        ["주방 타일 고르기", "Kitchen tile ideas", "home", 3, 3, 3, 1],
+        ["스탠딩 책상 비교", "Standing desks", "home", 3, 3, 2, 4],
+        ["아이 수면 스케줄", "Toddler sleep guide", "home", 3, 3, 1, 7],
+      ];
+      const L = (ko, english) => (en ? english : ko);
+
+      const columnModes = {
+        a: { accent: "var(--lime)", soft: "var(--lime-soft)", badge: L("+ 새 폴더", "+ New folder"), field: 3,
+             cols: [["Tidymark /", L("요리", "Cooking")], ["Tidymark /", L("운동", "Fitness")], ["Tidymark /", L("여행", "Travel")], ["Tidymark /", L("집·생활", "Home")]] },
+        b: { accent: "var(--sky)", soft: "var(--sky-soft)", badge: L("원래 있던 폴더", "Existing folder"), keep: true, field: 4, offset: 1,
+             cols: [[L("북마크바 /", "Bookmarks bar /"), L("레시피", "Recipes")], [L("북마크바 /", "Bookmarks bar /"), L("러닝", "Running")], [L("여행 /", "Travel /"), L("포르투갈", "Portugal")], [L("북마크바 /", "Bookmarks bar /"), L("우리 집", "Our home")]],
+             ghosts: [L("김치찌개 황금비율", "Kimchi stew ratios"), L("마라톤 접수 일정", "Marathon sign-up"), L("포르투 와이너리", "Porto wineries"), L("이사 체크리스트", "Moving checklist")] },
+        c: { accent: "var(--amber)", soft: "var(--amber-soft)", field: 5,
+             cols: [[L("최근 30일 안에 연 것", "opened in last 30 days"), "Active"], [L("30~180일 전에 연 것", "opened 30–180 days ago"), "Occasional"], [L("저장만 하고 안 연 것", "saved, never opened"), "Someday"], [L("180일 넘게 안 연 것", "not opened in 180+ days"), "Archive"]] },
+      };
+
+      // Chips, scattered as an unsorted pile at frame 0.
+      const chipsRoot = document.getElementById("chips");
+      const chipEls = chips.map(([ko, english, topic], i) => {
+        const el = document.createElement("div");
+        el.className = "abs chip";
+        el.dataset.layoutAllowOverlap = "";
+        el.dataset.layoutAllowOcclusion = "";
+        el.style.setProperty("--c", TOPIC[topic]);
+        el.innerHTML = `<i></i>${L(ko, english)}`;
+        chipsRoot.append(el);
+        return el;
+      });
+      chipEls.forEach((el, i) => {
+        const angle = (i * 137.5 * Math.PI) / 180;
+        gsap.set(el, {
+          x: 515 + Math.cos(angle) * (330 + (i % 3) * 60),
+          y: 330 + Math.sin(angle) * 230,
+          rotation: (i % 2 ? 1 : -1) * (4 + (i % 4) * 3),
+        });
+      });
+
+      const tl = gsap.timeline({ paused: true });
+      const ease = "power3.out";
+      const fly = (el, t, at) => tl.to(el, { x: t.x, y: t.y, scale: t.scale ?? 1, rotation: 0, duration: 0.8, ease: "power3.inOut" }, at);
+
+      if (columnModes[mode]) {
+        const m = columnModes[mode];
+        const cols = m.cols.map(([path, name], i) => {
+          const col = document.createElement("div");
+          col.className = "abs col";
+          col.dataset.layoutAllowOverlap = "";
+          col.dataset.layoutAllowOcclusion = "";
+          col.style.cssText = `left:${COL_X[i]}px;--accent:${m.accent};--soft:${m.soft}`;
+          col.innerHTML = `<div class="tab" data-layout-allow-overflow></div><p class="path">${path}</p><strong class="name">${name}</strong>` +
+            (m.badge ? `<span class="badge${m.keep ? " keep" : ""}">${m.badge}</span>` : "") +
+            (m.ghosts ? `<div class="ghost" style="top:${SLOT_Y(0) - 175 - 3}px">${m.ghosts[i]}</div>` : "");
+          document.getElementById("cols").append(col);
+          return col;
+        });
+        gsap.set(cols, { opacity: 0 });
+        if (mode === "a") {
+          // New folders pop into existence.
+          tl.fromTo(cols, { opacity: 0, scale: 0.6, y: 30 }, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "back.out(1.7)", stagger: 0.08 }, 0.3);
+          tl.fromTo(cols.map((c) => c.querySelector(".badge")), { scale: 0 }, { scale: 1, duration: 0.3, ease: "back.out(2.4)", stagger: 0.08 }, 0.65);
+        } else {
+          // Folders that were already there simply appear.
+          tl.fromTo(cols, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease, stagger: 0.05 }, 0.2);
+        }
+        const used = [0, 0, 0, 0];
+        chipEls.forEach((el, i) => {
+          const col = chips[i][m.field];
+          fly(el, { x: COL_X[col] + 15, y: SLOT_Y((m.offset || 0) + used[col]++) }, 0.9 + i * 0.05);
+        });
+      } else {
+        // D: lay bookmarks out by save date, spot the burst, file it as a project.
+        const months = en ? ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"] : ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월"];
+        const root = document.getElementById("timeline");
+        root.innerHTML =
+          `<div id="axis" class="abs"></div>` +
+          months.map((label, i) => `<div class="abs tick" style="left:${MONTH_X(i + 1)}px">${label}</div>`).join("") +
+          `<div id="cluster" class="abs"></div>` +
+          `<div id="cluster-label" class="abs">${L("사흘 동안 3개 저장", "3 saved in 3 days")}</div>` +
+          `<div id="project" class="abs" data-layout-allow-overlap data-layout-allow-occlusion><div class="tab" data-layout-allow-overflow></div>` +
+          `<p class="path">Tidymark / Projects /</p><strong class="name">2026-09 · ${L("리스본 여행", "Lisbon trip")}</strong></div>`;
+        gsap.set(["#axis", ".tick", "#cluster", "#cluster-label", "#project"], { opacity: 0 });
+        gsap.set("#axis", { scaleX: 0 });
+        tl.to("#axis", { opacity: 1, scaleX: 1, duration: 0.5, ease: "power2.out" }, 0.2);
+        tl.to(".tick", { opacity: 1, duration: 0.25, stagger: 0.03 }, 0.35);
+        let trio = 0;
+        const burst = [];
+        chipEls.forEach((el, i) => {
+          const month = chips[i][6];
+          if (month === 9) {
+            burst.push(el);
+            fly(el, { x: 1050, y: 440 + trio++ * 52, scale: 0.8 }, 0.5 + i * 0.035);
+          } else {
+            fly(el, { x: MONTH_X(month) - 90, y: month % 2 ? 500 : 560, scale: 0.72 }, 0.5 + i * 0.035);
+          }
+        });
+        tl.fromTo("#cluster", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.8)" }, 1.8);
+        tl.fromTo("#cluster-label", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, ease }, 1.95);
+        tl.fromTo("#project", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.45, ease }, 2.4);
+        burst.forEach((el, k) => fly(el, { x: 662, y: 150 + k * 56, scale: 0.9 }, 2.7 + k * 0.08));
+        tl.to("#cluster, #cluster-label", { opacity: 0, duration: 0.3 }, 2.8);
+        tl.to(chipEls.filter((el) => !burst.includes(el)), { opacity: 0.35, duration: 0.4 }, 2.8);
+      }
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["clip"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

@@ -2,6 +2,7 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
+    <meta name="color-scheme" content="only light" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Tidymark 정리 스튜디오</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
@@ -40,6 +41,7 @@
         </div>
 
         <div class="mode-cards" role="radiogroup" aria-label="정리 방식">
+          <div class="mode-card-wrap">
           <button class="mode-card" type="button" role="radio" data-mode="new" aria-checked="true">
             <span class="mode-card-tab">A</span>
             <strong>새 폴더 만들어서 정리</strong>
@@ -51,6 +53,9 @@
               <span class="tree-line">News &amp; Reading</span>
             </span>
           </button>
+            <button class="mode-help" type="button" data-help="new" aria-label="설명 영상 보기" title="설명 영상 보기">?</button>
+          </div>
+          <div class="mode-card-wrap">
           <button class="mode-card" type="button" role="radio" data-mode="existing" aria-checked="false">
             <span class="mode-card-tab">B</span>
             <strong>기존 폴더에 쏙쏙 집어넣기</strong>
@@ -62,6 +67,9 @@
               <span class="tree-line arrow">→ 여행 / 일본</span>
             </span>
           </button>
+            <button class="mode-help" type="button" data-help="existing" aria-label="설명 영상 보기" title="설명 영상 보기">?</button>
+          </div>
+          <div class="mode-card-wrap">
           <button class="mode-card" type="button" role="radio" data-mode="usage" aria-checked="false">
             <span class="mode-card-tab">C</span>
             <strong>쓰임새로 나누기</strong>
@@ -73,6 +81,9 @@
               <span class="tree-line">Archive</span>
             </span>
           </button>
+            <button class="mode-help" type="button" data-help="usage" aria-label="설명 영상 보기" title="설명 영상 보기">?</button>
+          </div>
+          <div class="mode-card-wrap">
           <button class="mode-card" type="button" role="radio" data-mode="projects" aria-checked="false">
             <span class="mode-card-tab">D</span>
             <strong>프로젝트로 묶기</strong>
@@ -83,6 +94,8 @@
               <span class="tree-line">2025-06 · 이직 준비</span>
             </span>
           </button>
+            <button class="mode-help" type="button" data-help="projects" aria-label="설명 영상 보기" title="설명 영상 보기">?</button>
+          </div>
         </div>
 
         <div class="setup-grid">
@@ -381,6 +394,13 @@
       </section>
     </main>
 
+    <dialog id="mode-video-dialog" class="video-dialog" aria-labelledby="mode-video-title">
+      <form method="dialog" class="video-dialog-head">
+        <h2 id="mode-video-title"></h2>
+        <button class="icon-button" type="submit" aria-label="닫기" title="닫기">✕</button>
+      </form>
+      <video id="mode-video" muted loop playsinline preload="none"></video>
+    </dialog>
     <dialog id="confirm-dialog" class="confirm-dialog">
       <form method="dialog">
         <h2>정리를 적용할까요?</h2>

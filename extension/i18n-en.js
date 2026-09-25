@@ -346,6 +346,8 @@ export const en = {
   "끄면 저장된 JSON에 있는 페이지는 다시 읽지 않아요.": "When off, pages already in the saved JSON aren't fetched again.",
   "최근 읽은 페이지": "Recently read pages",
   "추천 폴더 이름 언어": "Folder name language",
+  "설명 영상 보기": "Watch how it works",
+  "닫기": "Close",
 };
 
 // Sentences split around inline markup; ids inside must match options.html.
