@@ -1,7 +1,7 @@
 SHELL := /bin/zsh
 .DEFAULT_GOAL := run
 
-.PHONY: help setup install guard-key verify test check run dev stop restart status chrome doctor clean
+.PHONY: help setup install guard-key verify test check run dev stop restart status chrome doctor clean package cws-status release
 
 help: ## 사용 가능한 명령을 표시합니다.
 	@awk 'BEGIN {FS = ":.*## "; print "Tidymark\n"} /^[a-zA-Z_-]+:.*## / {printf "  make %-10s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -88,3 +88,12 @@ doctor: install ## Node, API 키, 프로젝트 상태를 빠르게 점검합니�
 
 clean: ## 설치된 npm 의존성만 제거합니다. .env는 보존합니다.
 	@node -e 'require("fs").rmSync("node_modules", {recursive:true, force:true})'
+
+package: verify ## 스토어 업로드용 zip을 dist/에 만듭니다.
+	@node scripts/cws.mjs package
+
+cws-status: .env ## Chrome Web Store 항목 상태를 조회합니다.
+	@set -a; source .env; set +a; node scripts/cws.mjs status
+
+release: verify .env ## 테스트 후 zip을 업로드하고 스토어 검토에 제출합니다.
+	@set -a; source .env; set +a; node scripts/cws.mjs release
