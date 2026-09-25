@@ -10,7 +10,9 @@ import {
   normalizeRequest,
 } from "./classifier.mjs";
 import { checkLinks, normalizeLinkRequest } from "./links.mjs";
-import { createMetadataCache } from "./metadata-cache.mjs";
+import { createMemoryMetadataCache, createMetadataCache } from "./metadata-cache.mjs";
+import { createRateLimiter } from "./rate-limit.mjs";
+import { requestLanguage, translate } from "./i18n.mjs";
 import { createPoeClient, DEFAULT_POE_MODEL, PoeError } from "./poe.mjs";
 import {
   analyzeBookmarkProfile,
@@ -31,16 +33,27 @@ try {
 }
 
 const port = Number.parseInt(process.env.PORT || "8787", 10);
+const host = process.env.HOST || "127.0.0.1";
+// TIDYMARK_PUBLIC=1 is for a shared deployment (Cloud Run): nothing is written to
+// disk, outbound fetches skip private networks, and requests are rate limited.
+const isPublic = process.env.TIDYMARK_PUBLIC === "1";
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "").split(",").map((o) => o.trim()).filter(Boolean);
+const rateLimiter = createRateLimiter({ perMinute: Number(process.env.RATE_LIMIT_PER_MIN || (isPublic ? 120 : 0)) });
 const maxBodyBytes = 256 * 1024;
 const maxProfileBodyBytes = 8 * 1024 * 1024;
-const dataDir = path.resolve(process.env.DATA_DIR || "data");
-const metadataCache = createMetadataCache(path.join(dataDir, "bookmarks-latest.json"));
+const dataDir = isPublic ? null : path.resolve(process.env.DATA_DIR || "data");
+const metadataCache = isPublic
+  ? createMemoryMetadataCache()
+  : createMetadataCache(path.join(dataDir, "bookmarks-latest.json"));
 const cachedMetadataFetch = async (url) => (await metadataCache.fetch(url)).meta;
 const poeModel = () => process.env.POE_MODEL?.trim() || DEFAULT_POE_MODEL;
 
 function setCorsHeaders(request, response) {
   const origin = request.headers.origin || "";
-  if (origin.startsWith("chrome-extension://") || origin === "http://localhost:8787") {
+  const allowed = allowedOrigins.length > 0
+    ? allowedOrigins.includes(origin)
+    : origin.startsWith("chrome-extension://") || origin === "http://localhost:8787";
+  if (allowed) {
     response.setHeader("Access-Control-Allow-Origin", origin);
     response.setHeader("Vary", "Origin");
   }
@@ -64,6 +77,11 @@ async function readJson(request, limit = maxBodyBytes) {
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
 
+function clientIp(request) {
+  // Cloud Run puts the caller's address first in X-Forwarded-For.
+  return String(request.headers["x-forwarded-for"] || "").split(",")[0].trim() || request.socket.remoteAddress || "";
+}
+
 let client;
 function getClient() {
   if (!client) client = new TypeSafeClient();
@@ -71,13 +89,14 @@ function getClient() {
 }
 
 function sendError(response, fallbackMessage, error) {
+  const language = response.req ? requestLanguage(response.req) : "ko";
   const isInputError = error instanceof TypeError || error instanceof SyntaxError;
   const isTooLarge = error instanceof RangeError;
   const isPoe = error instanceof PoeError;
   if (!isInputError && !isTooLarge) console.error(error);
   const status = isTooLarge ? 413 : isInputError ? 400 : isPoe && error.status === 503 ? 503 : 502;
   sendJson(response, status, {
-    error: isInputError || isTooLarge || isPoe ? error.message : fallbackMessage,
+    error: translate(language, isInputError || isTooLarge || isPoe ? error.message : fallbackMessage),
   });
 }
 
@@ -97,6 +116,10 @@ const server = createServer(async (request, response) => {
   }
 
   const url = new URL(request.url || "/", `http://${request.headers.host || "localhost"}`);
+  if (url.pathname.startsWith("/api/") && !rateLimiter.allow(clientIp(request))) {
+    sendJson(response, 429, { error: translate(requestLanguage(request), "요청이 너무 많습니다. 잠시 후 다시 시도하세요.") });
+    return;
+  }
   if (request.method === "GET" && url.pathname === "/health") {
     sendJson(response, 200, {
       ok: true,
@@ -161,7 +184,7 @@ const server = createServer(async (request, response) => {
       writeLine({ type: "done", cached });
     } catch (error) {
       console.error(error);
-      writeLine({ type: "error", error: "페이지 메타정보를 읽지 못했습니다." });
+      writeLine({ type: "error", error: translate(requestLanguage(request), "페이지 메타정보를 읽지 못했습니다.") });
     }
     response.end();
     return;
@@ -202,16 +225,18 @@ const server = createServer(async (request, response) => {
     await handle(response, "링크를 확인하지 못했습니다.", async () => {
       const body = await readJson(request);
       normalizeLinkRequest(body);
-      return checkLinks(body);
+      const language = requestLanguage(request);
+      const { results } = await checkLinks(body);
+      return { results: results.map((result) => ({ ...result, reason: translate(language, result.reason) })) };
     });
     return;
   }
 
-  if (request.method === "GET" && url.pathname === "/api/profile/latest") {
+  if (request.method === "GET" && url.pathname === "/api/profile/latest" && dataDir) {
     try {
       sendJson(response, 200, JSON.parse(await readFile(path.join(dataDir, "profile-latest.json"), "utf8")));
     } catch {
-      sendJson(response, 404, { error: "아직 분석한 관심사 리포트가 없습니다." });
+      sendJson(response, 404, { error: translate(requestLanguage(request), "아직 분석한 관심사 리포트가 없습니다.") });
     }
     return;
   }
@@ -219,6 +244,6 @@ const server = createServer(async (request, response) => {
   sendJson(response, 404, { error: "Not found" });
 });
 
-server.listen(port, "127.0.0.1", () => {
-  console.log(`Tidymark server listening on http://127.0.0.1:${port}`);
+server.listen(port, host, () => {
+  console.log(`Tidymark server listening on http://${host}:${port}${isPublic ? " (public mode)" : ""}`);
 });

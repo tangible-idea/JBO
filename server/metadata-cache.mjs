@@ -48,3 +48,20 @@ export function createMetadataCache(snapshotFile, { fetchMetadata = fetchBookmar
     },
   };
 }
+
+// In-memory cache for shared deployments: page metadata only, bounded, never on disk.
+export function createMemoryMetadataCache({ fetchMetadata = fetchBookmarkMetadata, maxEntries = 5_000 } = {}) {
+  const byUrl = new Map();
+  return {
+    async fetch(url, { refresh = false } = {}) {
+      if (!refresh && byUrl.has(url)) return { meta: byUrl.get(url), cached: true };
+      const meta = await fetchMetadata(url);
+      if (hasMeta(meta)) {
+        byUrl.delete(url);
+        byUrl.set(url, meta);
+        if (byUrl.size > maxEntries) byUrl.delete(byUrl.keys().next().value);
+      }
+      return { meta, cached: false };
+    },
+  };
+}

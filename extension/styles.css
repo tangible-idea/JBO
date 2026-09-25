@@ -627,6 +627,7 @@ body.studio {
   background: linear-gradient(180deg, var(--card-soft), var(--card) 70%);
   box-shadow: 6px 6px 0 var(--card-accent), var(--shadow);
 }
+html:not([lang="ko"]) .mode-card[aria-checked="true"]::after { content: "Selected"; }
 .mode-card[aria-checked="true"] .mode-card-tab { border-color: var(--ink); background: var(--card-accent); color: #18181a; }
 .mode-card[aria-checked="true"]::after {
   content: "선택됨";

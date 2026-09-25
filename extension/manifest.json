@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Tidymark",
+  "name": "__MSG_extName__",
   "version": "0.3.0",
-  "description": "현재 페이지를 알맞은 북마크 폴더에 저장하고, 쌓인 북마크를 한 번에 정리합니다.",
+  "description": "__MSG_extDescription__",
+  "default_locale": "en",
   "permissions": [
     "activeTab",
     "bookmarks",
@@ -22,7 +23,7 @@
     "http://*/*"
   ],
   "action": {
-    "default_title": "Tidymark로 북마크 정리",
+    "default_title": "__MSG_actionTitle__",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon16.png",

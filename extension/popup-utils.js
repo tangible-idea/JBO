@@ -1,3 +1,4 @@
+import { t } from "./i18n.js";
 export function shouldSuggestNewFolder(result, threshold) {
   if (!result?.recommendation) return true;
   const confidence = Number(result.confidence);
@@ -39,7 +40,7 @@ export function suggestFolderName(page) {
   }
 
   const title = String(page?.title || "").split(/\s[-–—|:]\s/)[0].trim();
-  return title.slice(0, 80) || "새 북마크 폴더";
+  return title.slice(0, 80) || t("새 북마크 폴더");
 }
 
 export function buildFolderTree(nodes, parentPath = "") {

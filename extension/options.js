@@ -1,3 +1,4 @@
+import { lang, locale, localizeDocument, t } from "./i18n.js";
 import { createFolderPicker } from "./folder-picker.js";
 import {
   buildCategoryTree,
@@ -24,6 +25,9 @@ import {
   usageBucket,
 } from "./rules.js";
 
+// Translate static HTML before anything below grabs element references.
+localizeDocument();
+
 const DEFAULT_CATEGORIES = [
   "Dev & Tech",
   "AI & Data",
@@ -42,7 +46,7 @@ const DEFAULT_SETTINGS = {
   autoClassify: true,
   autoSave: false,
   confidenceThreshold: 0.78,
-  folderLanguage: "ko",
+  folderLanguage: lang,
   batchRootName: "Tidymark",
   batchCategories: DEFAULT_CATEGORIES,
 };
@@ -58,10 +62,10 @@ const PROJECT_CLUSTERS_PER_REQUEST = 6;
 const LINK_BATCH = 25;
 
 const ANALYZE_LABELS = {
-  new: "새 폴더 구조로 분석하기",
-  existing: "기존 폴더 기준으로 분석하기",
-  usage: "쓰임새로 나눠 보기",
-  projects: "프로젝트 묶음 찾기",
+  new: t("새 폴더 구조로 분석하기"),
+  existing: t("기존 폴더 기준으로 분석하기"),
+  usage: t("쓰임새로 나눠 보기"),
+  projects: t("프로젝트 묶음 찾기"),
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -144,7 +148,7 @@ function endpointBase() {
 
 function normalizeEndpoint(value) {
   const url = new URL(value);
-  if (!/^https?:$/.test(url.protocol)) throw new Error("HTTP 또는 HTTPS 주소를 입력하세요.");
+  if (!/^https?:$/.test(url.protocol)) throw new Error(t("HTTP 또는 HTTPS 주소를 입력하세요."));
   return url.origin + url.pathname.replace(/\/$/, "");
 }
 
@@ -218,12 +222,12 @@ function scopedBookmarks() {
 
 function updateScopeCount() {
   const count = scopedBookmarks().length;
-  const where = scope === "folder" && scopePicker.selected
-    ? `‘${scopePicker.selected.title}’ 안의 `
+  const total = count.toLocaleString();
+  el.scopeCount.textContent = scope === "folder" && scopePicker.selected
+    ? t("‘{0}’ 안의 북마크 {1}개를 분석해요.", scopePicker.selected.title, total)
     : scope === "inbox"
-      ? "정리 안 된 "
-      : "";
-  el.scopeCount.textContent = `${where}북마크 ${count.toLocaleString()}개를 분석해요.`;
+      ? t("정리 안 된 북마크 {0}개를 분석해요.", total)
+      : t("북마크 {0}개를 분석해요.", total);
   renderModePreview();
 }
 
@@ -240,7 +244,7 @@ function rootFullPath() {
 
 function renderRootNotes() {
   document.querySelectorAll(".root-note").forEach((note) => {
-    note.textContent = `‘${rootFullPath()}’ 아래에 폴더를 만들어요. 이름과 위치는 A 방식에서 바꿀 수 있어요.`;
+    note.textContent = t("‘{0}’ 아래에 폴더를 만들어요. 이름과 위치는 A 방식에서 바꿀 수 있어요.", rootFullPath());
   });
   document.querySelectorAll(".archive-path").forEach((node) => {
     node.textContent = `‘${rootName()} / ${USAGE_FOLDERS.archive}’`;
@@ -250,12 +254,12 @@ function renderRootNotes() {
 /* ---------- usage buckets (mode C) ---------- */
 
 const BUCKET_INFO = [
-  ["active", USAGE_FOLDERS.active, `최근 ${USAGE_RULES.activeDays}일 안에 연 것`],
-  ["occasional", USAGE_FOLDERS.occasional, `${USAGE_RULES.activeDays}~${USAGE_RULES.archiveDays}일 전에 연 것`],
-  ["someday", USAGE_FOLDERS.someday, "저장만 하고 한 번도 안 연 것"],
-  ["archive", USAGE_FOLDERS.archive, `${USAGE_RULES.archiveDays}일 넘게 안 연 것`],
-  ["unknown", "기록 없음", "2023년 이전에 저장해 사용 기록이 없는 것 · 검토 후 Archive로"],
-  ["recent", "그대로 둠", `최근 ${USAGE_RULES.recentDays}일 안에 저장한 것`],
+  ["active", USAGE_FOLDERS.active, t("최근 {0}일 안에 연 것", USAGE_RULES.activeDays)],
+  ["occasional", USAGE_FOLDERS.occasional, t("{0}~{1}일 전에 연 것", USAGE_RULES.activeDays, USAGE_RULES.archiveDays)],
+  ["someday", USAGE_FOLDERS.someday, t("저장만 하고 한 번도 안 연 것")],
+  ["archive", USAGE_FOLDERS.archive, t("{0}일 넘게 안 연 것", USAGE_RULES.archiveDays)],
+  ["unknown", t("기록 없음"), t("2023년 이전에 저장해 사용 기록이 없는 것 · 검토 후 Archive로")],
+  ["recent", t("그대로 둠"), t("최근 {0}일 안에 저장한 것", USAGE_RULES.recentDays)],
 ];
 
 function usageFor(bookmark) {
@@ -290,15 +294,15 @@ function renderUsagePreview() {
     }),
   );
   el.usageTopicsNote.textContent = el.usageTopics.checked
-    ? `A 방식의 카테고리 ${categories.length}개로 한 번 더 나눠요. 끄면 AI 없이 바로 끝나요.`
-    : "구간 폴더에만 넣어요. AI를 쓰지 않아 바로 끝나요.";
+    ? t("A 방식의 카테고리 {0}개로 한 번 더 나눠요. 끄면 AI 없이 바로 끝나요.", categories.length)
+    : t("구간 폴더에만 넣어요. AI를 쓰지 않아 바로 끝나요.");
 }
 
 function renderHistoryNote() {
   el.grantHistory.hidden = historyGranted;
   el.historyNote.textContent = historyGranted
-    ? `최근 ${HISTORY_DAYS}일 방문 기록 ${visitsByUrl.size.toLocaleString()}건을 함께 봐요. 주소창에 직접 입력해 연 페이지도 ‘사용’으로 쳐요.`
-    : "북마크를 눌러 연 기록만으로는 주소창으로 연 경우를 놓쳐요. 권한은 이 기능에만 쓰고 서버로 보내지 않아요.";
+    ? t("최근 {0}일 방문 기록 {1}건을 함께 봐요. 주소창에 직접 입력해 연 페이지도 ‘사용’으로 쳐요.", HISTORY_DAYS, visitsByUrl.size.toLocaleString())
+    : t("북마크를 눌러 연 기록만으로는 주소창으로 연 경우를 놓쳐요. 권한은 이 기능에만 쓰고 서버로 보내지 않아요.");
 }
 
 async function loadVisits() {
@@ -333,15 +337,15 @@ function renderBurstPreview() {
   const summary = document.createElement("li");
   summary.className = "burst-summary";
   summary.textContent = bursts.length
-    ? `후보 ${bursts.length}묶음 · 북마크 ${bookmarkCount.toLocaleString()}개`
-    : "몰아서 저장한 묶음이 없어요.";
+    ? t("후보 {0}묶음 · 북마크 {1}개", bursts.length, bookmarkCount.toLocaleString())
+    : t("몰아서 저장한 묶음이 없어요.");
   const recent = [...bursts].sort((a, b) => b.startedAt - a.startedAt).slice(0, 5);
   el.burstPreview.replaceChildren(
     summary,
     ...recent.map((burst) => {
       const item = document.createElement("li");
       const when = document.createElement("strong");
-      when.textContent = `${new Date(burst.startedAt).toLocaleDateString("ko-KR")} · ${burst.bookmarks.length}개`;
+      when.textContent = t("{0} · {1}개", new Date(burst.startedAt).toLocaleDateString(locale), burst.bookmarks.length);
       const sample = document.createElement("small");
       sample.textContent = burst.bookmarks.slice(0, 3).map((bookmark) => bookmark.title || hostOf(bookmark.url)).join(", ");
       item.append(when, sample);
@@ -380,7 +384,7 @@ function renderCategories() {
       remove.className = "category-folder-remove";
       remove.type = "button";
       remove.textContent = "×";
-      remove.setAttribute("aria-label", `${node.path} 폴더${node.children.length ? "와 하위 폴더" : ""} 삭제`);
+      remove.setAttribute("aria-label", node.children.length ? t("{0} 폴더와 하위 폴더 삭제", node.path) : t("{0} 폴더 삭제", node.path));
       remove.addEventListener("click", () => {
         categories = categories.filter((category) => category !== node.path && !category.startsWith(`${node.path} / `));
         renderCategories();
@@ -394,7 +398,7 @@ function renderCategories() {
     return list;
   };
   el.categoryChips.replaceChildren(renderNodes(buildCategoryTree(categories)), el.categoryInput);
-  el.categoryCount.textContent = `${categories.length}개`;
+  el.categoryCount.textContent = t("{0}개", categories.length);
   renderModePreview();
 }
 
@@ -448,8 +452,8 @@ function updateTargetCount() {
   setStatus(
     el.targetCount,
     over
-      ? `${targetIds.size}개 선택됨 — 한 번에 ${MAX_TARGET_FOLDERS}개까지 비교할 수 있어요. 조금 줄여 주세요.`
-      : `${targetIds.size}개 폴더 중에서 골라요.`,
+      ? t("{0}개 선택됨 — 한 번에 {1}개까지 비교할 수 있어요. 조금 줄여 주세요.", targetIds.size, MAX_TARGET_FOLDERS)
+      : t("{0}개 폴더 중에서 골라요.", targetIds.size),
     over ? "error" : "",
   );
 }
@@ -457,9 +461,9 @@ function updateTargetCount() {
 /* ---------- analysis ---------- */
 
 function destinationLabel(key) {
-  if (!key) return plan?.mode === "usage" ? "그대로 두기" : "분류 보류";
+  if (!key) return plan?.mode === "usage" ? t("그대로 두기") : t("분류 보류");
   if (key.startsWith("category:")) return key.slice("category:".length);
-  return folderById.get(key.slice("folder:".length))?.path || "삭제된 폴더";
+  return folderById.get(key.slice("folder:".length))?.path || t("삭제된 폴더");
 }
 
 // Sends bookmarks to the classifier in parallel batches; resolves to id -> result.
@@ -479,10 +483,10 @@ async function classifyInBatches(bookmarks, request, batchSize, signal, onProgre
  */
 const prepareRun = {
   new(bookmarks) {
-    if (categories.length < 2) throw new Error("카테고리를 두 개 이상 만들어 주세요.");
+    if (categories.length < 2) throw new Error(t("카테고리를 두 개 이상 만들어 주세요."));
     return {
       total: bookmarks.length,
-      message: `북마크 ${bookmarks.length.toLocaleString()}개의 페이지 정보를 읽는 중…`,
+      message: t("북마크 {0}개의 페이지 정보를 읽는 중…", bookmarks.length.toLocaleString()),
       destinations: categories.map((category) => ({ key: `category:${category}`, label: category })),
       async execute(signal, onProgress) {
         const results = await classifyInBatches(bookmarks, { categories }, BATCH_SIZE.new, signal, onProgress);
@@ -496,11 +500,11 @@ const prepareRun = {
       .map((id) => folderById.get(id))
       .filter(Boolean)
       .map((folder) => ({ id: folder.id, path: folder.path }));
-    if (targets.length === 0) throw new Error("넣을 수 있는 폴더를 하나 이상 체크해 주세요.");
-    if (targets.length > MAX_TARGET_FOLDERS) throw new Error(`대상 폴더는 ${MAX_TARGET_FOLDERS}개까지 고를 수 있어요.`);
+    if (targets.length === 0) throw new Error(t("넣을 수 있는 폴더를 하나 이상 체크해 주세요."));
+    if (targets.length > MAX_TARGET_FOLDERS) throw new Error(t("대상 폴더는 {0}개까지 고를 수 있어요.", MAX_TARGET_FOLDERS));
     return {
       total: bookmarks.length,
-      message: `북마크 ${bookmarks.length.toLocaleString()}개의 페이지 정보를 읽는 중…`,
+      message: t("북마크 {0}개의 페이지 정보를 읽는 중…", bookmarks.length.toLocaleString()),
       destinations: targets.map((folder) => ({ key: `folder:${folder.id}`, label: folder.path })),
       async execute(signal, onProgress) {
         const results = await classifyInBatches(bookmarks, { folders: targets }, BATCH_SIZE.existing, signal, onProgress);
@@ -511,7 +515,7 @@ const prepareRun = {
 
   usage(bookmarks) {
     const useTopics = el.usageTopics.checked;
-    if (useTopics && categories.length < 2) throw new Error("주제로 나누려면 A 방식의 카테고리가 두 개 이상 필요해요.");
+    if (useTopics && categories.length < 2) throw new Error(t("주제로 나누려면 A 방식의 카테고리가 두 개 이상 필요해요."));
     const judged = bookmarks.map((bookmark) => ({ bookmark, usage: usageFor(bookmark) }));
     const toClassify = useTopics ? judged.filter(({ usage }) => usage.bucket !== "recent").map(({ bookmark }) => bookmark) : [];
     const destinations = Object.values(USAGE_FOLDERS).flatMap((folder) => [
@@ -521,7 +525,7 @@ const prepareRun = {
     return {
       total: toClassify.length,
       needsServer: toClassify.length > 0,
-      message: `구간을 나눴어요. 북마크 ${toClassify.length.toLocaleString()}개의 주제를 읽는 중…`,
+      message: t("구간을 나눴어요. 북마크 {0}개의 주제를 읽는 중…", toClassify.length.toLocaleString()),
       destinations,
       async execute(signal, onProgress) {
         const results = toClassify.length
@@ -535,15 +539,15 @@ const prepareRun = {
   },
 
   projects(bookmarks) {
-    if (serverHealth?.poeConfigured === false) throw new Error("프로젝트 이름을 지으려면 서버에 POE_API_KEY가 필요해요.");
+    if (serverHealth?.poeConfigured === false) throw new Error(t("프로젝트 이름을 지으려면 서버에 POE_API_KEY가 필요해요."));
     const bursts = findBursts(bookmarks, { inboxParentIds });
-    if (bursts.length === 0) throw new Error("몰아서 저장한 묶음을 찾지 못했어요. 범위를 ‘전체 북마크’로 넓혀 보세요.");
+    if (bursts.length === 0) throw new Error(t("몰아서 저장한 묶음을 찾지 못했어요. 범위를 ‘전체 북마크’로 넓혀 보세요."));
     const total = bursts.reduce((sum, burst) => sum + burst.bookmarks.length, 0);
     const destinations = [];
     return {
       total,
-      message: `묶음 ${bursts.length}개를 LLM이 살펴보는 중…`,
-      emptyMessage: "같은 목적으로 묶이는 북마크가 없었어요. 지금 정리 상태가 괜찮다는 뜻이에요.",
+      message: t("묶음 {0}개를 LLM이 살펴보는 중…", bursts.length),
+      emptyMessage: t("같은 목적으로 묶이는 북마크가 없었어요. 지금 정리 상태가 괜찮다는 뜻이에요."),
       destinations,
       async execute(signal, onProgress) {
         const burstById = new Map(bursts.map((burst) => [burst.id, burst]));
@@ -578,7 +582,7 @@ const prepareRun = {
               alreadyThere: false,
               needsReview: false,
               checked: true,
-              note: `${saved.toLocaleDateString("ko-KR")} 저장`,
+              note: t("{0} 저장", saved.toLocaleDateString(locale)),
               scoreLabel: `${saved.getMonth() + 1}/${saved.getDate()}`,
               scoreLevel: "high",
             });
@@ -605,11 +609,11 @@ async function analyze() {
   const bookmarks = scopedBookmarks();
   let run;
   try {
-    if (bookmarks.length === 0) throw new Error("정리할 북마크가 없어요.");
-    if (mode !== "existing" && !el.rootName.value.trim()) throw new Error("정리 폴더 이름을 입력해 주세요.");
+    if (bookmarks.length === 0) throw new Error(t("정리할 북마크가 없어요."));
+    if (mode !== "existing" && !el.rootName.value.trim()) throw new Error(t("정리 폴더 이름을 입력해 주세요."));
     run = prepareRun[mode](bookmarks);
     if (run.needsServer !== false && !(await ensureOriginPermission(settings.endpoint))) {
-      throw new Error("백엔드 접근 권한이 필요해요.");
+      throw new Error(t("백엔드 접근 권한이 필요해요."));
     }
   } catch (error) {
     setStatus(el.batchStatus, error.message, "error");
@@ -629,14 +633,14 @@ async function analyze() {
   const onProgress = (count) => {
     completed += count;
     el.batchProgress.style.width = `${Math.round((completed / Math.max(run.total, 1)) * 100)}%`;
-    setStatus(el.batchStatus, `${run.total.toLocaleString()}개 중 ${completed.toLocaleString()}개 분석 완료…`);
+    setStatus(el.batchStatus, t("{0}개 중 {1}개 분석 완료…", run.total.toLocaleString(), completed.toLocaleString()));
   };
 
   try {
     const items = await run.execute(signal, onProgress);
     el.batchProgress.style.width = "100%";
     if (items.length === 0) {
-      setStatus(el.batchStatus, run.emptyMessage || "옮길 북마크가 없어요.", "success");
+      setStatus(el.batchStatus, run.emptyMessage || t("옮길 북마크가 없어요."), "success");
       return;
     }
     for (const item of items) {
@@ -657,11 +661,11 @@ async function analyze() {
     renderPlan();
     el.plan.hidden = false;
     el.plan.scrollIntoView({ behavior: "smooth", block: "start" });
-    setStatus(el.batchStatus, "분석이 끝났어요. 예정표를 확인하고 적용하세요.", "success");
+    setStatus(el.batchStatus, t("분석이 끝났어요. 예정표를 확인하고 적용하세요."), "success");
   } catch (error) {
     setStatus(
       el.batchStatus,
-      signal.aborted ? "분석을 중지했어요." : error.message || "분석에 실패했어요.",
+      signal.aborted ? t("분석을 중지했어요.") : error.message || t("분석에 실패했어요."),
       signal.aborted ? "" : "error",
     );
   } finally {
@@ -701,14 +705,14 @@ function visibleItems() {
 function renderStats() {
   const items = plan.items;
   const checked = items.filter((item) => item.checked).length;
-  const holdLabel = destinationLabel("").replace(/두기$/, "둠");
+  const holdLabel = plan?.mode === "usage" ? t("그대로 둠") : t("분류 보류");
   const stats = [
-    ["분석", items.length],
-    ["옮길 항목", checked],
-    ["검토 필요", items.filter((item) => item.needsReview).length],
+    [t("분석"), items.length],
+    [t("옮길 항목"), checked],
+    [t("검토 필요"), items.filter((item) => item.needsReview).length],
     [holdLabel, items.filter((item) => !item.destination).length],
   ];
-  if (plan.mode === "existing") stats.push(["이미 제자리", items.filter((item) => item.alreadyThere).length]);
+  if (plan.mode === "existing") stats.push([t("이미 제자리"), items.filter((item) => item.alreadyThere).length]);
   el.planStats.replaceChildren(
     ...stats.map(([label, value]) => {
       const stat = document.createElement("span");
@@ -720,10 +724,10 @@ function renderStats() {
   );
   const destinationCount = new Set(items.filter((item) => item.checked).map((item) => item.destination)).size;
   el.applySummary.textContent = checked
-    ? `북마크 ${checked.toLocaleString()}개 → 폴더 ${destinationCount}곳`
-    : "옮길 북마크를 선택하세요";
+    ? t("북마크 {0}개 → 폴더 {1}곳", checked.toLocaleString(), destinationCount)
+    : t("옮길 북마크를 선택하세요");
   el.apply.disabled = checked === 0;
-  el.apply.textContent = checked ? `${checked.toLocaleString()}개 옮기기` : "적용하기";
+  el.apply.textContent = checked ? t("{0}개 옮기기", checked.toLocaleString()) : t("적용하기");
   document.querySelectorAll("[data-filter]").forEach((button) => {
     button.setAttribute("aria-checked", String(button.dataset.filter === filter));
   });
@@ -734,8 +738,8 @@ function destinationSelect(item) {
   const select = document.createElement("select");
   select.className = "dest-select";
   select.dataset.itemId = item.id;
-  select.setAttribute("aria-label", `${item.title || item.url} 옮길 곳`);
-  const none = new Option(plan.mode === "usage" ? "그대로 두기" : "분류 보류 (그대로 두기)", "");
+  select.setAttribute("aria-label", t("{0} 옮길 곳", item.title || item.url));
+  const none = new Option(plan.mode === "usage" ? t("그대로 두기") : t("분류 보류 (그대로 두기)"), "");
   select.append(none);
   for (const destination of plan.destinations) {
     select.append(new Option(destination.label, destination.key));
@@ -751,7 +755,7 @@ function renderPlan() {
   if (groups.length === 0) {
     const empty = document.createElement("p");
     empty.className = "plan-empty";
-    empty.textContent = "이 보기에 해당하는 북마크가 없어요.";
+    empty.textContent = t("이 보기에 해당하는 북마크가 없어요.");
     el.planGroups.append(empty);
     return;
   }
@@ -770,7 +774,7 @@ function renderPlan() {
     groupCheck.checked = checkedCount === group.items.length;
     groupCheck.indeterminate = checkedCount > 0 && checkedCount < group.items.length;
     groupCheck.disabled = !group.destination;
-    groupCheck.setAttribute("aria-label", `${destinationLabel(group.destination)} 전체 선택`);
+    groupCheck.setAttribute("aria-label", t("{0} 전체 선택", destinationLabel(group.destination)));
     const toggle = document.createElement("button");
     toggle.type = "button";
     toggle.className = "group-toggle";
@@ -810,7 +814,7 @@ function renderPlan() {
         check.dataset.itemId = item.id;
         check.checked = item.checked;
         check.disabled = !item.destination;
-        check.setAttribute("aria-label", `${item.title || item.url} 옮기기`);
+        check.setAttribute("aria-label", t("{0} 옮기기", item.title || item.url));
 
         const icon = document.createElement("img");
         icon.className = "favicon";
@@ -826,7 +830,7 @@ function renderPlan() {
         title.rel = "noreferrer";
         title.textContent = item.title || item.url;
         const meta = document.createElement("small");
-        meta.textContent = [hostOf(item.url), item.note, `지금: ${item.currentPath || "최상위"}`]
+        meta.textContent = [hostOf(item.url), item.note, t("지금: {0}", item.currentPath || t("최상위"))]
           .filter(Boolean)
           .join(" · ");
         copy.append(title, meta);
@@ -837,7 +841,7 @@ function renderPlan() {
           ? "same"
           : item.scoreLevel || (item.confidence > settings.confidenceThreshold ? "high" : "low");
         score.textContent = item.alreadyThere
-          ? "제자리"
+          ? t("제자리")
           : item.scoreLabel || `${Math.round(item.confidence * 100)}%`;
 
         row.append(check, icon, copy, score, destinationSelect(item));
@@ -885,8 +889,8 @@ async function applyPlan() {
   if (selected.length === 0) return;
   const destinationCount = new Set(selected.map((item) => item.destination)).size;
   const message = plan.mode === "existing"
-    ? `북마크 ${selected.length}개를 기존 폴더 ${destinationCount}곳으로 옮겨요.`
-    : `북마크 ${selected.length}개를 ‘${plan.rootName}’ 아래 ${destinationCount}개 폴더로 옮겨요.`;
+    ? t("북마크 {0}개를 기존 폴더 {1}곳으로 옮겨요.", selected.length, destinationCount)
+    : t("북마크 {0}개를 ‘{1}’ 아래 {2}개 폴더로 옮겨요.", selected.length, plan.rootName, destinationCount);
   if (!(await confirmApply(message))) return;
 
   el.apply.disabled = true;
@@ -914,9 +918,9 @@ async function applyPlan() {
       if (!current || current.parentId === parentId) continue;
       undoMoves.push({ id: item.id, parentId: current.parentId, index: current.index });
       await chrome.bookmarks.move(item.id, { parentId });
-      if (index % 10 === 0) setStatus(el.batchStatus, `${selected.length}개 중 ${index + 1}개 옮기는 중…`);
+      if (index % 10 === 0) setStatus(el.batchStatus, t("{0}개 중 {1}개 옮기는 중…", selected.length, index + 1));
     }
-    undo.summary = `북마크 ${undoMoves.length}개를 정리했어요.`;
+    undo.summary = t("북마크 {0}개를 정리했어요.", undoMoves.length);
     await saveUndo(undo);
     plan = null;
     el.plan.hidden = true;
@@ -926,22 +930,22 @@ async function applyPlan() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (error) {
     if (undoMoves.length > 0 || undo.createdFolderIds.length > 0) {
-      undo.summary = `북마크 ${undoMoves.length}개를 옮기다 멈췄어요.`;
+      undo.summary = t("북마크 {0}개를 옮기다 멈췄어요.", undoMoves.length);
       await saveUndo(undo);
       await renderUndoBanner();
     }
     el.apply.disabled = false;
-    setStatus(el.batchStatus, `${error.message || "정리에 실패했어요."} 옮긴 항목은 되돌릴 수 있어요.`, "error");
+    setStatus(el.batchStatus, t("{0} 옮긴 항목은 되돌릴 수 있어요.", error.message || t("정리에 실패했어요.")), "error");
   }
 }
 
 function timeAgo(timestamp) {
   const minutes = Math.round((Date.now() - timestamp) / 60000);
-  if (minutes < 1) return "방금";
-  if (minutes < 60) return `${minutes}분 전`;
+  if (minutes < 1) return t("방금");
+  if (minutes < 60) return t("{0}분 전", minutes);
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}시간 전`;
-  return `${Math.round(hours / 24)}일 전`;
+  if (hours < 24) return t("{0}시간 전", hours);
+  return t("{0}일 전", Math.round(hours / 24));
 }
 
 async function ensureFolderPath(parentId, titles, undo) {
@@ -971,7 +975,7 @@ async function renderUndoBanner() {
   const count = undoCount(lastBatchUndo);
   el.undoBanner.hidden = count === 0;
   if (count) {
-    el.undoText.textContent = `${timeAgo(lastBatchUndo.createdAt)} ${lastBatchUndo.summary || `북마크 ${count}개를 정리했어요.`}`;
+    el.undoText.textContent = `${timeAgo(lastBatchUndo.createdAt)} ${lastBatchUndo.summary || t("북마크 {0}개를 정리했어요.", count)}`;
   }
 }
 
@@ -1020,7 +1024,7 @@ async function undoLastBatch() {
   el.undoButton.disabled = false;
   await loadBookmarks();
   await renderUndoBanner();
-  const message = `${restored}개 항목을 원래대로 되돌렸어요.`;
+  const message = t("{0}개 항목을 원래대로 되돌렸어요.", restored);
   const kind = restored === total ? "success" : "error";
   setStatus(el.batchStatus, message, kind);
   setStatus($("#links-status"), message, kind);
@@ -1029,12 +1033,12 @@ async function undoLastBatch() {
 /* ---------- checkup (F) ---------- */
 
 const CHECKUP_KINDS = [
-  ["dead", "끊긴 링크", "#dead-list"],
-  ["duplicate", "중복", "#duplicate-list"],
-  ["empty", "빈 폴더", "#empty-list"],
-  ["stale", "방치된 폴더", "#stale-list"],
+  ["dead", t("끊긴 링크"), "#dead-list"],
+  ["duplicate", t("중복"), "#duplicate-list"],
+  ["empty", t("빈 폴더"), "#empty-list"],
+  ["stale", t("방치된 폴더"), "#stale-list"],
 ];
-const ACTION_LABELS = { remove: "삭제", removeFolder: "삭제", archive: "보관" };
+const ACTION_LABELS = { remove: t("삭제"), removeFolder: t("삭제"), archive: t("보관") };
 let deadCheckedAt = 0;
 let staleDays = 365;
 
@@ -1054,7 +1058,7 @@ function buildCheckupItems() {
       id: bookmark.id,
       title: bookmark.title || bookmark.url,
       url: bookmark.url,
-      detail: `${link.reason} · ${bookmark.currentPath || "최상위"}`,
+      detail: t("{0} · {1}", link.reason, bookmark.currentPath || t("최상위")),
       checked: true,
     });
   }
@@ -1068,7 +1072,7 @@ function buildCheckupItems() {
         id: bookmark.id,
         title: bookmark.title || bookmark.url,
         url: bookmark.url,
-        detail: `${bookmark.currentPath || "최상위"}에서 삭제 · 남는 곳: ${group.keep.currentPath || "최상위"}`,
+        detail: t("{0}에서 삭제 · 남는 곳: {1}", bookmark.currentPath || t("최상위"), group.keep.currentPath || t("최상위")),
         checked: true,
       });
     }
@@ -1086,7 +1090,7 @@ function buildCheckupItems() {
       kind: "empty",
       action: "removeFolder",
       id: folder.id,
-      title: folder.title || "(이름 없음)",
+      title: folder.title || t("(이름 없음)"),
       detail: folder.path,
       checked: true,
     });
@@ -1101,9 +1105,9 @@ function buildCheckupItems() {
       title: folder.title,
       detail: [
         folder.path,
-        `북마크 ${folder.count}개`,
-        `마지막 변경 ${daysAgoLabel(folder.modified)}`,
-        folder.lastUsed ? `마지막 사용 ${daysAgoLabel(folder.lastUsed)}` : "연 기록 없음",
+        t("북마크 {0}개", folder.count),
+        t("마지막 변경 {0}", daysAgoLabel(folder.modified)),
+        folder.lastUsed ? t("마지막 사용 {0}", daysAgoLabel(folder.lastUsed)) : t("연 기록 없음"),
       ].join(" · "),
       checked: false,
     });
@@ -1171,7 +1175,7 @@ function renderCheckup() {
       const value = document.createElement("b");
       value.textContent = kind === "dead" && !deadCheckedAt ? "–" : count.toLocaleString();
       const name = document.createElement("small");
-      name.textContent = kind === "dead" && !deadCheckedAt ? `${label} · 확인 전` : label;
+      name.textContent = kind === "dead" && !deadCheckedAt ? t("{0} · 확인 전", label) : label;
       stat.append(value, name);
       stat.classList.toggle("has-items", count > 0);
       return stat;
@@ -1183,13 +1187,13 @@ function renderCheckup() {
     if (items.length) {
       list.replaceChildren(...items.map(checkupRow));
     } else if (kind === "dead" && !deadCheckedAt) {
-      list.replaceChildren(emptyRow("‘링크 확인하기’를 누르면 모든 북마크 주소에 접속해 봐요. 북마크가 많으면 몇 분 걸려요."));
+      list.replaceChildren(emptyRow(t("‘링크 확인하기’를 누르면 모든 북마크 주소에 접속해 봐요. 북마크가 많으면 몇 분 걸려요.")));
     } else {
-      list.replaceChildren(emptyRow(kind === "dead" ? "끊긴 링크가 없어요." : "찾은 항목이 없어요."));
+      list.replaceChildren(emptyRow(kind === "dead" ? t("끊긴 링크가 없어요.") : t("찾은 항목이 없어요.")));
     }
   }
   if (deadCheckedAt) {
-    $("#check-links").textContent = "다시 확인하기";
+    $("#check-links").textContent = t("다시 확인하기");
   }
   renderStaleControls();
   renderCheckupSummary();
@@ -1203,7 +1207,7 @@ function renderStaleControls() {
   const allChecked = stale.length > 0 && stale.every((item) => item.checked);
   const toggle = $("#stale-toggle-all");
   toggle.hidden = stale.length === 0;
-  toggle.textContent = allChecked ? "전체 해제" : `전체 선택 (${stale.length})`;
+  toggle.textContent = allChecked ? t("전체 해제") : t("전체 선택 ({0})", stale.length);
 }
 
 function renderCheckupSummary() {
@@ -1212,14 +1216,14 @@ function renderCheckupSummary() {
   const folderCount = selected.filter((item) => item.action === "removeFolder").length;
   const archiveCount = selected.filter((item) => item.action === "archive").length;
   const parts = [
-    removeCount && `북마크 ${removeCount}개 삭제`,
-    folderCount && `빈 폴더 ${folderCount}개 삭제`,
-    archiveCount && `폴더 ${archiveCount}개 보관`,
+    removeCount && t("북마크 {0}개 삭제", removeCount),
+    folderCount && t("빈 폴더 {0}개 삭제", folderCount),
+    archiveCount && t("폴더 {0}개 보관", archiveCount),
   ].filter(Boolean);
-  $("#checkup-summary").textContent = parts.length ? parts.join(" · ") : "처리할 항목을 선택하세요";
+  $("#checkup-summary").textContent = parts.length ? parts.join(" · ") : t("처리할 항목을 선택하세요");
   const apply = $("#apply-checkup");
   apply.disabled = selected.length === 0;
-  apply.textContent = selected.length ? `${selected.length}개 처리하기` : "적용하기";
+  apply.textContent = selected.length ? t("{0}개 처리하기", selected.length) : t("적용하기");
   return parts.join(", ");
 }
 
@@ -1228,11 +1232,11 @@ async function checkDeadLinks() {
   const progress = $("#links-progress");
   const targets = movableBookmarks().filter((bookmark) => /^https?:/i.test(bookmark.url));
   if (targets.length === 0) {
-    setStatus(status, "확인할 웹 주소가 없어요.", "error");
+    setStatus(status, t("확인할 웹 주소가 없어요."), "error");
     return;
   }
   if (!(await ensureOriginPermission(settings.endpoint))) {
-    setStatus(status, "백엔드 접근 권한이 필요해요.", "error");
+    setStatus(status, t("백엔드 접근 권한이 필요해요."), "error");
     return;
   }
   linkController = new AbortController();
@@ -1254,12 +1258,12 @@ async function checkDeadLinks() {
       }
       done += chunk.length;
       progress.style.width = `${Math.round((done / targets.length) * 100)}%`;
-      setStatus(status, `${targets.length.toLocaleString()}개 중 ${done.toLocaleString()}개 확인 · 끊긴 링크 ${found.length}개`);
+      setStatus(status, t("{0}개 중 {1}개 확인 · 끊긴 링크 {2}개", targets.length.toLocaleString(), done.toLocaleString(), found.length));
     });
     finished = true;
-    setStatus(status, `다 확인했어요. 끊긴 링크 ${found.length}개를 찾았어요.`, "success");
+    setStatus(status, t("다 확인했어요. 끊긴 링크 {0}개를 찾았어요.", found.length), "success");
   } catch (error) {
-    setStatus(status, signal.aborted ? `중지했어요. 확인한 ${done.toLocaleString()}개 중 끊긴 링크 ${found.length}개를 보여 줘요.` : error.message, signal.aborted ? "" : "error");
+    setStatus(status, signal.aborted ? t("중지했어요. 확인한 {0}개 중 끊긴 링크 {1}개를 보여 줘요.", done.toLocaleString(), found.length) : error.message, signal.aborted ? "" : "error");
   } finally {
     linkController = null;
     button.disabled = false;
@@ -1286,7 +1290,7 @@ async function applyCheckup() {
   const selected = checkupItems.filter((item) => item.checked);
   if (selected.length === 0) return;
   const summary = renderCheckupSummary();
-  if (!(await confirmApply(`${summary}할게요.`))) return;
+  if (!(await confirmApply(t("{0}할게요.", summary)))) return;
 
   const status = $("#links-status");
   const apply = $("#apply-checkup");
@@ -1317,11 +1321,11 @@ async function applyCheckup() {
       }
       processed += 1;
     }
-    undo.summary = `점검 항목 ${processed}개를 처리했어요.`;
+    undo.summary = t("점검 항목 {0}개를 처리했어요.", processed);
     setStatus(status, undo.summary, "success");
   } catch (error) {
-    undo.summary = `점검 항목 ${processed}개를 처리하다 멈췄어요.`;
-    setStatus(status, `${error.message || "처리에 실패했어요."} 처리한 항목은 되돌릴 수 있어요.`, "error");
+    undo.summary = t("점검 항목 {0}개를 처리하다 멈췄어요.", processed);
+    setStatus(status, t("{0} 처리한 항목은 되돌릴 수 있어요.", error.message || t("처리에 실패했어요.")), "error");
   }
   if (undoCount(undo) > 0) await saveUndo(undo);
   const removedIds = new Set(selected.filter((item) => item.action === "remove").map((item) => item.id));
@@ -1355,7 +1359,7 @@ async function postJson(pathname, body, signal) {
     signal,
   });
   const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.error || `서버 오류 (${response.status})`);
+  if (!response.ok) throw new Error(result.error || t("서버 오류 ({0})", response.status));
   return result;
 }
 
@@ -1394,7 +1398,7 @@ function createReadFeed() {
       }),
     );
     const rest = pending.size - hosts.length;
-    if (rest > 0) nowHosts.append(Object.assign(document.createElement("em"), { textContent: `외 ${rest}개` }));
+    if (rest > 0) nowHosts.append(Object.assign(document.createElement("em"), { textContent: t("외 {0}개", rest) }));
   }
 
   function renderLog() {
@@ -1419,7 +1423,7 @@ function createReadFeed() {
         copy.append(title, detail);
         const badge = document.createElement("span");
         badge.className = `read-badge ${kind}`;
-        badge.textContent = { fetched: "읽음", cached: "재사용", empty: "정보 없음" }[kind];
+        badge.textContent = { fetched: t("읽음"), cached: t("재사용"), empty: t("정보 없음") }[kind];
         item.append(icon, copy, badge);
         return item;
       }),
@@ -1433,9 +1437,9 @@ function createReadFeed() {
     if (done > 0 && seconds > 1 && done < total) {
       const perSecond = done / seconds;
       const left = Math.ceil((total - done) / perSecond);
-      rate.textContent = `초당 ${perSecond.toFixed(1)}개 · 약 ${left < 60 ? `${left}초` : `${Math.ceil(left / 60)}분`} 남음`;
+      rate.textContent = t("초당 {0}개 · 약 {1} 남음", perSecond.toFixed(1), left < 60 ? t("{0}초", left) : t("{0}분", Math.ceil(left / 60)));
     } else if (done >= total) {
-      rate.textContent = `${seconds.toFixed(0)}초 걸림`;
+      rate.textContent = t("{0}초 걸림", seconds.toFixed(0));
     }
   }
 
@@ -1491,7 +1495,7 @@ async function streamMetadata(bookmarks, refresh, signal, onItem) {
   });
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    throw new Error(body.error || `서버 오류 (${response.status})`);
+    throw new Error(body.error || t("서버 오류 ({0})", response.status));
   }
   if (!response.headers.get("content-type")?.includes("ndjson")) {
     // Older server without streaming: report the whole chunk at once.
@@ -1528,7 +1532,7 @@ async function analyzeInterests() {
   const cancel = $("#cancel-interests");
   const folderLanguage = $("#folder-language").value;
   if (allBookmarks.length < 3) {
-    setStatus(status, "분석하려면 북마크가 3개 이상 필요해요.", "error");
+    setStatus(status, t("분석하려면 북마크가 3개 이상 필요해요."), "error");
     return;
   }
   insightController = new AbortController();
@@ -1540,7 +1544,7 @@ async function analyzeInterests() {
   progress.style.width = "0%";
   document.body.classList.add("is-analyzing");
   try {
-    if (!(await ensureOriginPermission(settings.endpoint))) throw new Error("백엔드 접근 권한이 필요해요.");
+    if (!(await ensureOriginPermission(settings.endpoint))) throw new Error(t("백엔드 접근 권한이 필요해요."));
     setInsightStep("meta");
     const total = allBookmarks.length;
     const refresh = $("#refresh-meta").checked;
@@ -1558,7 +1562,7 @@ async function analyzeInterests() {
         if (cached) reused += 1;
         feed.add(result, cached);
         progress.style.width = `${Math.round((done / total) * 80)}%`;
-        setStatus(status, `페이지 메타정보 ${done.toLocaleString()} / ${total.toLocaleString()}`);
+        setStatus(status, t("페이지 메타정보 {0} / {1}", done.toLocaleString(), total.toLocaleString()));
       });
     });
     feed.finish();
@@ -1566,8 +1570,8 @@ async function analyzeInterests() {
 
     setInsightStep("llm");
     progress.style.width = "90%";
-    setStatus(status, `${serverHealth?.poeModel || "LLM"}이 관심사를 읽는 중… 1~2분 걸릴 수 있어요.`);
-    lastProfile = await postJson("/api/profile", { bookmarks: lastSnapshot, folderLanguage }, signal);
+    setStatus(status, t("{0}이 관심사를 읽는 중… 1~2분 걸릴 수 있어요.", serverHealth?.poeModel || "LLM"));
+    lastProfile = await postJson("/api/profile", { bookmarks: lastSnapshot, folderLanguage, reportLanguage: lang }, signal);
     await chrome.storage.local.set({ lastProfile });
     setInsightStep("done");
     progress.style.width = "100%";
@@ -1575,13 +1579,13 @@ async function analyzeInterests() {
     setStatus(
       status,
       reused
-        ? `분석이 끝났어요. 메타정보 ${reused.toLocaleString()}개는 저장된 JSON을 재사용했어요.`
-        : "분석이 끝났어요.",
+        ? t("분석이 끝났어요. 메타정보 {0}개는 저장된 JSON을 재사용했어요.", reused.toLocaleString())
+        : t("분석이 끝났어요."),
       "success",
     );
   } catch (error) {
     setInsightStep("");
-    setStatus(status, signal.aborted ? "분석을 중지했어요." : error.message, signal.aborted ? "" : "error");
+    setStatus(status, signal.aborted ? t("분석을 중지했어요.") : error.message, signal.aborted ? "" : "error");
   } finally {
     feed.finish();
     insightController = null;
@@ -1595,20 +1599,20 @@ async function analyzeInterests() {
 function renderProfile(profile) {
   $("#insight-result").classList.remove("is-empty");
   $("#folder-language").value = profile.folderLanguage === "en" ? "en" : "ko";
-  $("#insight-summary-text").textContent = profile.summary || "요약이 없어요.";
+  $("#insight-summary-text").textContent = profile.summary || t("요약이 없어요.");
   const created = new Date(profile.createdAt);
   const coverage = profile.coverage?.included < profile.coverage?.total
-    ? `북마크 ${profile.coverage.total}개 중 ${profile.coverage.included}개 반영`
-    : `북마크 ${profile.coverage?.total ?? "?"}개 반영`;
+    ? t("북마크 {0}개 중 {1}개 반영", profile.coverage.total, profile.coverage.included)
+    : t("북마크 {0}개 반영", profile.coverage?.total ?? "?");
   $("#insight-meta").textContent = [
-    `${created.toLocaleString("ko-KR")} · ${profile.model}`,
+    `${created.toLocaleString(locale)} · ${profile.model}`,
     coverage,
-    profile.snapshotFile ? `저장: ${profile.snapshotFile}` : "",
+    profile.snapshotFile ? t("저장: {0}", profile.snapshotFile) : "",
   ].filter(Boolean).join(" · ");
 
   const list = $("#interest-list");
   list.replaceChildren();
-  $("#interest-count").textContent = `${profile.interests.length}개 주제`;
+  $("#interest-count").textContent = t("{0}개 주제", profile.interests.length);
   profile.interests.forEach((interest, index) => {
     const item = document.createElement("li");
     item.style.setProperty("--w", `${interest.weight}%`);
@@ -1616,7 +1620,7 @@ function renderProfile(profile) {
     const rank = document.createElement("span");
     rank.className = "interest-rank";
     rank.textContent = String(index + 1).padStart(2, "0");
-    rank.setAttribute("aria-label", `${index + 1}위`);
+    rank.setAttribute("aria-label", t("{0}위", index + 1));
     const content = document.createElement("div");
     content.className = "interest-content";
     const head = document.createElement("div");
@@ -1625,13 +1629,13 @@ function renderProfile(profile) {
     name.textContent = interest.name;
     const weight = document.createElement("span");
     weight.className = "interest-score";
-    weight.innerHTML = `<small>관심도</small><b>${interest.weight}</b><em>/100</em>`;
-    weight.setAttribute("aria-label", `관심도 ${interest.weight}점`);
+    weight.innerHTML = t("<small>관심도</small><b>{0}</b><em>/100</em>", interest.weight);
+    weight.setAttribute("aria-label", t("관심도 {0}점", interest.weight));
     head.append(name, weight);
     const bar = document.createElement("div");
     bar.className = "interest-bar";
     bar.setAttribute("role", "progressbar");
-    bar.setAttribute("aria-label", `${interest.name} 관심도`);
+    bar.setAttribute("aria-label", t("{0} 관심도", interest.name));
     bar.setAttribute("aria-valuemin", "0");
     bar.setAttribute("aria-valuemax", "100");
     bar.setAttribute("aria-valuenow", String(interest.weight));
@@ -1641,7 +1645,7 @@ function renderProfile(profile) {
     const evidenceDisclosure = document.createElement("details");
     evidenceDisclosure.className = "evidence-disclosure";
     const evidenceSummary = document.createElement("summary");
-    evidenceSummary.textContent = `근거 북마크 ${interest.evidence.length}개`;
+    evidenceSummary.textContent = t("근거 북마크 {0}개", interest.evidence.length);
     const evidence = document.createElement("div");
     evidence.className = "evidence";
     if (interest.evidence.length) {
@@ -1677,9 +1681,9 @@ function renderFolderStructure(profile) {
     info.className = "folder-info";
     info.type = "button";
     info.textContent = "i";
-    const detail = description || "관련 자료 설명이 없어요.";
+    const detail = description || t("관련 자료 설명이 없어요.");
     info.dataset.tooltip = detail;
-    info.setAttribute("aria-label", `${folderName} 관련 자료: ${detail}`);
+    info.setAttribute("aria-label", t("{0} 관련 자료: {1}", folderName, detail));
     return info;
   };
   for (const category of structure.categories) {
@@ -1709,7 +1713,7 @@ function renderFolderStructure(profile) {
     categoriesList.append(item);
   }
   tree.replaceChildren(rootLine, categoriesList);
-  $("#structure-count").textContent = `폴더 ${profile.leafCategories.length}개`;
+  $("#structure-count").textContent = t("폴더 {0}개", profile.leafCategories.length);
 }
 
 async function useProfileStructure({ analyzeNow = false } = {}) {
@@ -1726,7 +1730,7 @@ async function useProfileStructure({ analyzeNow = false } = {}) {
     el.analyze.scrollIntoView({ behavior: "smooth", block: "center" });
     await analyze();
   } else {
-    setStatus(el.batchStatus, `추천 폴더 ${categories.length}개를 가져왔어요. 분석하면 이동 예정표가 만들어져요.`, "success");
+    setStatus(el.batchStatus, t("추천 폴더 {0}개를 가져왔어요. 분석하면 이동 예정표가 만들어져요.", categories.length), "success");
   }
 }
 
@@ -1779,12 +1783,12 @@ async function changeFolderLanguage(event) {
   };
   select.disabled = true;
   $("#analyze-interests").disabled = true;
-  status.textContent = "폴더 이름 변경 중…";
+  status.textContent = t("폴더 이름 변경 중…");
   status.classList.remove("error");
   status.hidden = false;
   try {
     if (!variants[target]) {
-      if (!(await ensureOriginPermission(settings.endpoint))) throw new Error("백엔드 접근 권한이 필요해요.");
+      if (!(await ensureOriginPermission(settings.endpoint))) throw new Error(t("백엔드 접근 권한이 필요해요."));
       variants[target] = await postJson("/api/profile/folder-language", {
         folderStructure: lastProfile.folderStructure,
         folderLanguage: target,
@@ -1819,29 +1823,29 @@ async function checkServer({ report = false } = {}) {
     serverHealth = body;
     renderPoeWarning();
     pill.dataset.state = body.configured ? "ok" : "warn";
-    label.textContent = body.configured ? "서버 연결됨" : "API 키 없음";
+    label.textContent = body.configured ? t("서버 연결됨") : t("API 키 없음");
     if (report) {
       setStatus(
         el.endpointStatus,
-        body.configured ? "서버와 API 키가 준비됐어요." : "서버는 켜져 있지만 TYPESAFE_API_KEY가 없어요.",
+        body.configured ? t("서버와 API 키가 준비됐어요.") : t("서버는 켜져 있지만 TYPESAFE_API_KEY가 없어요."),
         body.configured ? "success" : "error",
       );
     }
   } catch {
     pill.dataset.state = "error";
-    label.textContent = "서버 꺼짐";
-    if (report) setStatus(el.endpointStatus, "서버에 연결할 수 없어요. `make`로 서버를 켜 주세요.", "error");
+    label.textContent = t("서버 꺼짐");
+    if (report) setStatus(el.endpointStatus, t("서버에 연결할 수 없어요. `make`로 서버를 켜 주세요."), "error");
   }
 }
 
 async function saveEndpoint() {
   try {
     const value = normalizeEndpoint(el.endpoint.value.trim());
-    if (!(await ensureOriginPermission(value))) throw new Error("해당 주소에 접근 권한이 필요해요.");
+    if (!(await ensureOriginPermission(value))) throw new Error(t("해당 주소에 접근 권한이 필요해요."));
     settings.endpoint = value;
     el.endpoint.value = value;
     await chrome.storage.sync.set({ endpoint: value });
-    setStatus(el.endpointStatus, "저장했어요. 연결을 확인하는 중…");
+    setStatus(el.endpointStatus, t("저장했어요. 연결을 확인하는 중…"));
     await checkServer({ report: true });
   } catch (error) {
     setStatus(el.endpointStatus, error.message, "error");
@@ -1857,7 +1861,7 @@ async function saveBehavior() {
     autoSave: settings.autoSave,
     confidenceThreshold: settings.confidenceThreshold,
   });
-  setStatus(el.settingsStatus, "저장했어요.", "success");
+  setStatus(el.settingsStatus, t("저장했어요."), "success");
 }
 
 function renderThreshold() {

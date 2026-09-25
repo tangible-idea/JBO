@@ -61,8 +61,17 @@ test("folder language applies only to recommended folder names", () => {
   const compact = compactForLlm(normalizeProfileRequest({ bookmarks }).bookmarks);
   const messages = buildProfileMessages(bookmarks, compact, "en");
   assert.match(messages[0].content, /rootName.*natural English/);
-  assert.match(messages[0].content, /summary, interests, evidence, and folder descriptions in Korean/);
+  assert.match(messages[0].content, /summary, interest names, interest descriptions, evidence and folder descriptions in Korean/);
   assert.match(messages[1].content, /"Other"/);
+});
+
+test("report language is independent of folder language", () => {
+  assert.equal(normalizeProfileRequest({ bookmarks }).reportLanguage, "ko");
+  assert.equal(normalizeProfileRequest({ bookmarks, reportLanguage: "en" }).reportLanguage, "en");
+  const compact = compactForLlm(normalizeProfileRequest({ bookmarks }).bookmarks);
+  const messages = buildProfileMessages(bookmarks, compact, "ko", "en");
+  assert.match(messages[0].content, /folder name in natural Korean/);
+  assert.match(messages[0].content, /folder descriptions in English/);
 });
 
 test("changing folder language preserves the folder tree and descriptions", async () => {

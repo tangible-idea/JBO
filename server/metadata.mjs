@@ -1,3 +1,4 @@
+import { outboundFetch } from "./safe-fetch.mjs";
 const MAX_HTML_BYTES = 128 * 1024;
 const METADATA_TIMEOUT_MS = 5_000;
 
@@ -41,7 +42,7 @@ export function extractMetadata(html) {
   };
 }
 
-export async function fetchBookmarkMetadata(url, { fetchImpl = fetch } = {}) {
+export async function fetchBookmarkMetadata(url, { fetchImpl = outboundFetch } = {}) {
   if (!/^https?:\/\//i.test(url)) return {};
   try {
     const response = await fetchImpl(url, {

@@ -1,3 +1,4 @@
+import { t } from "./i18n.js";
 // Rule-based sorting that needs no AI: usage buckets, save-time bursts and checkups.
 
 export const DAY = 86_400_000;
@@ -19,10 +20,10 @@ export const PROJECTS_FOLDER = "Projects";
 
 export function daysAgoLabel(timestamp, now = Date.now()) {
   const days = Math.floor((now - timestamp) / DAY);
-  if (days < 1) return "오늘";
-  if (days < 30) return `${days}일 전`;
-  if (days < 365) return `${Math.floor(days / 30)}개월 전`;
-  return `${Math.floor(days / 365)}년 전`;
+  if (days < 1) return t("오늘");
+  if (days < 30) return t("{0}일 전", days);
+  if (days < 365) return t("{0}개월 전", Math.floor(days / 30));
+  return t("{0}년 전", Math.floor(days / 365));
 }
 
 /**
@@ -33,23 +34,23 @@ export function daysAgoLabel(timestamp, now = Date.now()) {
 export function usageBucket(bookmark, { now = Date.now(), visit, historyChecked = false, rules = USAGE_RULES } = {}) {
   const daysSince = (timestamp) => (now - timestamp) / DAY;
   if (bookmark.dateAdded && daysSince(bookmark.dateAdded) < rules.recentDays) {
-    return { bucket: "recent", reason: `${daysAgoLabel(bookmark.dateAdded, now)} 저장` };
+    return { bucket: "recent", reason: t("{0} 저장", daysAgoLabel(bookmark.dateAdded, now)) };
   }
   const lastUsed = Math.max(bookmark.dateLastUsed || 0, visit?.lastVisitTime || 0);
   if (lastUsed) {
     const days = daysSince(lastUsed);
-    const reason = `마지막 사용 ${daysAgoLabel(lastUsed, now)}`;
+    const reason = t("마지막 사용 {0}", daysAgoLabel(lastUsed, now));
     if (days <= rules.activeDays) return { bucket: "active", lastUsed, reason };
     if (days > rules.archiveDays) return { bucket: "archive", lastUsed, reason };
     return { bucket: "occasional", lastUsed, reason };
   }
   const savedBeforeTracking = !bookmark.dateAdded || bookmark.dateAdded < LAST_USED_TRACKING_SINCE;
   if (!savedBeforeTracking) {
-    return { bucket: "someday", reason: `${daysAgoLabel(bookmark.dateAdded, now)} 저장 후 안 열어 봄` };
+    return { bucket: "someday", reason: t("{0} 저장 후 안 열어 봄", daysAgoLabel(bookmark.dateAdded, now)) };
   }
   // Old bookmark with no record: history can settle it, otherwise ask the user.
-  if (historyChecked) return { bucket: "archive", reason: "2023년 이후 사용 기록 없음" };
-  return { bucket: "unknown", reason: "사용 기록 없음 (2023년 이전 저장)" };
+  if (historyChecked) return { bucket: "archive", reason: t("2023년 이후 사용 기록 없음") };
+  return { bucket: "unknown", reason: t("사용 기록 없음 (2023년 이전 저장)") };
 }
 
 function splitAtLargestGap(group) {
@@ -196,12 +197,12 @@ function collectLinks(node) {
 }
 
 const USAGE_SCORE_LABELS = {
-  active: "자주",
-  occasional: "가끔",
-  someday: "안 봄",
-  archive: "오래됨",
-  unknown: "모름",
-  recent: "최근",
+  active: t("자주"),
+  occasional: t("가끔"),
+  someday: t("안 봄"),
+  archive: t("오래됨"),
+  unknown: t("모름"),
+  recent: t("최근"),
 };
 
 /**

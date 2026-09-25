@@ -1,3 +1,4 @@
+import { t } from "./i18n.js";
 import { filterFolderTree } from "./popup-utils.js";
 
 function highlight(text, query) {
@@ -49,7 +50,7 @@ export function createFolderPicker(root, { onChange } = {}) {
   function updateLabel() {
     const node = byId.get(value);
     const parentId = parentOf.get(value);
-    titleLabel.textContent = node ? node.title : "폴더를 선택하세요";
+    titleLabel.textContent = node ? node.title : t("폴더를 선택하세요");
     parentLabel.textContent = parentId ? `${byId.get(parentId).path} /` : "";
   }
 
@@ -82,7 +83,7 @@ export function createFolderPicker(root, { onChange } = {}) {
     if (rows.length === 0) {
       const empty = document.createElement("li");
       empty.className = "folder-empty";
-      empty.textContent = "일치하는 폴더가 없어요";
+      empty.textContent = t("일치하는 폴더가 없어요");
       list.append(empty);
     }
     for (const { node, depth, hasChildren, open } of rows) {

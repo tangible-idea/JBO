@@ -1,7 +1,7 @@
 SHELL := /bin/zsh
 .DEFAULT_GOAL := run
 
-.PHONY: help setup install guard-key verify test check run dev stop restart status chrome doctor clean package cws-status release site site-build
+.PHONY: help setup install guard-key verify test check run dev stop restart status chrome doctor clean package cws-status release site site-build deploy-api
 
 help: ## 사용 가능한 명령을 표시합니다.
 	@awk 'BEGIN {FS = ":.*## "; print "Tidymark\n"} /^[a-zA-Z_-]+:.*## / {printf "  make %-10s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -106,3 +106,6 @@ site: site/node_modules/.package-lock.json ## 소개 웹사이트(React)를 개�
 
 site-build: site/node_modules/.package-lock.json ## 소개 웹사이트를 site/dist에 정적 파일로 빌드합니다.
 	@cd site && npm run build
+
+deploy-api: verify .env ## 백엔드를 Cloud Run에 배포하고 서비스 URL을 출력합니다.
+	@set -a; source .env; set +a; ./scripts/deploy-api.sh

@@ -1,3 +1,4 @@
+import { outboundFetch } from "./safe-fetch.mjs";
 export const MAX_LINK_BATCH = 25;
 const LINK_TIMEOUT_MS = 8_000;
 
@@ -24,7 +25,7 @@ function errorCode(error) {
   return error?.cause?.code || error?.code || "";
 }
 
-export async function checkLink(url, { fetchImpl = fetch } = {}) {
+export async function checkLink(url, { fetchImpl = outboundFetch } = {}) {
   if (!/^https?:\/\//i.test(url)) return { state: "skipped", reason: "웹 주소가 아니에요" };
   try {
     const response = await fetchImpl(url, {
@@ -40,6 +41,7 @@ export async function checkLink(url, { fetchImpl = fetch } = {}) {
     return { state: "unknown", status: response.status, reason: `응답 ${response.status}` };
   } catch (error) {
     const code = errorCode(error);
+    if (code === "EBLOCKED") return { state: "skipped", reason: "내부 네트워크 주소예요" };
     if (GONE_ERROR_CODES.has(code)) return { state: "dead", reason: "도메인이 없어요" };
     if (error?.name === "TimeoutError") return { state: "unknown", reason: "응답 없음" };
     return { state: "unknown", reason: code || "연결 실패" };

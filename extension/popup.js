@@ -1,3 +1,4 @@
+import { localizeDocument, t } from "./i18n.js";
 import { createFolderPicker } from "./folder-picker.js";
 import {
   buildFolderTree,
@@ -5,6 +6,9 @@ import {
   shouldSuggestNewFolder,
   suggestFolderName,
 } from "./popup-utils.js";
+
+// Translate static HTML before anything below grabs element references.
+localizeDocument();
 
 const DEFAULT_SETTINGS = {
   endpoint: "http://127.0.0.1:8787",
@@ -90,26 +94,26 @@ function updateAction() {
   if (mode === "existing") {
     const folder = destinationPicker.selected;
     if (!folder) {
-      label = "저장할 폴더를 선택하세요";
+      label = t("저장할 폴더를 선택하세요");
       enabled = false;
     } else if (existingBookmark?.parentId === folder.id) {
-      label = `‘${folder.title}’에 저장되어 있어요`;
+      label = t("‘{0}’에 저장되어 있어요", folder.title);
       enabled = false;
     } else {
-      label = existingBookmark ? `‘${folder.title}’(으)로 옮기기` : `‘${folder.title}’에 저장`;
+      label = existingBookmark ? t("‘{0}’(으)로 옮기기", folder.title) : t("‘{0}’에 저장", folder.title);
     }
   } else {
     const name = elements.newFolderName.value.trim();
     const parent = parentPicker.selected;
     elements.newFolderPreview.textContent = parent && name ? `${parent.path} / ${name}` : "";
     if (!name) {
-      label = "새 폴더 이름을 입력하세요";
+      label = t("새 폴더 이름을 입력하세요");
       enabled = false;
     } else if (!parent) {
-      label = "만들 위치를 선택하세요";
+      label = t("만들 위치를 선택하세요");
       enabled = false;
     } else {
-      label = `‘${name}’ 만들고 저장`;
+      label = t("‘{0}’ 만들고 저장", name);
     }
   }
   elements.saveLabel.textContent = label;
@@ -131,7 +135,7 @@ function renderRecommendationMessage(message, { retry = false } = {}) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "text-button";
-    button.textContent = "다시 시도";
+    button.textContent = t("다시 시도");
     button.addEventListener("click", classify);
     box.append(button);
   }
@@ -142,15 +146,15 @@ function renderNoMatch(result) {
   const box = document.createElement("div");
   box.className = "rec-nomatch";
   const title = document.createElement("strong");
-  title.textContent = "딱 맞는 폴더가 없어 보여요";
+  title.textContent = t("딱 맞는 폴더가 없어 보여요");
   const detail = document.createElement("p");
   detail.textContent = result.recommendation
-    ? `확신도 ${Math.round((result.confidence || 0) * 100)}%예요. 새 폴더에 두는 게 더 깔끔할까요?`
-    : "기존 폴더 중 어울리는 곳이 없어요. 새 폴더에 두는 게 더 깔끔해요.";
+    ? t("확신도 {0}%예요. 새 폴더에 두는 게 더 깔끔할까요?", Math.round((result.confidence || 0) * 100))
+    : t("기존 폴더 중 어울리는 곳이 없어요. 새 폴더에 두는 게 더 깔끔해요.");
   const action = document.createElement("button");
   action.type = "button";
   action.className = "rec-nomatch-action";
-  action.textContent = "새 폴더 만들기 →";
+  action.textContent = t("새 폴더 만들기 →");
   action.addEventListener("click", () => setMode("new"));
   box.append(title, detail, action);
   return box;
@@ -164,7 +168,7 @@ function renderRecommendations(result) {
   if (noMatch && result.candidates.length > 0) {
     const label = document.createElement("p");
     label.className = "rec-fallback-label";
-    label.textContent = "그래도 기존 폴더에 넣으려면";
+    label.textContent = t("그래도 기존 폴더에 넣으려면");
     elements.recommendations.append(label);
   }
 
@@ -188,11 +192,11 @@ function renderRecommendations(result) {
     if (candidate.id === recommendedId) {
       const tag = document.createElement("em");
       tag.className = "rec-tag";
-      tag.textContent = "추천";
+      tag.textContent = t("추천");
       name.append(tag);
     }
     const path = document.createElement("small");
-    path.textContent = parentPath(candidate.path, title) || "최상위";
+    path.textContent = parentPath(candidate.path, title) || t("최상위");
     copy.append(name, path);
     const score = document.createElement("span");
     score.className = "rec-score";
@@ -206,7 +210,7 @@ function renderRecommendations(result) {
     elements.recommendations.append(row);
   });
 
-  if (!noMatch && result.candidates.length === 0) renderRecommendationMessage("맞는 기존 폴더를 찾지 못했어요.");
+  if (!noMatch && result.candidates.length === 0) renderRecommendationMessage(t("맞는 기존 폴더를 찾지 못했어요."));
   highlightRecommendation();
 }
 
@@ -215,8 +219,8 @@ function prepareNewFolder(result) {
   elements.newFolderHint.hidden = !result;
   if (result) {
     elements.newFolderHint.textContent = result.recommendation
-      ? `추천 확신도 ${confidencePercent}% — 기준 ${Math.round(settings.confidenceThreshold * 100)}%보다 낮아 새 폴더를 제안해요.`
-      : "기존 폴더 중 어울리는 곳이 없어 새 폴더를 제안해요.";
+      ? t("추천 확신도 {0}% — 기준 {1}%보다 낮아 새 폴더를 제안해요.", confidencePercent, Math.round(settings.confidenceThreshold * 100))
+      : t("기존 폴더 중 어울리는 곳이 없어 새 폴더를 제안해요.");
   }
   // Put the new folder next to the closest match, not inside it.
   const closest = result?.candidates[0] && findFolder(result.candidates[0].id);
@@ -271,10 +275,10 @@ async function saveToExisting({ automatic = false } = {}) {
   await upsertBookmark(folder.id);
   setStatus(
     automatic
-      ? `확신도가 높아 ‘${folder.title}’에 자동 저장했어요.`
+      ? t("확신도가 높아 ‘{0}’에 자동 저장했어요.", folder.title)
       : moved
-        ? `‘${folder.path}’(으)로 옮겼어요.`
-        : `‘${folder.path}’에 저장했어요.`,
+        ? t("‘{0}’(으)로 옮겼어요.", folder.path)
+        : t("‘{0}’에 저장했어요.", folder.path),
     "success",
   );
 }
@@ -293,7 +297,7 @@ async function createFolderAndSave() {
   destinationPicker.setValue(folder.id);
   elements.newFolderHint.hidden = true;
   setMode("existing");
-  setStatus(`‘${parent.path} / ${folder.title}’ 폴더를 만들고 저장했어요.`, "success");
+  setStatus(t("‘{0} / {1}’ 폴더를 만들고 저장했어요.", parent.path, folder.title), "success");
 }
 
 async function save() {
@@ -303,7 +307,7 @@ async function save() {
     if (mode === "existing") await saveToExisting();
     else await createFolderAndSave();
   } catch (error) {
-    setStatus(error.message || "저장하지 못했어요.", "error");
+    setStatus(error.message || t("저장하지 못했어요."), "error");
   } finally {
     busy = false;
     updateAction();
@@ -325,14 +329,14 @@ async function classify() {
       }),
     });
     const result = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(result.error || `서버 오류 (${response.status})`);
+    if (!response.ok) throw new Error(result.error || t("서버 오류 ({0})", response.status));
     // 확신이 낮으면 기존 폴더를 미리 고르지 않아, 저장 버튼이 약한 추천으로 이어지지 않게 합니다.
     const noMatch = shouldSuggestNewFolder(result, settings.confidenceThreshold);
     if (result.recommendation && !existingBookmark && !noMatch) destinationPicker.setValue(result.recommendation.id);
     renderRecommendations(result);
     prepareNewFolder(noMatch ? result : null);
     if (result.truncatedFolderCount > 0) {
-      setStatus(`폴더가 많아 100개만 비교했어요. (${result.truncatedFolderCount}개 제외)`);
+      setStatus(t("폴더가 많아 100개만 비교했어요. ({0}개 제외)", result.truncatedFolderCount));
     }
     if (
       settings.autoSave &&
@@ -343,8 +347,8 @@ async function classify() {
       await saveToExisting({ automatic: true });
     }
   } catch (error) {
-    renderRecommendationMessage(`추천을 받지 못했어요. ${error.message}`, { retry: true });
-    setStatus("설정에서 백엔드 주소를 확인하세요.", "error");
+    renderRecommendationMessage(t("추천을 받지 못했어요. {0}", error.message), { retry: true });
+    setStatus(t("설정에서 백엔드 주소를 확인하세요."), "error");
   } finally {
     elements.classify.disabled = false;
     elements.recommendations.removeAttribute("aria-busy");
@@ -353,7 +357,7 @@ async function classify() {
 }
 
 function renderPage() {
-  elements.pageTitle.textContent = activeTab.title || "제목 없는 페이지";
+  elements.pageTitle.textContent = activeTab.title || t("제목 없는 페이지");
   try {
     const url = new URL(activeTab.url);
     elements.pageHost.textContent = url.hostname || activeTab.url;
@@ -374,9 +378,9 @@ async function initialize() {
   settings = { ...DEFAULT_SETTINGS, ...(await chrome.storage.sync.get(DEFAULT_SETTINGS)) };
   [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!activeTab?.url || !/^(https?|file|ftp):/.test(activeTab.url)) {
-    elements.pageTitle.textContent = "이 페이지는 저장할 수 없어요";
-    elements.pageHost.textContent = "일반 웹페이지에서 다시 열어 주세요.";
-    renderRecommendationMessage("브라우저 내부 페이지는 북마크할 수 없어요.");
+    elements.pageTitle.textContent = t("이 페이지는 저장할 수 없어요");
+    elements.pageHost.textContent = t("일반 웹페이지에서 다시 열어 주세요.");
+    renderRecommendationMessage(t("브라우저 내부 페이지는 북마크할 수 없어요."));
     activeTab = null;
     updateAction();
     return;
@@ -387,7 +391,7 @@ async function initialize() {
   if (existingBookmark) {
     destinationPicker.setValue(existingBookmark.parentId);
     const current = folders.find((folder) => folder.id === existingBookmark.parentId);
-    setStatus(current ? `이미 ‘${current.path}’에 저장된 페이지예요.` : "이미 저장된 페이지예요.");
+    setStatus(current ? t("이미 ‘{0}’에 저장된 페이지예요.", current.path) : t("이미 저장된 페이지예요."));
   } else if (folders[0]) {
     destinationPicker.setValue(folders[0].id);
   }
@@ -395,14 +399,14 @@ async function initialize() {
   updateAction();
 
   if (folders.length === 0) {
-    renderRecommendationMessage("먼저 Chrome에 북마크 폴더를 하나 만들어 주세요.");
+    renderRecommendationMessage(t("먼저 Chrome에 북마크 폴더를 하나 만들어 주세요."));
     return;
   }
   if (settings.autoClassify) await classify();
   else {
     elements.classify.disabled = false;
-    elements.classify.textContent = "추천 받기";
-    renderRecommendationMessage("‘추천 받기’를 누르면 어울리는 폴더를 찾아요.");
+    elements.classify.textContent = t("추천 받기");
+    renderRecommendationMessage(t("‘추천 받기’를 누르면 어울리는 폴더를 찾아요."));
   }
 }
 

@@ -1,0 +1,5 @@
+{
+  "extName": { "message": "Tidymark" },
+  "extDescription": { "message": "현재 페이지를 알맞은 북마크 폴더에 저장하고, 쌓인 북마크를 한 번에 정리합니다." },
+  "actionTitle": { "message": "Tidymark로 북마크 정리" }
+}

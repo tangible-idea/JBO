@@ -168,7 +168,7 @@
             <p class="step">2</p>
             <h2>몰아서 저장한 묶음</h2>
             <p class="panel-note">며칠 사이에 4개 이상 몰아서 저장했는데 아직 한 폴더에 모여 있지 않은 북마크를 찾아요. LLM이 같은 목적인지 확인하고 이름을 지어요.</p>
-            <p id="projects-poe-warning" class="hint-banner warn" hidden>
+            <p id="projects-poe-warning" class="hint-banner warn" data-i18n-html="projectsPoeWarning" hidden>
               이름을 지으려면 서버에 <code>POE_API_KEY</code>가 필요해요.
             </p>
             <ol id="burst-preview" class="burst-preview" aria-label="묶음 후보"></ol>
@@ -252,7 +252,7 @@
             </select>
             <button id="stale-toggle-all" class="text-button" type="button">전체 선택</button>
           </div>
-          <p class="panel-note"><span id="stale-period-label">1년</span> 넘게 바뀌지 않았고 안의 북마크도 그동안 열지 않은 폴더예요. 지우지 않고 <span class="archive-path"></span>로 옮겨요.</p>
+          <p class="panel-note" data-i18n-html="staleNote"><span id="stale-period-label">1년</span> 넘게 바뀌지 않았고 안의 북마크도 그동안 열지 않은 폴더예요. 지우지 않고 <span class="archive-path"></span>로 옮겨요.</p>
           <ul id="stale-list" class="checkup-list"></ul>
         </section>
 
@@ -268,12 +268,12 @@
           <h1>내 북마크로 보는 관심사</h1>
           <p>모든 북마크의 제목과 페이지 메타정보를 JSON 한 파일로 모은 뒤, Poe의 LLM이 관심 분야를 읽고 그에 맞는 새 폴더 구조를 추천해요.</p>
         </div>
-        <p id="poe-warning" class="hint-banner warn" hidden>
+        <p id="poe-warning" class="hint-banner warn" data-i18n-html="poeWarning" hidden>
           서버에 <code>POE_API_KEY</code>가 없어요. <code>.env</code>에 키를 넣고 <code>make restart</code>로 다시 켜 주세요.
         </p>
         <div class="run-row">
           <button id="analyze-interests" class="action-button big" type="button">
-            <span class="spark" aria-hidden="true">✦</span><span>북마크 <b id="insight-count">0</b>개 분석하기</span>
+            <span class="spark" aria-hidden="true">✦</span><span data-i18n-html="analyzeCount">북마크 <b id="insight-count">0</b>개 분석하기</span>
           </button>
           <button id="cancel-interests" class="ghost-button" type="button" hidden>중지</button>
           <label class="inline-check" title="끄면 저장된 JSON에 있는 페이지는 다시 읽지 않아요.">
