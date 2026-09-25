@@ -1,5 +1,6 @@
 import { createFolderPicker } from "./folder-picker.js";
 import {
+  buildCategoryTree,
   chunkItems,
   collectBookmarks,
   groupPlan,
@@ -362,23 +363,37 @@ function saveCategories() {
 }
 
 function renderCategories() {
-  el.categoryChips.querySelectorAll(".chip").forEach((chip) => chip.remove());
-  for (const category of categories) {
-    const chip = document.createElement("span");
-    chip.className = "chip";
-    chip.textContent = category;
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.setAttribute("aria-label", `${category} 삭제`);
-    remove.textContent = "×";
-    remove.addEventListener("click", () => {
-      categories = categories.filter((item) => item !== category);
-      renderCategories();
-      saveCategories();
-    });
-    chip.append(remove);
-    el.categoryChips.insertBefore(chip, el.categoryInput);
-  }
+  const renderNodes = (nodes) => {
+    const list = document.createElement("ul");
+    list.className = "category-folder-list";
+    for (const node of nodes) {
+      const item = document.createElement("li");
+      const row = document.createElement("div");
+      row.className = `category-folder-row${node.children.length ? " parent" : ""}`;
+      const glyph = document.createElement("span");
+      glyph.className = `folder-glyph${node.children.length ? " open" : ""}`;
+      glyph.setAttribute("aria-hidden", "true");
+      const name = document.createElement("span");
+      name.className = "category-folder-name";
+      name.textContent = node.name;
+      const remove = document.createElement("button");
+      remove.className = "category-folder-remove";
+      remove.type = "button";
+      remove.textContent = "×";
+      remove.setAttribute("aria-label", `${node.path} 폴더${node.children.length ? "와 하위 폴더" : ""} 삭제`);
+      remove.addEventListener("click", () => {
+        categories = categories.filter((category) => category !== node.path && !category.startsWith(`${node.path} / `));
+        renderCategories();
+        saveCategories();
+      });
+      row.append(glyph, name, remove);
+      item.append(row);
+      if (node.children.length) item.append(renderNodes(node.children));
+      list.append(item);
+    }
+    return list;
+  };
+  el.categoryChips.replaceChildren(renderNodes(buildCategoryTree(categories)), el.categoryInput);
   el.categoryCount.textContent = `${categories.length}개`;
   renderModePreview();
 }
@@ -1694,20 +1709,25 @@ function renderFolderStructure(profile) {
     categoriesList.append(item);
   }
   tree.replaceChildren(rootLine, categoriesList);
-  $("#structure-count").textContent = `말단 폴더 ${profile.leafCategories.length}개`;
+  $("#structure-count").textContent = `폴더 ${profile.leafCategories.length}개`;
 }
 
-function useProfileStructure() {
+async function useProfileStructure({ analyzeNow = false } = {}) {
   if (!lastProfile) return;
   categories = parseCategories(lastProfile.leafCategories.join("\n"));
-  el.rootName.value = lastProfile.folderStructure.rootName;
+  const suggestedRoot = lastProfile.folderStructure.rootName;
+  el.rootName.value = /^(북마크|bookmarks?)$/i.test(suggestedRoot.trim()) ? "Tidymark" : suggestedRoot;
   chrome.storage.sync.set({ batchRootName: el.rootName.value });
   renderCategories();
   saveCategories();
   setMode("new");
   showView("organize");
-  setStatus(el.batchStatus, `추천 구조(${categories.length}개 카테고리)를 적용했어요. 분석을 시작해 보세요.`, "success");
-  el.analyze.scrollIntoView({ behavior: "smooth", block: "center" });
+  if (analyzeNow) {
+    el.analyze.scrollIntoView({ behavior: "smooth", block: "center" });
+    await analyze();
+  } else {
+    setStatus(el.batchStatus, `추천 폴더 ${categories.length}개를 가져왔어요. 분석하면 이동 예정표가 만들어져요.`, "success");
+  }
 }
 
 function downloadSnapshot() {
@@ -2020,7 +2040,7 @@ el.analyze.addEventListener("click", analyze);
 $("#analyze-interests").addEventListener("click", analyzeInterests);
 $("#folder-language").addEventListener("change", changeFolderLanguage);
 $("#cancel-interests").addEventListener("click", () => insightController?.abort());
-$("#use-structure").addEventListener("click", useProfileStructure);
+$("#use-structure").addEventListener("click", () => useProfileStructure({ analyzeNow: true }));
 $("#download-snapshot").addEventListener("click", downloadSnapshot);
 $("#suggest-categories").addEventListener("click", () => {
   if (lastProfile) useProfileStructure();

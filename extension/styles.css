@@ -678,40 +678,42 @@ body.studio {
 .segmented button[aria-checked="true"] { background: var(--card); color: var(--ink); box-shadow: var(--shadow); }
 .segmented.three { grid-template-columns: repeat(3, 1fr); }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+.category-editor {
   border: 1px solid var(--line-strong);
   border-radius: 12px;
   padding: 8px;
   background: var(--paper);
 }
-.chip {
-  display: inline-flex;
+.category-folder-list { margin: 0; padding: 0; list-style: none; }
+.category-editor > .category-folder-list { max-height: 430px; overflow: auto; }
+.category-folder-list .category-folder-list { margin-left: 9px; border-left: 1.5px dashed var(--line-strong); padding-left: 15px; }
+.category-folder-row {
+  display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 9px;
   border-radius: 8px;
-  padding: 5px 5px 5px 10px;
-  background: var(--lime-soft);
-  color: var(--lime-ink);
+  padding: 6px 8px;
+  color: var(--ink-2);
   font-size: 12.5px;
-  font-weight: 700;
-  animation: rise 0.15s ease;
 }
-.chip button {
+.category-folder-row:hover { background: var(--card); }
+.category-folder-row.parent { color: var(--ink); font-weight: 800; }
+.category-folder-name { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+.category-folder-remove {
   display: grid;
   place-items: center;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
   border: 0;
   border-radius: 5px;
   background: none;
-  color: inherit;
-  opacity: 0.55;
+  color: var(--muted);
+  font-size: 16px;
+  opacity: 0.45;
 }
-.chip button:hover { background: rgba(0, 0, 0, 0.08); opacity: 1; }
-.chip-input { flex: 1 0 160px; border: 0; padding: 5px 6px; background: none; font-size: 13px; }
+.category-folder-remove:hover, .category-folder-remove:focus-visible { background: var(--line); color: var(--ink); opacity: 1; }
+.chip-input { width: 100%; margin-top: 6px; border: 0; border-top: 1px solid var(--line); padding: 10px 8px 4px; background: none; font-size: 13px; }
 .chip-input:focus { outline: none; }
 
 .check-tree {

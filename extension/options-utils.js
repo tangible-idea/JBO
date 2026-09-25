@@ -12,6 +12,25 @@ export function parseCategories(value, max = 24) {
     .slice(0, max);
 }
 
+export function buildCategoryTree(categories) {
+  const roots = [];
+  for (const category of categories) {
+    const parts = category.split(" / ").map((part) => part.trim()).filter(Boolean);
+    let siblings = roots;
+    let path = "";
+    for (const part of parts) {
+      path = path ? `${path} / ${part}` : part;
+      let node = siblings.find((item) => item.name === part);
+      if (!node) {
+        node = { name: part, path, children: [] };
+        siblings.push(node);
+      }
+      siblings = node.children;
+    }
+  }
+  return roots;
+}
+
 export function chunkItems(items, size = 20) {
   const chunks = [];
   for (let index = 0; index < items.length; index += size) {

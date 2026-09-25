@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  buildCategoryTree,
   chunkItems,
   collectBookmarks,
   groupPlan,
@@ -12,6 +13,24 @@ import {
 
 test("parseCategories trims and deduplicates lines", () => {
   assert.deepEqual(parseCategories(" 개발 \n디자인\n개발\n"), ["개발", "디자인"]);
+});
+
+test("buildCategoryTree groups leaf paths under their parent folders", () => {
+  assert.deepEqual(buildCategoryTree([
+    "App Development / Android",
+    "App Development / Flutter",
+    "AI & Automation / Tools",
+    "Other",
+  ]), [
+    { name: "App Development", path: "App Development", children: [
+      { name: "Android", path: "App Development / Android", children: [] },
+      { name: "Flutter", path: "App Development / Flutter", children: [] },
+    ] },
+    { name: "AI & Automation", path: "AI & Automation", children: [
+      { name: "Tools", path: "AI & Automation / Tools", children: [] },
+    ] },
+    { name: "Other", path: "Other", children: [] },
+  ]);
 });
 
 test("chunkItems preserves every bookmark", () => {
