@@ -1,4 +1,4 @@
-import { lang, locale, localizeDocument, t } from "./i18n.js";
+import { lang, languagePreference, locale, localizeDocument, setLanguagePreference, t } from "./i18n.js";
 import { createFolderPicker } from "./folder-picker.js";
 import {
   buildCategoryTree,
@@ -920,17 +920,17 @@ async function applyPlan() {
       await chrome.bookmarks.move(item.id, { parentId });
       if (index % 10 === 0) setStatus(el.batchStatus, t("{0}개 중 {1}개 옮기는 중…", selected.length, index + 1));
     }
-    undo.summary = t("북마크 {0}개를 정리했어요.", undoMoves.length);
+    setUndoSummary(undo, "북마크 {0}개를 정리했어요.", undoMoves.length);
     await saveUndo(undo);
     plan = null;
     el.plan.hidden = true;
     await loadBookmarks();
     await renderUndoBanner();
-    setStatus(el.batchStatus, undo.summary, "success");
+    setStatus(el.batchStatus, undoSummary(undo), "success");
     window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (error) {
     if (undoMoves.length > 0 || undo.createdFolderIds.length > 0) {
-      undo.summary = t("북마크 {0}개를 옮기다 멈췄어요.", undoMoves.length);
+      setUndoSummary(undo, "북마크 {0}개를 옮기다 멈췄어요.", undoMoves.length);
       await saveUndo(undo);
       await renderUndoBanner();
     }
@@ -970,12 +970,25 @@ function undoCount(undo) {
   return (undo?.moves?.length || 0) + (undo?.removed?.length || 0) + (undo?.removedFolders?.length || 0);
 }
 
+// The summary is stored as its source sentence plus the count, and translated
+// when shown, so it follows the current UI language. Entries saved before this
+// only have a finished sentence in whatever language was active then.
+function setUndoSummary(undo, key, count) {
+  undo.summaryKey = key;
+  undo.summaryCount = count;
+}
+
+function undoSummary(undo, fallbackCount = 0) {
+  if (undo?.summaryKey) return t(undo.summaryKey, undo.summaryCount);
+  return t("북마크 {0}개를 정리했어요.", fallbackCount);
+}
+
 async function renderUndoBanner() {
   const { lastBatchUndo } = await chrome.storage.local.get("lastBatchUndo");
   const count = undoCount(lastBatchUndo);
   el.undoBanner.hidden = count === 0;
   if (count) {
-    el.undoText.textContent = `${timeAgo(lastBatchUndo.createdAt)} ${lastBatchUndo.summary || t("북마크 {0}개를 정리했어요.", count)}`;
+    el.undoText.textContent = t("{0} {1}", timeAgo(lastBatchUndo.createdAt), undoSummary(lastBatchUndo, count));
   }
 }
 
@@ -1321,10 +1334,10 @@ async function applyCheckup() {
       }
       processed += 1;
     }
-    undo.summary = t("점검 항목 {0}개를 처리했어요.", processed);
-    setStatus(status, undo.summary, "success");
+    setUndoSummary(undo, "점검 항목 {0}개를 처리했어요.", processed);
+    setStatus(status, undoSummary(undo), "success");
   } catch (error) {
-    undo.summary = t("점검 항목 {0}개를 처리하다 멈췄어요.", processed);
+    setUndoSummary(undo, "점검 항목 {0}개를 처리하다 멈췄어요.", processed);
     setStatus(status, t("{0} 처리한 항목은 되돌릴 수 있어요.", error.message || t("처리에 실패했어요.")), "error");
   }
   if (undoCount(undo) > 0) await saveUndo(undo);
@@ -1354,7 +1367,7 @@ function setInsightStep(step) {
 async function postJson(pathname, body, signal) {
   const response = await fetch(`${endpointBase()}${pathname}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Accept-Language": lang },
     body: JSON.stringify(body),
     signal,
   });
@@ -1489,7 +1502,7 @@ function createReadFeed() {
 async function streamMetadata(bookmarks, refresh, signal, onItem) {
   const response = await fetch(`${endpointBase()}/api/metadata`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Accept-Language": lang },
     body: JSON.stringify({ bookmarks, refresh, stream: true }),
     signal,
   });
@@ -1960,6 +1973,16 @@ document.querySelectorAll(".nav-tab").forEach((tab) => {
 });
 document.querySelectorAll(".mode-card").forEach((card) => {
   card.addEventListener("click", () => setMode(card.dataset.mode));
+});
+
+// Language: the whole page is rebuilt in the new language, so just reload.
+document.querySelectorAll("[data-language]").forEach((button) => {
+  button.setAttribute("aria-checked", String(button.dataset.language === languagePreference()));
+  button.addEventListener("click", () => {
+    if (button.dataset.language === languagePreference()) return;
+    setLanguagePreference(button.dataset.language);
+    location.reload();
+  });
 });
 
 // (?) on each mode card plays a short looping explainer clip in an overlay.

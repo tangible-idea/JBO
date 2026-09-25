@@ -1,4 +1,4 @@
-import { localizeDocument, t } from "./i18n.js";
+import { lang, localizeDocument, t } from "./i18n.js";
 import { createFolderPicker } from "./folder-picker.js";
 import {
   buildFolderTree,
@@ -322,7 +322,7 @@ async function classify() {
     const pageContext = await getPageContext();
     const response = await fetch(`${settings.endpoint.replace(/\/$/, "")}/api/classify`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Accept-Language": lang },
       body: JSON.stringify({
         page: { title: activeTab.title, url: activeTab.url, description: pageContext.description },
         folders,

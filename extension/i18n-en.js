@@ -146,6 +146,7 @@ export const en = {
   "삭제": "Delete",
   "보관": "Archive",
   "{0} · {1}": "{0} · {1}",
+  "{0} {1}": "{0} · {1}",
   "{0}에서 삭제 · 남는 곳: {1}": "Delete from {0} · keeps {1}",
   "(이름 없음)": "(untitled)",
   "북마크 {0}개": "{0} bookmarks",
@@ -348,6 +349,9 @@ export const en = {
   "추천 폴더 이름 언어": "Folder name language",
   "설명 영상 보기": "Watch how it works",
   "닫기": "Close",
+  "언어": "Language",
+  "브라우저 언어": "Browser language",
+  "팝업과 정리 스튜디오, 설명 영상, 관심사 리포트가 이 언어로 나와요.": "The popup, studio, explainer videos and interest report use this language.",
 };
 
 // Sentences split around inline markup; ids inside must match options.html.

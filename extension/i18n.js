@@ -2,7 +2,28 @@
 // keys into the English table. Non-Korean browsers get English.
 import { en, enHtml } from "./i18n-en.js";
 
-const uiLanguage = globalThis.chrome?.i18n?.getUILanguage?.() || "ko";
+// Settings can pin the language; "auto" follows the browser. localStorage is
+// shared by the popup and options pages and can be read synchronously.
+const LANGUAGE_KEY = "tidymark.uiLanguage";
+export function languagePreference() {
+  try {
+    const saved = globalThis.localStorage?.getItem(LANGUAGE_KEY);
+    return saved === "ko" || saved === "en" ? saved : "auto";
+  } catch {
+    return "auto";
+  }
+}
+export function setLanguagePreference(value) {
+  try {
+    if (value === "ko" || value === "en") globalThis.localStorage.setItem(LANGUAGE_KEY, value);
+    else globalThis.localStorage.removeItem(LANGUAGE_KEY);
+  } catch {
+    // Storage blocked: the choice lasts only for this page.
+  }
+}
+
+const preference = languagePreference();
+const uiLanguage = preference !== "auto" ? preference : globalThis.chrome?.i18n?.getUILanguage?.() || "ko";
 export const lang = uiLanguage.toLowerCase().startsWith("ko") ? "ko" : "en";
 export const locale = lang === "ko" ? "ko-KR" : "en-US";
 
