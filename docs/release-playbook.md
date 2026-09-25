@@ -103,3 +103,14 @@ API는 zip 업로드와 검토 제출만 합니다. 아래는 대시보드에서
 ## 알려진 위험
 
 - 확장이 기본적으로 `http://127.0.0.1:8787` 로컬 백엔드를 호출합니다. 스토어 사용자는 이 서버가 없으므로 검토에서 "기능하지 않음"으로 거절될 수 있습니다. 공개 출시 전에 HTTPS 백엔드를 배포하고 기본 endpoint를 바꾸거나, 등록정보에 설정 방법을 분명히 적으세요.
+
+## 사이트와 URL (2026-09-25 확정)
+
+- 소개 사이트: `site/` (Vite + React). **Vercel**에서 `https://tidy.tmtt.link`로 서비스합니다. master에 푸시하면 1분 안에 반영됩니다.
+- 개인정보처리방침: `https://tidy.tmtt.link/privacypolicy` (`site/privacypolicy/index.html` 엔트리 → `src/PrivacyPolicy.jsx`). 권한이나 데이터 흐름이 바뀌면 `site/src/content.jsx`의 `privacy`와 `PRIVACY_UPDATED`를 고칩니다.
+- 대시보드 입력값:
+  - Store listing → Homepage URL: `https://tidy.tmtt.link/`
+  - Store listing → Support URL: `https://github.com/tangible-idea/JBO/issues`
+  - Privacy → Privacy policy URL: `https://tidy.tmtt.link/privacypolicy`
+- URL 칸에는 반드시 `https://`까지 넣습니다. `tidy.tmtt.link`만 넣었을 때 "not reachable" 오류가 났습니다.
+- 모든 항목을 채운 뒤 "Why can't I submit?" 버튼이 사라지고 `Submit for review`가 활성화되는 것을 확인했습니다.
