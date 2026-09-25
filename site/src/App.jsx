@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import Logo from "./components/Logo.jsx";
 import PopupDemo from "./components/PopupDemo.jsx";
 import { PRIVACY_UPDATED, STORE_URL, buckets, checks, movePlan, privacy, savePoints, ways } from "./content.jsx";
@@ -89,7 +90,20 @@ function Save() {
   );
 }
 
+const CLIP_SECONDS = 4.5;
+const reducedMotion = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
 function Ways() {
+  const [active, setActive] = useState(0);
+  const [playing, setPlaying] = useState(!reducedMotion());
+  const video = useRef(null);
+  const way = ways[active];
+
+  useEffect(() => {
+    if (playing) video.current?.play().catch(() => setPlaying(false));
+    else video.current?.pause();
+  }, [playing, active]);
+
   return (
     <section className="block" id="tidy">
       <div className="wrap">
@@ -97,16 +111,46 @@ function Ways() {
           Pick a scope: only the loose bookmarks sitting outside any folder, everything, or one folder. Then pick how
           you want them sorted.
         </SectionHead>
-        <div className="ways">
-          {ways.map((way) => (
-            <article className="way" key={way.tab} style={{ "--c": way.color, "--soft": way.soft }}>
-              <span className="tab">{way.tab}</span>
-              <div className="body">
-                <h3>{way.title}</h3>
-                <p>{way.text}</p>
-                <pre>{way.sample}</pre>
-              </div>
-            </article>
+        <figure className="way-player" style={{ "--c": way.color }}>
+          {/* key remounts the video so each mode starts from its unsorted pile */}
+          <video
+            key={way.tab}
+            ref={video}
+            src={`./videos/mode-${way.tab.toLowerCase()}-en.mp4`}
+            muted
+            playsInline
+            controls={!playing}
+            preload="auto"
+            aria-label={`${way.title}: ${way.text}`}
+            onEnded={() => setActive((active + 1) % ways.length)}
+          />
+          <figcaption>
+            <span className="tab">{way.tab}</span>
+            {way.title}
+            <button type="button" className="way-toggle" onClick={() => setPlaying(!playing)}>
+              {playing ? "Pause tour" : "Play tour"}
+            </button>
+          </figcaption>
+        </figure>
+        <div className="ways" role="tablist" aria-label="Organize modes">
+          {ways.map((item, index) => (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={index === active}
+              className="way"
+              key={item.tab}
+              style={{ "--c": item.color, "--soft": item.soft }}
+              onClick={() => setActive(index)}
+            >
+              <span className="tab">{item.tab}</span>
+              <span className="body">
+                <span className="way-title">{item.title}</span>
+                <span className="way-text">{item.text}</span>
+                <span className="way-sample">{item.sample}</span>
+                {index === active && playing && <span className="progress" key={active} style={{ "--d": `${CLIP_SECONDS}s` }} />}
+              </span>
+            </button>
           ))}
         </div>
       </div>
