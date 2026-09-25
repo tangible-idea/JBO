@@ -133,3 +133,13 @@ API는 zip 업로드와 검토 제출만 합니다. 아래는 대시보드에서
 - 확장 UI: 한국어 원문 문장을 키로 쓰고, 영어는 `extension/i18n-en.js`에 둡니다(`t("‘{0}’에 저장", name)`). 브라우저 언어가 `ko`가 아니면 영어로 나옵니다. manifest 이름과 설명은 `_locales/{en,ko}`에 있습니다.
 - 문구를 추가하면 `i18n-en.js`에도 넣습니다. 빠진 키는 한국어로 그대로 보입니다.
 - 스토어 등록정보: 한국어는 `dist/store-assets/`, 영어는 `dist/store-assets/en/`에 있습니다. 영어 스크린샷은 가짜 Chrome API로 영어 UI를 띄워 1280×800으로 찍은 것입니다.
+
+## Orca로 패키지·이미지 올리기 (2026-09-25, 0.3.1)
+
+- **파일 업로드**: 대시보드의 `input[type=file]`은 숨겨져 있어서 snapshot에 ref가 나오지 않습니다. `orca eval`로 `aria-label`을 붙이고 `display:block`으로 보이게 만든 뒤 snapshot에서 ref를 얻어 `orca upload --element @eNN --files <절대경로>`를 실행합니다. 여러 파일을 한 번에 받지 않으므로 한 장씩 올리고, 올릴 때마다 input을 다시 찾습니다.
+  - Package 탭: `Upload new package`를 누르면 대화상자 안에 `.zip,.crx` input이 생깁니다.
+  - Store listing input 순서: 0 아이콘, 1 언어별 스크린샷, 2 전역 스크린샷, 3 작은 타일, 4 마키 타일
+- **언어별 등록정보**: 패키지에 `_locales`가 있으면 "Current editing language" 콤보박스에 English(기본)와 Korean이 나옵니다. 언어를 바꾼 뒤 설명과 Localised screenshots를 채우고 `Save draft`를 누릅니다. 아이콘과 프로모션 타일은 언어 공통입니다(지금은 영어 타일).
+- **이미지 삭제**: `Remove image …` 버튼은 `orca click`으로는 반응하지 않습니다. `orca focus`로 포커스를 준 뒤 `document.activeElement` 좌표를 구해 `orca mouse` 클릭을 하면 페이지 안에 "Remove Image" 확인 창이 뜨고, 거기서 `Remove`를 누릅니다.
+- **주의**: `orca reload` 뒤에는 ref가 바뀝니다. 예전 ref로 클릭하면 엉뚱한 링크(Ratings 등)가 눌립니다. 새로고침 후에는 항상 snapshot을 다시 찍습니다.
+- 0.3.1 상태: 영어·한국어 등록정보, Privacy 탭(Cloud Run 호스트 권한 사유 포함)을 모두 저장했고 `Submit for review`가 활성화된 것을 확인했습니다.
