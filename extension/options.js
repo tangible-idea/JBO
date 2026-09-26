@@ -1583,7 +1583,7 @@ async function analyzeInterests() {
 
     setInsightStep("llm");
     progress.style.width = "90%";
-    setStatus(status, t("{0}이 관심사를 읽는 중… 1~2분 걸릴 수 있어요.", serverHealth?.poeModel || "AI"));
+    setStatus(status, t("AI가 관심사를 읽는 중… 1~2분 걸릴 수 있어요."));
     lastProfile = await postJson("/api/profile", { bookmarks: lastSnapshot, folderLanguage, reportLanguage: lang }, signal);
     await chrome.storage.local.set({ lastProfile });
     setInsightStep("done");
@@ -1618,7 +1618,7 @@ function renderProfile(profile) {
     ? t("북마크 {0}개 중 {1}개 반영", profile.coverage.total, profile.coverage.included)
     : t("북마크 {0}개 반영", profile.coverage?.total ?? "?");
   $("#insight-meta").textContent = [
-    `${created.toLocaleString(locale)} · ${profile.model}`,
+    created.toLocaleString(locale),
     coverage,
     profile.snapshotFile ? t("저장: {0}", profile.snapshotFile) : "",
   ].filter(Boolean).join(" · ");

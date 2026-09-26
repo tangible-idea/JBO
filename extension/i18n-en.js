@@ -185,7 +185,7 @@ export const en = {
   "{0}초 걸림": "took {0}s",
   "분석하려면 북마크가 3개 이상 필요해요.": "You need at least 3 bookmarks to analyze.",
   "페이지 메타정보 {0} / {1}": "Page info {0} / {1}",
-  "{0}이 관심사를 읽는 중… 1~2분 걸릴 수 있어요.": "{0} is reading your interests… this can take 1–2 minutes.",
+  "AI가 관심사를 읽는 중… 1~2분 걸릴 수 있어요.": "AI is reading your interests… this can take 1–2 minutes.",
   "분석이 끝났어요. 메타정보 {0}개는 저장된 정보를 재사용했어요.": "Done. Saved page info was reused for {0} bookmarks.",
   "분석이 끝났어요.": "Done.",
   "요약이 없어요.": "No summary.",
