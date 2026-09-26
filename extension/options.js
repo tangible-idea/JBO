@@ -1583,7 +1583,7 @@ async function analyzeInterests() {
 
     setInsightStep("llm");
     progress.style.width = "90%";
-    setStatus(status, t("{0}이 관심사를 읽는 중… 1~2분 걸릴 수 있어요.", serverHealth?.poeModel || "LLM"));
+    setStatus(status, t("{0}이 관심사를 읽는 중… 1~2분 걸릴 수 있어요.", serverHealth?.poeModel || "AI"));
     lastProfile = await postJson("/api/profile", { bookmarks: lastSnapshot, folderLanguage, reportLanguage: lang }, signal);
     await chrome.storage.local.set({ lastProfile });
     setInsightStep("done");
@@ -1592,7 +1592,7 @@ async function analyzeInterests() {
     setStatus(
       status,
       reused
-        ? t("분석이 끝났어요. 메타정보 {0}개는 저장된 JSON을 재사용했어요.", reused.toLocaleString())
+        ? t("분석이 끝났어요. 메타정보 {0}개는 저장된 정보를 재사용했어요.", reused.toLocaleString())
         : t("분석이 끝났어요."),
       "success",
     );

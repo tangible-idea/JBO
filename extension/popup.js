@@ -348,7 +348,7 @@ async function classify() {
     }
   } catch (error) {
     renderRecommendationMessage(t("추천을 받지 못했어요. {0}", error.message), { retry: true });
-    setStatus(t("설정에서 백엔드 주소를 확인하세요."), "error");
+    setStatus(t("서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요."), "error");
   } finally {
     elements.classify.disabled = false;
     elements.recommendations.removeAttribute("aria-busy");

@@ -2,7 +2,7 @@
 // https://creator.poe.com/docs/external-applications/openai-compatible-api
 
 export const POE_BASE_URL = "https://api.poe.com/v1";
-export const DEFAULT_POE_MODEL = "Claude-Sonnet-4.6";
+export const DEFAULT_POE_MODEL = "gemini-3.8-flash";
 const REQUEST_TIMEOUT_MS = 180_000;
 
 export class PoeError extends Error {
