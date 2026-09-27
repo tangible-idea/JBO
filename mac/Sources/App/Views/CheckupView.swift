@@ -12,7 +12,7 @@ struct CheckupView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(L("지울 것, 치울 것")).font(.system(size: 28, weight: .heavy))
+                    Text(L("Downloads 폴더 정리")).font(.system(size: 28, weight: .heavy))
                     Text(L("옮기는 대신 지우거나 치울 만한 것을 찾아요. 지운 파일은 휴지통으로 가고, 되돌릴 수 있어요."))
                         .foregroundStyle(Theme.muted)
                 }

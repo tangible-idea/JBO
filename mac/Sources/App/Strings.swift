@@ -14,7 +14,7 @@ extension AppModel {
             // checkup
             "이미 설치한 앱의 설치 파일": "Installers for apps you have", "받다 만 파일": "Unfinished downloads", "중복 파일": "Duplicates",
             "오래 안 연 큰 파일": "Large, long-unopened files", "오래된 스크린샷": "Old screenshots",
-            "지울 것, 치울 것": "Delete or put away",
+            "Downloads 폴더 정리": "Clean up Downloads",
             "옮기는 대신 지우거나 치울 만한 것을 찾아요. 지운 파일은 휴지통으로 가고, 되돌릴 수 있어요.": "Finds things to delete or put away instead of sorting. Deleted files go to the Trash and can be restored.",
             "{0}개 선택 · {1} 확보": "{0} selected · frees {1}", "{0}개 처리하기": "Fix {0}", "{0}개를 처리할까요?": "Fix {0} items?",
             "치울 것이 없어요.": "Nothing to clean up.",
