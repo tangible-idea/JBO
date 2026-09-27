@@ -96,14 +96,22 @@ public enum Executor {
     }
 }
 
-/// The last apply, kept on disk so Undo survives a restart.
+/// The last apply, kept on disk so Undo survives a restart. Earlier records are
+/// kept in `history/` (newest 10), so replacing or undoing one never loses the
+/// only copy of what an apply did.
 public enum UndoStore {
+    /// Development and test runs point this elsewhere so they never touch the real record.
+    nonisolated(unsafe) public static var directory: URL = FileManager.default
+        .urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent("Tidymark", isDirectory: true)
+    public static let historyLimit = 10
+
     public static var file: URL {
-        let folder = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("Tidymark", isDirectory: true)
-        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        return folder.appendingPathComponent("last-undo.json")
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        return directory.appendingPathComponent("last-undo.json")
     }
+
+    static var historyFolder: URL { directory.appendingPathComponent("history", isDirectory: true) }
 
     public static func load() -> UndoRecord? {
         guard let data = try? Data(contentsOf: file) else { return nil }
@@ -111,7 +119,28 @@ public enum UndoStore {
     }
 
     public static func save(_ record: UndoRecord?) {
+        archiveCurrent()
         guard let record, record.count > 0 else { try? FileManager.default.removeItem(at: file); return }
         try? JSONEncoder().encode(record).write(to: file, options: .atomic)
+    }
+
+    /// Copies the current record into history before it is replaced or cleared.
+    static func archiveCurrent() {
+        let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: file.path) else { return }
+        try? fileManager.createDirectory(at: historyFolder, withIntermediateDirectories: true)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd-HHmmss-SSS"
+        let target = historyFolder.appendingPathComponent("undo-\(formatter.string(from: Date())).json")
+        try? fileManager.copyItem(at: file, to: target)
+        let entries = ((try? fileManager.contentsOfDirectory(atPath: historyFolder.path)) ?? []).sorted()
+        for name in entries.dropLast(historyLimit) {
+            try? fileManager.removeItem(at: historyFolder.appendingPathComponent(name))
+        }
+    }
+
+    public static func history() -> [URL] {
+        ((try? FileManager.default.contentsOfDirectory(at: historyFolder, includingPropertiesForKeys: nil)) ?? [])
+            .sorted { $0.lastPathComponent > $1.lastPathComponent }
     }
 }

@@ -162,3 +162,40 @@ final class TidyCoreTests: XCTestCase {
         XCTAssertEqual(L("‘{0}’이(가) 이미 설치돼 있어요", "Figma"), "‘Figma’ is already installed")
     }
 }
+
+final class UndoStoreTests: XCTestCase {
+    var original: URL!
+
+    override func setUp() {
+        original = UndoStore.directory
+        UndoStore.directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    }
+
+    override func tearDown() {
+        try? FileManager.default.removeItem(at: UndoStore.directory)
+        UndoStore.directory = original
+    }
+
+    func record(_ name: String) -> UndoRecord {
+        var record = UndoRecord()
+        record.moves = [.init(from: URL(fileURLWithPath: "/tmp/\(name)"), to: URL(fileURLWithPath: "/tmp/x/\(name)"), trashed: true)]
+        return record
+    }
+
+    func testReplacingOrClearingKeepsEarlierRecordsInHistory() {
+        UndoStore.save(record("first"))
+        UndoStore.save(record("second"))
+        UndoStore.save(nil)
+        XCTAssertNil(UndoStore.load())
+        let archived = UndoStore.history().compactMap { try? JSONDecoder().decode(UndoRecord.self, from: Data(contentsOf: $0)) }
+        XCTAssertEqual(Set(archived.map { $0.moves[0].from.lastPathComponent }), ["first", "second"])
+    }
+
+    func testHistoryIsCapped() {
+        for index in 0..<(UndoStore.historyLimit + 5) {
+            UndoStore.save(record("r\(index)"))
+            usleep(2_000)
+        }
+        XCTAssertEqual(UndoStore.history().count, UndoStore.historyLimit)
+    }
+}

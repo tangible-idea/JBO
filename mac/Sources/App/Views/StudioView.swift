@@ -220,13 +220,13 @@ struct PlanList: View {
     let onApply: () -> Void
     @State private var confirming = false
 
-    private var groups: [(label: String, indices: [Int])] {
+    private var groups: [(label: String, ids: [UUID])] {
         var order: [String] = []
-        var byLabel: [String: [Int]] = [:]
-        for index in items.indices {
-            let label = items[index].destinationLabel(root: root)
+        var byLabel: [String: [UUID]] = [:]
+        for item in items {
+            let label = item.destinationLabel(root: root)
             if byLabel[label] == nil { order.append(label) }
-            byLabel[label, default: []].append(index)
+            byLabel[label, default: []].append(item.id)
         }
         // Moves first, then Trash, then what stays.
         let keep = L("그대로 두기"), trash = L("휴지통")
@@ -249,7 +249,7 @@ struct PlanList: View {
                 Text(L("정리할 파일이 없어요.")).foregroundStyle(Theme.muted)
             }
             ForEach(groups, id: \.label) { group in
-                PlanGroup(label: group.label, indices: group.indices, items: $items)
+                PlanGroup(label: group.label, ids: group.ids, items: $items)
             }
         }
         .confirmationDialog(L("{0}개를 적용할까요?", checked), isPresented: $confirming) {
@@ -262,23 +262,25 @@ struct PlanList: View {
 
 struct PlanGroup: View {
     let label: String
-    let indices: [Int]
+    let ids: [UUID]
     @Binding var items: [PlanItem]
     @State private var expanded = true
 
     var body: some View {
-        let movable = indices.filter { items[$0].action != .keep }
-        let allChecked = !movable.isEmpty && movable.allSatisfy { items[$0].checked }
+        let movable = items.filter { ids.contains($0.id) && $0.action != .keep }.map(\.id)
+        let allChecked = !movable.isEmpty && items.filter { movable.contains($0.id) }.allSatisfy(\.checked)
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 10) {
                 if !movable.isEmpty {
-                    Toggle("", isOn: Binding(get: { allChecked }, set: { value in movable.forEach { items[$0].checked = value } }))
+                    Toggle("", isOn: Binding(get: { allChecked }, set: { value in
+                        for index in items.indices where movable.contains(items[index].id) { items[index].checked = value }
+                    }))
                         .labelsHidden()
                 }
                 Image(systemName: label == L("휴지통") ? "trash" : label == L("그대로 두기") ? "tray" : "folder.fill")
                     .foregroundStyle(label == L("휴지통") ? Theme.danger : Theme.muted)
                 Text(label).font(.headline).lineLimit(1).truncationMode(.middle)
-                Pill(text: "\(indices.count)")
+                Pill(text: "\(ids.count)")
                 Spacer()
                 Button { expanded.toggle() } label: { Image(systemName: expanded ? "chevron.up" : "chevron.down") }
                     .buttonStyle(.borderless)
@@ -286,9 +288,11 @@ struct PlanGroup: View {
             .padding(12)
             if expanded {
                 Divider()
-                ForEach(indices, id: \.self) { index in
-                    PlanRow(item: $items[index])
-                    if index != indices.last { Divider().padding(.leading, 46) }
+                ForEach(ids, id: \.self) { id in
+                    if let row = $items.element(id) {
+                        PlanRow(item: row)
+                        if id != ids.last { Divider().padding(.leading, 46) }
+                    }
                 }
             }
         }
@@ -325,5 +329,20 @@ struct PlanRow: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
+    }
+}
+
+extension Binding where Value == [PlanItem] {
+    /// Binds one element by id rather than index. After an apply the array is
+    /// replaced while rows are still on screen; an index binding would then read
+    /// past the end and crash, while this one simply stops finding the row.
+    func element(_ id: UUID) -> Binding<PlanItem>? {
+        guard let current = wrappedValue.first(where: { $0.id == id }) else { return nil }
+        return Binding<PlanItem>(
+            get: { wrappedValue.first(where: { $0.id == id }) ?? current },
+            set: { newValue in
+                if let index = wrappedValue.firstIndex(where: { $0.id == id }) { wrappedValue[index] = newValue }
+            }
+        )
     }
 }

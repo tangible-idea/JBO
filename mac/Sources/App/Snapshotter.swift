@@ -9,6 +9,7 @@ import TidyCore
 enum Snapshotter {
     static func runIfRequested() {
         let args = ProcessInfo.processInfo.arguments
+        if args.contains("--selftest-apply") { Task { await selftestApply() }; return }
         guard let flag = args.firstIndex(of: "--snapshot"), args.indices.contains(flag + 1) else { return }
         let folder = URL(fileURLWithPath: args[flag + 1])
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -36,6 +37,29 @@ enum Snapshotter {
         model.studioTab = .settings
         render(StudioView().environment(model), size: CGSize(width: 1000, height: 1100), to: folder, name: "4-settings")
         NSApp.terminate(nil)
+    }
+
+    /// Reproduces "apply from the Checkup tab while its rows are on screen":
+    /// shows the studio in a real window, applies, lets the list refresh, then undoes.
+    /// Prints SELFTEST OK and exits 0 if nothing crashed.
+    static func selftestApply() async {
+        let model = AppModel.shared
+        model.onboarded = true
+        model.start()
+        try? await Task.sleep(for: .seconds(2))
+        model.studioTab = .checkup
+        let window = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 1000, height: 900), styleMask: [.titled], backing: .buffered, defer: false)
+        window.contentView = NSHostingView(rootView: StudioView().environment(model))
+        window.orderFrontRegardless()
+        try? await Task.sleep(for: .seconds(1))
+        let before = model.findings.filter(\.plan.checked).count
+        model.applyCheckup()
+        try? await Task.sleep(for: .seconds(3))
+        let applied = model.lastUndo?.count ?? 0
+        model.undo()
+        try? await Task.sleep(for: .seconds(3))
+        print("SELFTEST OK selected=\(before) applied=\(applied) findingsAfterUndo=\(model.findings.count)")
+        exit(0)
     }
 
     static func render<V: View>(_ view: V, size: CGSize, to folder: URL, name: String) {

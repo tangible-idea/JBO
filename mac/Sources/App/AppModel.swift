@@ -36,13 +36,13 @@ final class AppModel {
     var plan: [PlanItem] = []
     var planMode: OrganizeMode?
     var findings: [CheckupFinding] = []
-    var lastUndo: UndoRecord? = UndoStore.load()
+    var lastUndo: UndoRecord?
     var status: (text: String, isError: Bool)?
     /// Live suggestions for downloads that arrived while the app was running.
     var suggestions: [PlanItem] = []
     private(set) var bookmarks = BookmarkIndex()
 
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
     private let chromeRoot: URL
     private var watcher: FolderWatcher?
     private var knownURLs = Set<URL>()
@@ -54,6 +54,14 @@ final class AppModel {
         func arg(_ name: String) -> URL? {
             args.firstIndex(of: name).flatMap { args.indices.contains($0 + 1) ? URL(fileURLWithPath: args[$0 + 1]) : nil }
         }
+        // Any override means a development run: keep its settings and undo record apart
+        // from the real ones so a test can never overwrite what the user did.
+        let isDevRun = ["--downloads", "--root", "--chrome"].contains(where: args.contains)
+        defaults = isDevRun ? UserDefaults(suiteName: "net.tangibleidea.tidymark.mac.dev")! : .standard
+        if isDevRun {
+            UndoStore.directory = FileManager.default.temporaryDirectory.appendingPathComponent("TidymarkDev", isDirectory: true)
+        }
+        lastUndo = UndoStore.load()
         downloadsURL = arg("--downloads") ?? DownloadScanner.defaultDownloadsURL
         chromeRoot = arg("--chrome") ?? BookmarkIndex.chromeRoot
         let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]

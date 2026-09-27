@@ -5,6 +5,18 @@ struct CheckupView: View {
     @Environment(AppModel.self) private var model
     @State private var confirming = false
 
+    /// Looks rows up by id: findings are replaced after an apply, and an index
+    /// binding would read past the end while the old rows are still drawn.
+    private func findingBinding(_ id: UUID) -> Binding<PlanItem>? {
+        guard let current = model.findings.first(where: { $0.id == id })?.plan else { return nil }
+        return Binding(
+            get: { model.findings.first(where: { $0.id == id })?.plan ?? current },
+            set: { newValue in
+                if let index = model.findings.firstIndex(where: { $0.id == id }) { model.findings[index].plan = newValue }
+            }
+        )
+    }
+
     var body: some View {
         @Bindable var model = model
         let selected = model.findings.filter(\.plan.checked)
@@ -46,19 +58,21 @@ struct CheckupView: View {
                     Label(L("치울 것이 없어요."), systemImage: "checkmark.circle").foregroundStyle(Theme.muted)
                 }
                 ForEach(CheckupKind.allCases) { kind in
-                    let indices = model.findings.indices.filter { model.findings[$0].kind == kind }
-                    if !indices.isEmpty {
+                    let ids = model.findings.filter { $0.kind == kind }.map(\.id)
+                    if !ids.isEmpty {
                         VStack(alignment: .leading, spacing: 0) {
                             HStack {
                                 Label(kind.title, systemImage: kind.symbol).font(.headline)
-                                Pill(text: "\(indices.count)")
+                                Pill(text: "\(ids.count)")
                                 Spacer()
                             }
                             .padding(12)
                             Divider()
-                            ForEach(indices, id: \.self) { index in
-                                PlanRow(item: $model.findings[index].plan)
-                                if index != indices.last { Divider().padding(.leading, 46) }
+                            ForEach(ids, id: \.self) { id in
+                                if let row = findingBinding(id) {
+                                    PlanRow(item: row)
+                                    if id != ids.last { Divider().padding(.leading, 46) }
+                                }
                             }
                         }
                         .background(Theme.card, in: RoundedRectangle(cornerRadius: 12))
