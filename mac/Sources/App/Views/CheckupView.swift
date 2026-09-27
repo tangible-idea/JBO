@@ -9,6 +9,9 @@ struct CheckupView: View {
         @Bindable var model = model
         let selected = model.findings.filter(\.plan.checked)
         let freed = selected.filter { $0.plan.action == .trash }.reduce(Int64(0)) { $0 + $1.plan.item.size }
+        let applyTitle = freed > 0
+            ? L("{0}개 처리하기 · {1} 확보", selected.count, formatBytes(freed))
+            : L("{0}개 처리하기", selected.count)
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 6) {
@@ -35,7 +38,7 @@ struct CheckupView: View {
                 HStack {
                     Text(L("{0}개 선택 · {1} 확보", selected.count, formatBytes(freed))).font(.headline)
                     Spacer()
-                    Button(L("{0}개 처리하기", selected.count)) { confirming = true }
+                    Button(applyTitle) { confirming = true }
                         .buttonStyle(.primary)
                         .disabled(selected.isEmpty)
                 }
@@ -66,7 +69,7 @@ struct CheckupView: View {
             .padding(24)
         }
         .confirmationDialog(L("{0}개를 처리할까요?", selected.count), isPresented: $confirming) {
-            Button(L("{0}개 처리하기", selected.count)) { model.applyCheckup() }
+            Button(applyTitle) { model.applyCheckup() }
         } message: {
             Text(L("휴지통으로 보낸 파일도 ‘되돌리기’로 원래 자리에 돌려놓을 수 있어요."))
         }
