@@ -1,0 +1,66 @@
+name: TidymarkMac
+options:
+  bundleIdPrefix: net.tangibleidea
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    DEVELOPMENT_TEAM: ""
+targets:
+  TidyCore:
+    type: framework
+    platform: macOS
+    sources: [Sources/TidyCore]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: net.tangibleidea.tidymark.core
+        GENERATE_INFOPLIST_FILE: YES
+  TidymarkMac:
+    type: application
+    platform: macOS
+    sources:
+      - Sources/App
+      - Resources
+    dependencies:
+      - target: TidyCore
+    info:
+      path: Sources/App/Info.plist
+      properties:
+        CFBundleDisplayName: Tidymark for Mac
+        CFBundleName: Tidymark
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        LSUIElement: true
+        LSApplicationCategoryType: public.app-category.productivity
+        NSDownloadsFolderUsageDescription: Tidymark reads your Downloads folder to sort, clean up and file what you download. Nothing leaves your Mac.
+        NSDocumentsFolderUsageDescription: Tidymark moves files into the folders you choose in Documents.
+        NSDesktopFolderUsageDescription: Tidymark moves files into the folders you choose on the Desktop.
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: net.tangibleidea.tidymark.mac
+        PRODUCT_NAME: Tidymark
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_HARDENED_RUNTIME: YES
+  TidyCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [Tests/TidyCoreTests]
+    dependencies:
+      - target: TidyCore
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: net.tangibleidea.tidymark.coretests
+schemes:
+  TidymarkMac:
+    build:
+      targets:
+        TidymarkMac: all
+        TidyCoreTests: [test]
+    test:
+      targets: [TidyCoreTests]
