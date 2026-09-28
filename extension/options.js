@@ -1233,7 +1233,9 @@ function renderCheckupSummary() {
     folderCount && t("빈 폴더 {0}개 삭제", folderCount),
     archiveCount && t("폴더 {0}개 보관", archiveCount),
   ].filter(Boolean);
-  $("#checkup-summary").textContent = parts.length ? parts.join(" · ") : t("처리할 항목을 선택하세요");
+  // English parts start lowercase so they fit "This will {0}."; capitalize only for the bar.
+  const joined = parts.join(" · ");
+  $("#checkup-summary").textContent = joined ? joined[0].toUpperCase() + joined.slice(1) : t("처리할 항목을 선택하세요");
   const apply = $("#apply-checkup");
   apply.disabled = selected.length === 0;
   apply.textContent = selected.length ? t("{0}개 처리하기", selected.length) : t("적용하기");
