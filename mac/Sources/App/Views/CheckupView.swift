@@ -52,9 +52,11 @@ struct CheckupView: View {
                     Spacer()
                     Button(applyTitle) { confirming = true }
                         .buttonStyle(.primary)
-                        .disabled(selected.isEmpty)
+                        .disabled(selected.isEmpty || model.isScanning || model.isChecking)
                 }
-                if model.findings.isEmpty {
+                if model.isScanning || model.isChecking {
+                    ProgressView().controlSize(.small)
+                } else if model.findings.isEmpty {
                     Label(L("치울 것이 없어요."), systemImage: "checkmark.circle").foregroundStyle(Theme.muted)
                 }
                 ForEach(CheckupKind.allCases) { kind in

@@ -27,6 +27,11 @@ struct TidymarkMacApp: App {
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        StudioOpener.open()
+        return false
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Tidymark keeps one light look everywhere (extension, site, app), even in Dark Mode.
         NSApp.appearance = NSAppearance(named: .aqua)
@@ -54,6 +59,7 @@ enum StudioOpener {
     @MainActor static func open() {
         NSApp.activate(ignoringOtherApps: true)
         if let window = NSApp.windows.first(where: { $0.identifier?.rawValue.contains("studio") == true }) {
+            if window.isMiniaturized { window.deminiaturize(nil) }
             window.makeKeyAndOrderFront(nil)
         } else {
             openWindow?(id: "studio")

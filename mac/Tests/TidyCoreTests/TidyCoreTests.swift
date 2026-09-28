@@ -119,6 +119,32 @@ final class TidyCoreTests: XCTestCase {
         XCTAssertEqual(byKind[.screenshots]?.first?.plan.checked, false)
     }
 
+    func testCancelledDuplicateScanProducesNoDeletionCandidates() async throws {
+        let base = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: base) }
+        let files = try ["original.bin", "copy.bin"].map { name in
+            let url = base.appendingPathComponent(name)
+            try Data(repeating: 42, count: 2 * 1024 * 1024).write(to: url)
+            return DownloadItem(url: url, size: 2 * 1024 * 1024, dateAdded: now)
+        }
+        XCTAssertEqual(Checkup.duplicates(files).count, 1)
+        let result = await Task.detached {
+            withUnsafeCurrentTask { $0?.cancel() }
+            return (Checkup.hash(files[0].url), Checkup.duplicates(files).count)
+        }.value
+        XCTAssertNil(result.0)
+        XCTAssertEqual(result.1, 0)
+    }
+
+    func testUnreadableFilesAreNotReportedAsDuplicates() {
+        let base = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let files = ["missing.bin", "also-missing.bin"].map {
+            DownloadItem(url: base.appendingPathComponent($0), size: 128, dateAdded: now)
+        }
+        XCTAssertTrue(Checkup.duplicates(files).isEmpty)
+    }
+
     func testApplyAndUndoRoundTrip() throws {
         let base = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let downloads = base.appendingPathComponent("Downloads")

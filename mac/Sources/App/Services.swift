@@ -23,7 +23,11 @@ final class FolderWatcher {
         source.resume()
     }
 
-    func stop() { source.cancel() }
+    func stop() {
+        pending?.cancel()
+        pending = nil
+        source.cancel()
+    }
 }
 
 /// "‘file.pdf’ → Documents" notifications with Move / Ignore buttons.

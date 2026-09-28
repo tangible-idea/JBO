@@ -31,6 +31,8 @@ final class AppModel {
     var items: [DownloadItem] = []
     var accessDenied = false
     var isScanning = false
+    var isChecking = false
+    var isAnalyzing = false
     var mode: OrganizeMode = .newFolders
     var studioTab: StudioTab = .organize
     var plan: [PlanItem] = []
@@ -46,6 +48,12 @@ final class AppModel {
     private let chromeRoot: URL
     private var watcher: FolderWatcher?
     private var knownURLs = Set<URL>()
+    private var hasScanned = false
+    private var lastScan: Date?
+    private var refreshPending = false
+    private var checkupTask: Task<Void, Never>?
+    private var scanRevision = 0
+    private var planRevision = 0
 
     private init() {
         // Launch arguments let development point the app at a fixture folder
@@ -102,28 +110,59 @@ final class AppModel {
 
     // MARK: scanning
 
+    /// Opening the menu uses the last result. The watcher and explicit refresh
+    /// keep it current; this fallback also works when watching is disabled.
+    func refreshIfNeeded() {
+        guard !isScanning, lastScan.map({ Date().timeIntervalSince($0) < 60 }) != true else { return }
+        refresh()
+    }
+
     func refresh() {
-        guard !isScanning else { return }
+        guard !isScanning else { refreshPending = true; return }
         isScanning = true
+        scanRevision += 1
+        let revision = scanRevision
+        checkupTask?.cancel()
+        isChecking = false
         let folder = downloadsURL
-        let root = rootURL
         Task.detached(priority: .userInitiated) {
             let scanned = Result { try DownloadScanner.scan(folder) }
-            let items = (try? scanned.get()) ?? []
-            let findings = Checkup.run(items, root: root, installedApps: Checkup.installedAppNames())
             await MainActor.run {
                 self.isScanning = false
-                if case .failure(let error as NSError) = scanned {
-                    self.accessDenied = error.code == NSFileReadNoPermissionError || error.domain == NSPOSIXErrorDomain
+                defer {
+                    if self.refreshPending {
+                        self.refreshPending = false
+                        self.refresh()
+                    }
+                }
+                guard case .success(let items) = scanned else {
+                    if case .failure(let error as NSError) = scanned {
+                        self.accessDenied = error.code == NSFileReadNoPermissionError || error.domain == NSPOSIXErrorDomain
+                    }
                     self.items = []
                     self.findings = []
                     return
                 }
                 self.accessDenied = false
+                self.lastScan = Date()
                 self.items = items
-                self.findings = findings
-                if self.knownURLs.isEmpty { self.knownURLs = Set(items.map(\.url)) }
+                self.recordArrivals(items)
                 self.refreshPlanIfShown()
+                self.runCheckup(items, revision: revision)
+            }
+        }
+    }
+
+    private func runCheckup(_ items: [DownloadItem], revision: Int) {
+        let root = rootURL
+        isChecking = true
+        checkupTask = Task.detached(priority: .utility) {
+            let findings = Checkup.run(items, root: root, installedApps: Checkup.installedAppNames())
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                guard self.scanRevision == revision else { return }
+                self.findings = findings
+                self.isChecking = false
             }
         }
     }
@@ -133,15 +172,31 @@ final class AppModel {
     // MARK: organize
 
     func analyze() {
-        plan = Planner.plan(mode, items: items, options: options)
-        planMode = mode
+        planRevision += 1
+        let revision = planRevision
+        let mode = mode
+        let items = items
+        let options = options
+        isAnalyzing = true
+        Task.detached(priority: .userInitiated) {
+            let plan = Planner.plan(mode, items: items, options: options)
+            await MainActor.run {
+                guard self.planRevision == revision else { return }
+                self.isAnalyzing = false
+                guard self.mode == mode else { return }
+                self.plan = plan
+                self.planMode = mode
+            }
+        }
     }
 
     private func refreshPlanIfShown() {
-        if let planMode, planMode == mode { plan = Planner.plan(mode, items: items, options: options) }
+        if let planMode, planMode == mode { analyze() }
     }
 
     func applyPlan() {
+        planRevision += 1
+        isAnalyzing = false
         apply(plan.filter(\.checked))
         plan = []
         planMode = nil
@@ -185,20 +240,22 @@ final class AppModel {
     }
 
     private func downloadsChanged() {
-        let before = knownURLs
         refresh()
-        // Look at arrivals after the scan; partial downloads are skipped until they finish and get renamed.
-        Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(600))
-            let arrivals = self.items.filter { !before.contains($0.url) && !Checkup.partialExtensions.contains($0.ext) }
-            self.knownURLs = Set(self.items.map(\.url))
-            for item in arrivals {
-                let suggestion = Planner.newFolder(item, self.options)
-                self.suggestions.insert(suggestion, at: 0)
-                if self.notifyEnabled { Notifier.shared.post(suggestion, root: self.rootURL) }
-            }
-            self.suggestions = Array(self.suggestions.prefix(8))
+    }
+
+    /// Compare only completed scans, rather than guessing when disk I/O finishes.
+    private func recordArrivals(_ items: [DownloadItem]) {
+        let arrivals = hasScanned && watchEnabled
+            ? items.filter { !knownURLs.contains($0.url) && !Checkup.partialExtensions.contains($0.ext) }
+            : []
+        knownURLs = Set(items.map(\.url))
+        hasScanned = true
+        for item in arrivals {
+            let suggestion = Planner.newFolder(item, options)
+            suggestions.insert(suggestion, at: 0)
+            if notifyEnabled { Notifier.shared.post(suggestion, root: rootURL) }
         }
+        suggestions = Array(suggestions.prefix(8))
     }
 
     func acceptSuggestion(path: String) {

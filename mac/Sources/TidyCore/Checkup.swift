@@ -85,7 +85,12 @@ public enum Checkup {
         let files = items.filter { !$0.isDirectory && $0.size > 0 }
         var result: [(DownloadItem, DownloadItem)] = []
         for (_, sameSize) in Dictionary(grouping: files, by: \.size) where sameSize.count > 1 {
-            let byHash = Dictionary(grouping: sameSize) { hash($0.url) ?? UUID().uuidString }
+            guard !Task.isCancelled else { return [] }
+            var byHash: [String: [DownloadItem]] = [:]
+            for item in sameSize {
+                guard !Task.isCancelled else { return [] }
+                if let digest = hash(item.url) { byHash[digest, default: []].append(item) }
+            }
             for (_, copies) in byHash where copies.count > 1 {
                 let keep = copies.min { rank($0) < rank($1) }!
                 result += copies.filter { $0.url != keep.url }.map { ($0, keep) }
@@ -105,8 +110,14 @@ public enum Checkup {
         guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
         defer { try? handle.close() }
         var hasher = SHA256()
-        while let chunk = try? handle.read(upToCount: 4 * 1024 * 1024), !chunk.isEmpty {
-            hasher.update(data: chunk)
+        do {
+            while true {
+                guard !Task.isCancelled else { return nil }
+                guard let chunk = try handle.read(upToCount: 1024 * 1024), !chunk.isEmpty else { break }
+                hasher.update(data: chunk)
+            }
+        } catch {
+            return nil // A partial read must never count as a matching file.
         }
         return hasher.finalize().map { String(format: "%02x", $0) }.joined()
     }

@@ -1,6 +1,6 @@
 # Tidymark for Mac
 
-Downloads 폴더를 정리하는 메뉴바 앱입니다. Tidymark 확장의 네 가지 정리 방식과 점검을 파일에 그대로 적용합니다. 파일 내용은 읽지 않고, macOS가 이미 기록해 둔 정보만 이 Mac 안에서 씁니다. 파일 이름, 종류, 추가된 날짜, 마지막으로 연 날짜, 받은 사이트 주소(`kMDItemWhereFroms`)입니다.
+Downloads 폴더를 정리하는 메뉴바 앱입니다. Tidymark 확장의 네 가지 정리 방식과 점검을 파일에 그대로 적용합니다. 정리 분류에는 macOS가 이미 기록해 둔 정보만 이 Mac 안에서 씁니다. 중복 점검은 같은 크기의 파일 내용을 읽어 비교합니다. 파일 이름, 종류, 추가된 날짜, 마지막으로 연 날짜, 받은 사이트 주소(`kMDItemWhereFroms`)입니다.
 
 ## 기능
 
@@ -56,3 +56,10 @@ TIDYMARK_FIXTURE_DATES=1 build/Build/Products/Debug/Tidymark.app/Contents/MacOS/
 
 - 지금은 ad-hoc 서명입니다. 다른 Mac에 배포하려면 Developer ID 서명과 공증(notarization)이 필요합니다.
 - 실제 Downloads에서 새 다운로드 알림 흐름(감시 → 알림 → 옮기기)을 직접 한 번 확인해야 합니다.
+
+## 반응 속도
+
+- 메뉴바를 다시 열면 저장된 결과를 먼저 표시합니다. 60초 안에는 열기만으로 재검사하지 않습니다. 폴더 변경 감시와 수동 새로고침은 즉시 갱신을 요청합니다.
+- 파일 목록을 먼저 갱신하고, 중복 파일 점검은 낮은 우선순위의 백그라운드 작업으로 진행합니다. 새 검사가 시작되면 이전 중복 검사는 취소합니다.
+- 정리 예정표 생성도 백그라운드에서 실행합니다. 검사 도중 들어온 폴더 변경은 합쳐서 다음 스캔에 반영합니다.
+- 실제 사용용 최적화 빌드: `xcodebuild -project TidymarkMac.xcodeproj -scheme TidymarkMac -configuration Release -derivedDataPath build build`. 결과는 `build/Build/Products/Release/Tidymark.app`입니다.

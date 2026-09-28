@@ -34,7 +34,7 @@ struct MenuBarView: View {
         .frame(width: 360)
         .onAppear {
             StudioOpener.openWindow = openWindow
-            if model.onboarded { model.refresh() }
+            if model.onboarded { model.refreshIfNeeded() }
         }
     }
 
@@ -50,7 +50,7 @@ struct MenuBarView: View {
                     .foregroundStyle(Theme.muted)
             }
             Spacer()
-            if model.isScanning { ProgressView().controlSize(.small) }
+            if model.isScanning || model.isChecking { ProgressView().controlSize(.small) }
         }
     }
 
@@ -58,7 +58,9 @@ struct MenuBarView: View {
         let count = model.findings.count
         let bytes = model.findings.filter { $0.plan.action == .trash }.reduce(Int64(0)) { $0 + $1.plan.item.size }
         return VStack(alignment: .leading, spacing: 8) {
-            if count == 0 {
+            if count == 0 && (model.isScanning || model.isChecking) {
+                ProgressView().controlSize(.small)
+            } else if count == 0 {
                 Label(L("치울 것이 없어요."), systemImage: "checkmark.circle")
                     .foregroundStyle(Theme.muted)
             } else {

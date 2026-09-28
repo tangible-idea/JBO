@@ -103,14 +103,16 @@ struct OrganizeView: View {
                         Label(L("예정표 만들기"), systemImage: "sparkles").padding(.horizontal, 6)
                     }
                     .buttonStyle(.primaryLarge)
-                    .disabled(model.items.isEmpty || (model.mode == .existingFolders && model.targetFolders.isEmpty))
+                    .disabled(model.isAnalyzing || model.items.isEmpty || (model.mode == .existingFolders && model.targetFolders.isEmpty))
                     Text(L("최근 {0}일 안에 받은 파일은 그대로 둬요.", model.graceDays))
                         .font(.callout)
                         .foregroundStyle(Theme.muted)
                 }
+                if model.isAnalyzing { ProgressView().controlSize(.small) }
                 if model.planMode != nil {
                     PlanList(items: $model.plan, root: model.rootURL,
                              applyTitle: { L("{0}개 옮기기", $0) }) { model.applyPlan() }
+                        .disabled(model.isAnalyzing)
                 }
             }
             .padding(24)
