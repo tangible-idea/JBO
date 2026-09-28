@@ -7,115 +7,227 @@
   <style>
     @page { size: A4 portrait; margin: 0; }
     * { box-sizing: border-box; }
-    :root { --ink: #252824; --muted: #62665e; --accent: #a34b36; --line: #d9d9d0; --tint: #f4f2ec; }
-    body { margin: 0; background: #e8e7e2; color: var(--ink); font-family: Arial, Helvetica, sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .page { width: 210mm; height: 297mm; padding: 14mm 16mm 12mm; margin: 24px auto; background: #fff; display: flex; flex-direction: column; }
-    .masthead { display: flex; justify-content: space-between; align-items: center; padding-bottom: 3mm; border-bottom: 1px solid var(--ink); font-size: 7.5pt; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
-    .masthead span:last-child { color: var(--accent); }
-    header { padding: 7mm 0 6mm; border-bottom: 3px double var(--ink); }
-    .kicker { margin: 0 0 2.5mm; color: var(--accent); font-size: 8pt; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
-    h1 { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 35pt; line-height: 1.14; font-weight: 400; letter-spacing: -.05em; white-space: nowrap; }
-    h1 em { color: var(--accent); font-weight: 400; }
-    .deck { margin: 3mm 0 0; font-family: Georgia, 'Times New Roman', serif; font-size: 14pt; line-height: 1.4; color: var(--muted); }
-    .columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 12mm; padding: 7mm 0 5mm; flex: 1; min-height: 0; }
+    :root { --ink: #252a30; --muted: #626a73; --line: #d5d9de; --tint: #f5f6f7; --diagram: #566877; }
+    body { margin: 0; background: #e9ebed; color: var(--ink); font-family: Arial, Helvetica, sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { width: 210mm; height: 297mm; padding: 17mm 17mm 14mm; margin: 24px auto; background: white; display: flex; flex-direction: column; }
+    header { padding-bottom: 5mm; border-bottom: 1px solid var(--line); }
+    h1 { margin: 0 0 2.5mm; font-size: 24pt; line-height: 1.2; font-weight: 700; }
+    .subtitle { margin: 0; color: var(--muted); font-size: 11pt; }
+    .columns { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 11mm; flex: 1; min-height: 0; padding: 7mm 0 5mm; }
     .column { min-height: 0; }
-    .column + .column { border-left: 1px solid var(--line); padding-left: 6mm; margin-left: -6mm; }
+    .column + .column { border-left: 1px solid var(--line); padding-left: 5.5mm; margin-left: -5.5mm; }
     section { break-inside: avoid; }
-    section + section { margin-top: 6mm; padding-top: 5mm; border-top: 1px solid var(--line); }
-    .label { display: block; margin: 0 0 2.5mm; color: var(--accent); font-size: 7.5pt; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
-    h2 { margin: 0 0 3mm; font-family: Georgia, 'Times New Roman', serif; font-size: 21pt; font-weight: 400; line-height: 1.12; letter-spacing: -.03em; }
-    p { margin: 0 0 3mm; font-size: 10.3pt; line-height: 1.53; }
+    section + section { margin-top: 7mm; padding-top: 5mm; border-top: 1px solid var(--line); }
+    h2 { margin: 0 0 3mm; font-size: 14pt; line-height: 1.3; font-weight: 700; }
+    p { margin: 0 0 3mm; font-size: 11pt; line-height: 1.55; }
     section > p:last-child { margin-bottom: 0; }
-    strong { font-weight: 700; }
-    .lead { font-size: 11pt; line-height: 1.5; }
-    .intro .lead::first-letter { float: left; margin: .2mm 1.5mm 0 0; color: var(--accent); font-family: Georgia, 'Times New Roman', serif; font-size: 35pt; line-height: .95; }
-    .definition h2 { font-size: 24pt; }
-    table { width: 100%; border-collapse: collapse; margin: 4mm 0; font-size: 9.5pt; line-height: 1.45; }
-    th, td { padding: 2.2mm 0; border-top: 1px solid var(--line); text-align: left; vertical-align: top; }
-    tr:last-child th, tr:last-child td { border-bottom: 1px solid var(--line); }
-    th { width: 16mm; color: var(--accent); font-size: 9pt; }
-    td { padding-left: 2mm; }
-    .try { margin-top: 5mm; padding: 4mm; background: var(--tint); border-left: 2px solid var(--accent); }
-    .try .label { margin-bottom: 2mm; }
-    .try p { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 13pt; line-height: 1.4; }
-    .description { margin-bottom: 3mm; color: var(--muted); font-size: 9pt; }
-    .example { margin: 3.5mm 0; padding: 3mm 3.5mm; background: var(--tint); }
-    .example .label { font-size: 7pt; margin-bottom: 1.5mm; }
-    .example p { margin: 0; font-size: 9.5pt; line-height: 1.5; }
-    .benefit { font-size: 9.5pt; color: var(--muted); }
-    .benefit strong { color: var(--ink); }
-    sup { font-size: 6.5pt; }
+    .description { color: var(--muted); font-size: 9.5pt; margin-top: -1mm; }
+    .case-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 3mm; margin-bottom: 4mm; }
+    .case-heading h2 { margin-bottom: 2mm; }
+    .case-heading .description { margin: 0; }
+    .website { width: 22mm; flex-shrink: 0; text-align: center; }
+    .website img { display: block; width: 15mm; height: 15mm; margin: 0 auto; }
+    .website span { display: block; font-size: 7pt; line-height: 1.3; white-space: nowrap; color: var(--muted); }
+    figure { margin: 3mm 0; }
+    
+    .flow { display: grid; grid-template-columns: 1.1fr 13px .65fr 13px 1fr; align-items: center; }
+    .node { border: 1px solid var(--line); padding: 3mm 1.5mm; text-align: center; font-size: 9pt; line-height: 1.4; background: white; }
+    .node b { display: block; font-weight: 700; }
+    .node small { display: block; font-size: 8pt; margin-top: 1mm; color: var(--muted); }
+    .model { background: var(--tint); border-color: #8e9aa5; }
+    .arrow { text-align: center; color: var(--diagram); font-size: 12pt; }
+    figcaption { margin-top: 2mm; color: var(--muted); font-size: 8pt; line-height: 1.4; }
+    .answers { border: 1px solid var(--line); padding: 0 3mm; margin-top: 4mm; }
+    .answer { padding: 3mm 0; }
+    .answer + .answer { border-top: 1px solid var(--line); }
+    .answer-heading { display: flex; justify-content: space-between; gap: 2mm; margin-bottom: 2mm; font-size: 9.5pt; }
+    .answer-heading span { color: var(--muted); font-size: 8pt; }
+    .choices { display: flex; gap: 2mm; align-items: center; }
+    .chip { border: 1px solid var(--line); padding: 1.5mm 2mm; font-size: 8.5pt; color: var(--muted); }
+    .chip.selected { border-color: var(--diagram); background: var(--tint); color: var(--ink); }
+    .meter-label { display: flex; justify-content: space-between; margin-bottom: 1.5mm; font-size: 8.5pt; }
+    .meter { height: 3mm; background: #e6e9ec; }
+    .meter-fill { height: 100%; background: var(--diagram); }
+    .scale { display: flex; justify-content: space-between; margin-top: 1mm; font-size: 7.5pt; color: var(--muted); }
+    .question { margin-top: 5mm; padding-top: 3mm; border-top: 1px solid var(--line); }
+    .question h2 { font-size: 11pt; margin-bottom: 2mm; }
+    .question p { font-size: 10pt; margin-bottom: 0; }
+    .case-flow .node { padding: 2.5mm 1.5mm; }
+    .case-flow { grid-template-columns: 1fr 13px 1fr 13px 1fr; }
+    .example { padding: 2.5mm 3mm; background: var(--tint); margin: 3mm 0; }
+    .example b { display: block; font-size: 9pt; margin-bottom: 2mm; }
+    .example p { margin: 0; font-size: 10pt; line-height: 1.5; }
+    .benefit { font-size: 10pt; }
+    footer { display: flex; align-items: flex-end; justify-content: space-between; gap: 4mm; padding-top: 3mm; border-top: 1px solid var(--line); color: var(--muted); font-size: 7.5pt; line-height: 1.5; }
     a { color: inherit; text-decoration: none; }
-    footer { display: flex; justify-content: space-between; align-items: flex-end; gap: 5mm; padding-top: 3mm; border-top: 1px solid var(--ink); color: var(--muted); font-size: 7pt; line-height: 1.5; }
-    .folio { text-align: right; white-space: nowrap; font-size: 7pt; letter-spacing: .09em; }
-    .folio b { display: block; color: var(--accent); font-family: Georgia, 'Times New Roman', serif; font-size: 17pt; font-weight: 400; letter-spacing: 0; }
-    @media print { body { background: #fff; } .page { margin: 0; } }
+    sup { font-size: 7pt; }
+    .page:not(:last-child) { break-after: page; }
+    .front .node { padding-top: 4mm; padding-bottom: 4mm; }
+    .front .answers { margin-top: 6mm; }
+    .front .answer { padding: 4mm 0; }
+    .front figcaption { font-size: 8.5pt; }
+    .steps { margin: 0; padding-left: 5mm; font-size: 11pt; line-height: 1.55; }
+    .steps li + li { margin-top: 2mm; }
+    .back-content { flex: 1; min-height: 0; padding: 7mm 0 5mm; display: flex; flex-direction: column; }
+    .back .columns { flex: 0; padding: 0; }
+    .back .node { padding-top: 4mm; padding-bottom: 4mm; }
+    .back .example { margin: 5mm 0; padding: 4mm; }
+    .back .example p { font-size: 10.5pt; }
+    .back .benefit { font-size: 10.5pt; }
+    .case-question { margin-top: 5mm; padding-top: 3mm; border-top: 1px solid var(--line); }
+    .case-question p { font-size: 10.5pt; }
+    .share { margin-top: auto; padding: 5mm 0 0; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 8mm; }
+    .share h2 { margin-bottom: 2mm; }
+    .share p { margin-bottom: 0; max-width: 125mm; }
+    .share-link { flex-shrink: 0; width: 39mm; text-align: center; }
+    .share-link img { display: block; width: 25mm; height: 25mm; margin: 0 auto 1mm; }
+    .share-link span { font-size: 8pt; color: var(--muted); white-space: nowrap; }
+    @media print { body { background: white; } .page { margin: 0; } }
     @media screen and (max-width: 800px) { .page { margin: 0; } }
   </style>
 </head>
 <body>
-  <main class="page">
-    <div class="masthead"><span>Pow Mingle / Ideas into practice</span><span>Field notes · Issue 11</span></div>
+  <main class="page front" aria-label="Front: introduction and JEV overview">
     <header>
-      <p class="kicker">This month’s technology</p>
-      <h1>Pow Mingle #11: <em>JEV</em></h1>
-      <p class="deck">Small decisions. Useful ideas. AI in everyday tools.</p>
+      <h1>Pow Mingle #11: JEV</h1>
+      <p class="subtitle">A shared meal, a new technology, and something to try</p>
     </header>
     <div class="columns">
-      <div class="column">
-        <section class="intro">
-          <span class="label">The gathering</span>
-          <h2>For curious people.</h2>
-          <p class="lead">Our group is open to everyone interested in making interesting things, whether or not you work in tech.</p>
-          <p>AI tools and insights arrive every day. Pow Mingle makes time each month to explore one new AI technology and try it on <strong>our own ideas</strong>.</p>
-          <p>Bring an everyday frustration or something you want to make. This month, we explore JEV through two projects.</p>
+      <div class="column"><section>
+          <h2>About Pow Mingle</h2>
+          <p>Our group is open to everyone interested in making interesting things, whether or not you work in tech.</p>
+          <p>AI tools and insights arrive every day. It can be hard to find time to understand them, let alone try them. Each month, we explore one new AI technology and apply it to our own ideas.</p>
+          <p>Bring your curiosity, an everyday frustration, or something you want to make. You do not need a technical background or a finished project.</p>
         </section>
-        <section class="definition">
-          <span class="label">The technology</span>
-          <h2>What is JEV?</h2>
-          <p>JEV is an AI model from TypeSafe that <strong>understands text and makes focused decisions</strong>. Give it information and a question; it returns a choice, a score, or a yes/no probability. An app uses those answers to take the next step.<sup><a href="https://docs.typesafe.ai/concepts/system-one">1</a></sup></p>
-          <table aria-label="Three kinds of questions JEV can answer">
-            <tr><th>Choose</th><td>Which folder fits this page?</td></tr>
-            <tr><th>Check</th><td>Does this entry describe work experience?</td></tr>
-            <tr><th>Rate</th><td>How closely does this experience match the role?</td></tr>
-          </table>
-          <p>The idea: <strong>break a bigger task into small, clear questions</strong>, then combine the answers. Probabilities help flag uncertain decisions.<sup><a href="https://docs.typesafe.ai/primitives">2</a></sup></p>
+        <section>
+          <h2>Why meet at a restaurant?</h2>
+          <p>Sharing a meal gives us a relaxed way to meet. Conversation can begin with what we do, what interests us, or what we are trying to figure out.</p>
+          <p>A restaurant makes room for people with different backgrounds to talk at the same table. We can ask basic questions, exchange unfinished ideas, and learn from one another over food.</p>
+          <p>The setting is part of the idea: make it easier to join the conversation, get to know someone, and find something worth trying together.</p>
         </section>
-        <aside class="try">
-          <span class="label">Try it on your idea</span>
-          <p>What do you repeatedly choose, check, or compare? Turn one of those tasks into a question.</p>
-        </aside>
-      </div>
-      <div class="column">
-        <section class="case">
-          <span class="label">01 / Tidymark</span>
-          <h2>A place for<br>every bookmark.</h2>
-          <p class="description">A helper for organizing saved webpages</p>
-          <p>Tidymark gives JEV a page’s <strong>title, URL, and description</strong> and asks which existing bookmark folder fits best.</p>
-          <p>It also sorts accumulated bookmarks in batches, flagging uncertain items for review.</p>
-          <div class="example">
-            <span class="label">In practice</span>
-            <p>“Kyoto café guide”<br>→ Suggest “Travel / Japan”<br>→ Confirm and save</p>
-          </div>
-          <p class="benefit"><strong>The benefit:</strong> Less time choosing folders; saved links become easier to find.</p>
-        </section>
-        <section class="case">
-          <span class="label">02 / ResumeDot</span>
-          <h2>A clearer view<br>of each résumé.</h2>
-          <p class="description">A helper for organizing and comparing résumés</p>
-          <p>ResumeDot uses JEV to select <strong>names, contact details, employers, and roles</strong>, and distinguish work experience from education.</p>
-          <p>It rates experience, skills, qualifications, and overall fit against a job description. The app combines these ratings into a <strong>weighted score out of 100</strong>.</p>
-          <div class="example">
-            <span class="label">In practice</span>
-            <p>“Customer support experience required”<br>→ Assess relevant résumé evidence<br>→ Show individual and overall scores</p>
-          </div>
-          <p class="benefit"><strong>The benefit:</strong> Compare résumés using consistent criteria and spot areas to explore further.</p>
-        </section>
-      </div>
+        <section>
+          <h2>What to try tonight</h2>
+          <ol class="steps">
+            <li>Get to know the people at your table.</li>
+            <li>Explore JEV and the two examples.</li>
+            <li>Find one decision in your idea that AI could help with.</li>
+          </ol>
+        </section></div>
+      <div class="column"><section>
+          <h2>How JEV works</h2>
+          <p>JEV is an AI model from TypeSafe. It understands text and answers focused questions with choices, probabilities, or scores that an app can use.<sup><a href="https://docs.typesafe.ai/concepts/system-one">1</a></sup></p>
+          <figure aria-label="Information and a question go to JEV, which returns an answer for the app to use">
+            <div class="flow">
+              <div class="node"><b>Input</b><small>Text + question</small></div>
+              <span class="arrow">→</span>
+              <div class="node model"><b>JEV</b><small>Judges</small></div>
+              <span class="arrow">→</span>
+              <div class="node"><b>Answer</b><small>App uses it</small></div>
+            </div>
+            <figcaption>Ask a small question. Use the answer in your app.</figcaption>
+          </figure>
+          <figure aria-label="Examples of JEV's three answer types: a selected folder, a yes probability, and a match score">
+            <div class="answers">
+              <div class="answer">
+                <div class="answer-heading"><b>Choose a folder</b><span>Choice</span></div>
+                <div class="choices"><span class="chip selected">✓ Travel / Japan</span><span class="chip">Work</span></div>
+              </div>
+              <div class="answer">
+                <div class="answer-heading"><b>Check a condition</b><span>Yes/no</span></div>
+                <div class="meter-label"><span>Is this work experience?</span><b>Yes: 90%</b></div>
+                <div class="meter" role="img" aria-label="Illustrative yes probability of 90 percent"><div class="meter-fill" style="width:90%"></div></div>
+              </div>
+              <div class="answer">
+                <div class="answer-heading"><b>Rate a match</b><span>Score</span></div>
+                <div class="meter-label"><span>Experience vs. job requirements</span><b>3.2 / 4</b></div>
+                <div class="meter" role="img" aria-label="Illustrative match score of 3.2 on a zero to four scale"><div class="meter-fill" style="width:80%"></div></div>
+                <div class="scale"><span>Low match</span><span>High match</span></div>
+              </div>
+            </div>
+            <figcaption>Illustrative answers. You set the choices and rating scale.<sup><a href="https://docs.typesafe.ai/primitives">2</a></sup></figcaption>
+          </figure>
+          <p>You define the question and possible answers. The app combines small judgments into a useful workflow; probabilities help flag uncertainty.</p>
+        <p>On the back, see how the same idea helps organize bookmarks and compare résumés.</p>
+        </section><aside class="question">
+          <h2>Start with one question</h2>
+          <p>“Which one fits?”, “Does this count?”, or “How well does it match?”</p>
+        </aside></div>
     </div>
     <footer>
-      <div>Sources: <a href="https://docs.typesafe.ai/concepts/system-one">¹ TypeSafe / System One</a>; <a href="https://docs.typesafe.ai/primitives">² Primitives</a> · docs.typesafe.ai<br>Cases reflect the current project code. Scenarios are illustrative.</div>
-      <div class="folio">POW MINGLE<b>01</b></div>
+      <div>Sources: <a href="https://docs.typesafe.ai/concepts/system-one">¹ TypeSafe / System One</a>; <a href="https://docs.typesafe.ai/primitives">² Primitives</a> · docs.typesafe.ai<br>Diagram values are illustrative.</div>
+      <span>1 / 2</span>
+    </footer>
+  </main>
+  <main class="page back" aria-label="Back: two projects and a sharing invitation">
+    <header>
+      <h1>JEV in practice</h1>
+      <p class="subtitle">Pow Mingle #11 · Two projects using small AI decisions</p>
+    </header>
+    <div class="back-content">
+      <div class="columns">
+        <div class="column"><section>
+          <div class="case-heading">
+            <div><h2>1. Tidymark</h2><p class="description">Organizing bookmarks</p></div>
+            <a class="website" href="http://tidy.tmtt.link/" aria-label="Visit the Tidymark website">
+              <img src="assets/pow-mingle-11-jev/tidymark-qr.svg" alt="QR code for http://tidy.tmtt.link/">
+              <span>tidy.tmtt.link</span>
+            </a>
+          </div>
+          <p>Tidymark gives JEV a page’s title, URL, and description, and asks which existing bookmark folder fits best.</p>
+          <figure aria-label="A webpage is classified by JEV into a recommended bookmark folder">
+            <div class="flow case-flow">
+              <div class="node">Page</div><span class="arrow">→</span>
+              <div class="node model">JEV chooses</div><span class="arrow">→</span>
+              <div class="node">Folder</div>
+            </div>
+          </figure>
+          <p>It also sorts accumulated bookmarks in batches, flagging uncertain items for review.</p>
+          <div class="example">
+            <b>Example</b>
+            <p>“Kyoto cafés” → “Travel / Japan”<br>Confirm the suggestion and save.</p>
+          </div>
+          <p class="benefit"><b>Why it helps:</b> Less time choosing folders, and saved links become easier to find.</p>
+        <aside class="case-question"><p><b>The small question:</b><br>Which existing folder is the best fit for this page?</p></aside>
+        </section></div>
+        <div class="column"><section>
+          <div class="case-heading">
+            <div><h2>2. ResumeDot</h2><p class="description">Organizing and comparing résumés</p></div>
+            <a class="website" href="http://resumedot.com/" aria-label="Visit the ResumeDot website">
+              <img src="assets/pow-mingle-11-jev/resumedot-qr.svg" alt="QR code for http://resumedot.com/">
+              <span>resumedot.com</span>
+            </a>
+          </div>
+          <p>JEV helps select names, contact details, employers, and roles, and separate work experience from education.</p>
+          <figure aria-label="A résumé and job description are rated by JEV, and the app combines the ratings">
+            <div class="flow case-flow">
+              <div class="node">Résumé<br>+ job</div><span class="arrow">→</span>
+              <div class="node model">JEV rates</div><span class="arrow">→</span>
+              <div class="node">App combines</div>
+            </div>
+          </figure>
+          <p>The app combines JEV’s ratings for experience, skills, qualifications, and overall fit into a weighted score out of 100.</p>
+          <div class="example">
+            <b>Example</b>
+            <p>A customer support role<br>→ Compare résumé evidence and scores</p>
+          </div>
+          <p class="benefit"><b>Why it helps:</b> Compare résumés using consistent criteria and find areas to explore further.</p>
+        <aside class="case-question"><p><b>The small questions:</b><br>Is this work experience? How well does the evidence match the role?</p></aside>
+        </section></div>
+      </div>
+      <aside class="share">
+        <div>
+          <h2>Made something? Show it off.</h2>
+          <p>Share your project, prototype, or experiment with the group. It can be a work in progress, and it does not have to use JEV. Tell us what you made and what you learned.</p>
+        </div>
+        <a class="share-link" href="https://thepowapp.com/thread" aria-label="Share what you made on Pow">
+          <img src="assets/pow-mingle-11-jev/pow-thread-qr.svg" alt="QR code for https://thepowapp.com/thread">
+          <span>thepowapp.com/thread</span>
+        </a>
+      </aside>
+    </div>
+    <footer>
+      <div>Cases reflect the current Tidymark and ResumeDot project code.<br>Example scenarios are illustrative.</div>
+      <span>2 / 2</span>
     </footer>
   </main>
 </body>
