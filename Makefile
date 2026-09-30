@@ -1,7 +1,12 @@
 SHELL := /bin/zsh
 .DEFAULT_GOAL := run
 
-.PHONY: help setup install guard-key verify test check run dev stop restart status chrome doctor clean package cws-status release site site-build deploy-api
+.PHONY: help setup install guard-key verify test check run dev stop restart status mac ios android chrome chrome-open doctor clean package cws-status release site site-build deploy-api
+
+MAC_CONFIG ?= Release
+MAC_APP := mac/build/Build/Products/$(MAC_CONFIG)/Tidymark.app
+# 연결된 기기 중 첫 번째를 고릅니다. 실제 기기를 에뮬레이터보다 먼저 씁니다. DEVICE=<id>로 직접 지정할 수 있습니다.
+find-device = $(or $(DEVICE),$(shell cd mobile && flutter devices --machine 2>/dev/null | node -e 'const d=JSON.parse(require("fs").readFileSync(0,"utf8")).filter(x=>x.targetPlatform.startsWith("$(1)")).sort((a,b)=>a.emulator-b.emulator); process.stdout.write(d[0]?d[0].id:"")' 2>/dev/null))
 
 help: ## 사용 가능한 명령을 표시합니다.
 	@awk 'BEGIN {FS = ":.*## "; print "Tidymark\n"} /^[a-zA-Z_-]+:.*## / {printf "  make %-10s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -36,8 +41,7 @@ check: install ## JavaScript와 manifest 문법을 검사합니다.
 	@node -e 'JSON.parse(require("fs").readFileSync("extension/manifest.json")); console.log("manifest: valid JSON")'
 
 run: install guard-key verify ## 모두 준비한 뒤 백엔드를 실행합니다. 기본 make 명령입니다.
-	@echo "백엔드를 http://127.0.0.1:8787 에서 시작합니다…"
-	@set -a; source .env; set +a; exec npm start
+	@set -a; source .env; set +a; echo "백엔드를 $${HOST:-127.0.0.1}:$${PORT:-8787} 에서 시작합니다…"; exec npm start
 
 dev: install guard-key ## 파일 변경 감시 모드로 백엔드를 실행합니다.
 	@set -a; source .env; set +a; exec npm run dev
@@ -70,7 +74,29 @@ status: ## 실행 중인 백엔드와 API 키 반영 상태를 확인합니다.
 		exit 1; \
 	fi
 
-chrome: ## Chrome 확장 관리 화면과 로드할 폴더를 엽니다.
+mac: ## 맥 앱을 빌드하고 실행합니다. 실행 중인 앱은 먼저 종료합니다.
+	@cd mac && xcodegen generate --quiet
+	@echo "맥 앱을 빌드합니다… ($(MAC_CONFIG))"
+	@cd mac && xcodebuild -project TidymarkMac.xcodeproj -scheme TidymarkMac -configuration $(MAC_CONFIG) -derivedDataPath build -quiet build
+	@pkill -x Tidymark 2>/dev/null || true
+	@open $(MAC_APP)
+	@echo "실행했습니다: $(MAC_APP)"
+
+ios: ## 연결된 iOS 기기에 릴리스 빌드를 설치합니다.
+	@device="$(call find-device,ios)"; \
+	if [[ -z "$$device" ]]; then echo "오류: 연결된 iOS 기기가 없습니다. flutter devices로 확인하세요."; exit 1; fi; \
+	echo "iOS 기기 $$device 에 설치합니다…"; \
+	cd mobile && flutter pub get && flutter build ios --release && flutter install --release -d "$$device"
+
+android: ## 연결된 Android 기기에 릴리스 빌드를 설치합니다.
+	@device="$(call find-device,android)"; \
+	if [[ -z "$$device" ]]; then echo "오류: 연결된 Android 기기가 없습니다. flutter devices로 확인하세요."; exit 1; fi; \
+	echo "Android 기기 $$device 에 설치합니다…"; \
+	cd mobile && flutter pub get && flutter build apk --release && flutter install --release -d "$$device"
+
+chrome: package ## Chrome 확장 프로그램 zip을 dist/에 만듭니다.
+
+chrome-open: ## Chrome 확장 관리 화면과 로드할 폴더를 엽니다.
 	@if [[ "$$(uname -s)" == "Darwin" ]]; then \
 		open -a "Google Chrome" "chrome://extensions"; \
 		open extension; \

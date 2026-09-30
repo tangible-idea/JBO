@@ -400,6 +400,16 @@
           </div>
           <p id="settings-status" class="status left" role="status"></p>
         </section>
+        <section class="panel">
+          <h2>모바일 앱 연결</h2>
+          <p class="panel-note">맥에서 개인 서버를 실행할 때 모바일 앱과 같은 주소·연결 토큰을 입력하세요. 모바일에서 저장한 링크가 이 Chrome에 추가됩니다.</p>
+          <label class="section-label" for="mobile-endpoint">개인 서버 주소</label>
+          <input id="mobile-endpoint" class="text-input" type="url" placeholder="http://192.168.1.10:8787" spellcheck="false" />
+          <label class="section-label" for="mobile-token">연결 토큰</label>
+          <input id="mobile-token" class="text-input" type="password" autocomplete="off" />
+          <button id="save-mobile" class="action-button" type="button">모바일 연결 저장</button>
+          <p id="mobile-status" class="status left" role="status"></p>
+        </section>
       </section>
     </main>
 

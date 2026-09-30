@@ -23,6 +23,7 @@ import {
   translateFolderStructure,
 } from "./profile.mjs";
 import { nameProjects, normalizeProjectsRequest } from "./projects.mjs";
+import { authorizedMobile, chromeCatalog, fileCatalog, queueBookmark, pendingBookmarks, acknowledgeBookmark } from "./mobile.mjs";
 
 // Load .env so `npm start` works without `make`. Variables already set in the
 // shell take precedence over the file.
@@ -57,7 +58,7 @@ function setCorsHeaders(request, response) {
     response.setHeader("Access-Control-Allow-Origin", origin);
     response.setHeader("Vary", "Origin");
   }
-  response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
 }
 
@@ -116,6 +117,13 @@ const server = createServer(async (request, response) => {
   }
 
   const url = new URL(request.url || "/", `http://${request.headers.host || "localhost"}`);
+  // Binding the personal server to Wi-Fi must not expose the older unauthenticated APIs.
+  const peer = request.socket.remoteAddress || "";
+  const localPeer = peer === "127.0.0.1" || peer === "::1" || peer === "::ffff:127.0.0.1";
+  if (process.env.MOBILE_TOKEN && !isPublic && !localPeer && !url.pathname.startsWith("/api/mobile/")) {
+    sendJson(response, 403, { error: "이 경로는 맥에서만 사용할 수 있습니다." });
+    return;
+  }
   if (url.pathname.startsWith("/api/") && !rateLimiter.allow(clientIp(request))) {
     sendJson(response, 429, { error: translate(requestLanguage(request), "요청이 너무 많습니다. 잠시 후 다시 시도하세요.") });
     return;
@@ -127,6 +135,67 @@ const server = createServer(async (request, response) => {
       poeConfigured: Boolean(process.env.POE_API_KEY),
       poeModel: poeModel(),
     });
+    return;
+  }
+
+  if (url.pathname.startsWith("/api/mobile/")) {
+    if (!authorizedMobile(request)) {
+      sendJson(response, 401, { error: "모바일 연결 토큰을 확인하세요." });
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/mobile/folders") {
+      await handle(response, "폴더를 읽지 못했습니다.", async () => ({ folders: (await chromeCatalog()).folders.filter((f) => f.profile === "Default") }));
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/mobile/search") {
+      await handle(response, "검색하지 못했습니다.", async () => {
+        const query = (url.searchParams.get("q") || "").trim().toLocaleLowerCase().slice(0, 200);
+        const [{ bookmarks }, files] = await Promise.all([chromeCatalog(), fileCatalog()]);
+        const matches = (items) => items.filter((item) =>
+          !query || [item.title, item.url, item.path, item.collection].some((value) => String(value || "").toLocaleLowerCase().includes(query))
+        );
+        const foundBookmarks = matches(bookmarks);
+        const foundFiles = matches(files);
+        return { results: [...foundBookmarks.slice(0, 50), ...foundFiles.slice(0, 50)], total: foundBookmarks.length + foundFiles.length };
+      });
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/mobile/classify") {
+      await handle(response, "추천하지 못했습니다.", async () => {
+        const body = await readJson(request);
+        const folders = (await chromeCatalog()).folders.filter((f) => f.profile === "Default");
+        const pageUrl = String(body.page?.url || "");
+        const metadata = await cachedMetadataFetch(pageUrl);
+        const page = {
+          url: pageUrl,
+          title: body.page?.title || metadata.pageTitle || "",
+          description: metadata.description || "",
+        };
+        const result = await classifyBookmark(getClient(), { page, folders }, { model: process.env.TYPESAFE_MODEL?.trim() || undefined });
+        return { ...result, pageTitle: metadata.pageTitle || "" };
+      });
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/mobile/saves") {
+      await handle(response, "저장 요청을 만들지 못했습니다.", async () => {
+        const body = await readJson(request);
+        if (!body.title && typeof body.url === "string") {
+          body.title = (await cachedMetadataFetch(body.url)).pageTitle || body.url;
+        }
+        return { item: await queueBookmark(body) };
+      });
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/mobile/saves") {
+      await handle(response, "저장 요청을 읽지 못했습니다.", async () => ({ items: await pendingBookmarks() }));
+      return;
+    }
+    const match = /^\/api\/mobile\/saves\/([\w-]+)\/ack$/.exec(url.pathname);
+    if (request.method === "POST" && match) {
+      await handle(response, "저장 상태를 바꾸지 못했습니다.", async () => ({ saved: await acknowledgeBookmark(match[1]) }));
+      return;
+    }
+    sendJson(response, 404, { error: "Not found" });
     return;
   }
 

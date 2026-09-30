@@ -1924,6 +1924,9 @@ async function migrateLegacyRootName() {
 
 async function initialize() {
   settings = { ...DEFAULT_SETTINGS, ...(await chrome.storage.sync.get(DEFAULT_SETTINGS)) };
+  const mobile = await chrome.storage.local.get(["mobileEndpoint", "mobileToken"]);
+  $("#mobile-endpoint").value = mobile.mobileEndpoint || "";
+  $("#mobile-token").value = mobile.mobileToken || "";
   await migrateLegacyRootName();
   el.endpoint.value = settings.endpoint;
   el.autoClassify.checked = settings.autoClassify;
@@ -2143,6 +2146,21 @@ el.endpoint.addEventListener("keydown", (event) => {
   if (event.key === "Enter") saveEndpoint();
 });
 $("#save-endpoint").addEventListener("click", saveEndpoint);
+$("#save-mobile").addEventListener("click", async () => {
+  try {
+    const endpoint = normalizeEndpoint($("#mobile-endpoint").value.trim());
+    const token = $("#mobile-token").value.trim();
+    if (token.length < 24) throw new Error("연결 토큰은 24자 이상이어야 합니다.");
+    if (!(await ensureOriginPermission(endpoint))) throw new Error("서버 접근 권한이 필요합니다.");
+    const response = await fetch(`${endpoint}/api/mobile/folders`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!response.ok) throw new Error("서버 주소 또는 연결 토큰을 확인하세요.");
+    await chrome.storage.local.set({ mobileEndpoint: endpoint, mobileToken: token });
+    chrome.runtime.sendMessage({ type: "process-mobile-saves" });
+    setStatus($("#mobile-status"), "모바일 앱과 연결됐어요.", "success");
+  } catch (error) {
+    setStatus($("#mobile-status"), error.message, "error");
+  }
+});
 el.autoClassify.addEventListener("change", saveBehavior);
 el.autoSave.addEventListener("change", saveBehavior);
 el.threshold.addEventListener("input", renderThreshold);
