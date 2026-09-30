@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pow Mingle #11: JEV</title>
+  <title>Pow Mingle #11: JEV(Decisions API)</title>
   <style>
     @page { size: A4 portrait; margin: 0; }
     * { box-sizing: border-box; }
@@ -39,6 +39,7 @@
     figcaption { margin-top: 2mm; color: var(--muted); font-size: 8pt; line-height: 1.4; }
     .answers { border: 1px solid var(--line); padding: 0 3mm; margin-top: 4mm; }
     .answer { padding: 3mm 0; }
+    .chart-img { display: block; width: 100%; height: auto; }
     .answer + .answer { border-top: 1px solid var(--line); }
     .answer-heading { display: flex; justify-content: space-between; gap: 2mm; margin-bottom: 2mm; font-size: 9.5pt; }
     .answer-heading span { color: var(--muted); font-size: 8pt; }
@@ -67,7 +68,8 @@
     .steps li + li { margin-top: 2mm; }
     .limits { margin: 0; padding-left: 4.5mm; font-size: 9.5pt; line-height: 1.4; }
     .limits li + li { margin-top: 1mm; }
-    .front .column section.not-fit { margin-top: 4.5mm; padding-top: 4mm; }
+    .front .column section.not-fit { margin-top: 3mm; padding-top: 3mm; }
+    .front figure { margin: 2mm 0; }
     .not-fit h2 { font-size: 12pt; margin-bottom: 2mm; }
     .back-content { flex: 1; min-height: 0; padding: 6mm 0 4mm; display: flex; flex-direction: column; }
     .back .columns { flex: none; padding: 0; }
@@ -130,7 +132,7 @@
 <body>
   <main class="page front" aria-label="Front: introduction and JEV overview">
     <header>
-      <h1>Pow Mingle #11: JEV</h1>
+      <h1>Pow Mingle #11: JEV(Decisions API)</h1>
       <p class="subtitle">A shared meal, a new technology, and something to try</p>
     </header>
     <div class="columns">
@@ -143,7 +145,6 @@
         <section>
           <h2>Why meet at a restaurant?</h2>
           <p>Sharing a meal gives us a relaxed way to meet. Conversation can begin with what we do, what interests us, or what we are trying to figure out.</p>
-          <p>A restaurant makes room for people with different backgrounds to talk at the same table. We can ask basic questions, exchange unfinished ideas, and learn from one another over food.</p>
           <p>The setting is part of the idea: make it easier to join the conversation, get to know someone, and find something worth trying together.</p>
         </section>
         <section>
@@ -170,8 +171,7 @@
           <figure aria-label="Examples of JEV's three answer types: a selected folder, a yes probability, and a match score">
             <div class="answers">
               <div class="answer">
-                <div class="answer-heading"><b>Choose a folder</b><span>Choice</span></div>
-                <div class="choices"><span class="chip selected">✓ Travel / Japan</span><span class="chip">Work</span></div>
+                <img class="chart-img" src="assets/pow-mingle-11-jev/accuracy-vs-cost.png" alt="Average of 4 workflows, accuracy vs cost: JEV sits at about 68% accuracy at the lowest cost">
               </div>
               <div class="answer">
                 <div class="answer-heading"><b>Check a condition</b><span>Yes/no</span></div>
@@ -188,7 +188,6 @@
             <figcaption>Illustrative answers. You set the choices and rating scale.<sup><a href="https://docs.typesafe.ai/primitives">2</a></sup></figcaption>
           </figure>
           <p>You define the question and possible answers. The app combines small judgments into a useful workflow; probabilities help flag uncertainty.</p>
-        <p>On the back, see how the same idea helps organize bookmarks and compare resumes.</p>
         </section>
         <section class="not-fit">
           <h2>When JEV is not a good fit</h2>
@@ -208,7 +207,7 @@
   </main>
   <main class="page back" aria-label="Back: two projects and a sharing invitation">
     <header>
-      <h1>JEV in practice</h1>
+      <h1>JEV(Decisions API) in practice</h1>
       <p class="subtitle">Pow Mingle #11 · Two projects using small AI decisions</p>
     </header>
     <div class="back-content">
