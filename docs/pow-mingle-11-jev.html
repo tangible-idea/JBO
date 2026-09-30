@@ -59,12 +59,16 @@
     a { color: inherit; text-decoration: none; }
     sup { font-size: 7pt; }
     .page:not(:last-child) { break-after: page; }
-    .front .node { padding-top: 4mm; padding-bottom: 4mm; }
-    .front .answers { margin-top: 6mm; }
-    .front .answer { padding: 4mm 0; }
+    .front .node { padding-top: 2.5mm; padding-bottom: 2.5mm; }
+    .front .answers { margin-top: 3mm; }
+    .front .answer { padding: 2.5mm 0; }
     .front figcaption { font-size: 8.5pt; }
     .steps { margin: 0; padding-left: 5mm; font-size: 11pt; line-height: 1.55; }
     .steps li + li { margin-top: 2mm; }
+    .limits { margin: 0; padding-left: 4.5mm; font-size: 9.5pt; line-height: 1.4; }
+    .limits li + li { margin-top: 1mm; }
+    .front .column section.not-fit { margin-top: 4.5mm; padding-top: 4mm; }
+    .not-fit h2 { font-size: 12pt; margin-bottom: 2mm; }
     .back-content { flex: 1; min-height: 0; padding: 6mm 0 4mm; display: flex; flex-direction: column; }
     .back .columns { flex: none; padding: 0; }
     .back .node { padding-top: 4mm; padding-bottom: 4mm; }
@@ -185,6 +189,16 @@
           </figure>
           <p>You define the question and possible answers. The app combines small judgments into a useful workflow; probabilities help flag uncertainty.</p>
         <p>On the back, see how the same idea helps organize bookmarks and compare resumes.</p>
+        </section>
+        <section class="not-fit">
+          <h2>When JEV is not a good fit</h2>
+          <ul class="limits">
+            <li>Writing replies or code, or explaining itself<sup><a href="https://docs.typesafe.ai/concepts/system-one">1</a></sup></li>
+            <li>Images, audio, or video (text only, for now)<sup><a href="https://docs.typesafe.ai/concepts/system-one">1</a></sup></li>
+            <li>Open-ended questions with no set answers</li>
+            <li>Exact rules, math, or lookups (use plain code)</li>
+            <li>High-stakes calls with no human review</li>
+          </ul>
         </section></div>
     </div>
     <footer>
@@ -248,7 +262,7 @@
             </div>
             <figcaption>The app weights JEV’s four ratings into one score. Scores shown are illustrative.</figcaption>
           </figure>
-          <p class="benefit"><b>Why it helps:</b> Compare resumes using consistent criteria and find areas to explore further.</p>
+          <p class="benefit"><b>Why it helps:</b> It is fast. 100 resumes are scored and ranked in seconds.</p>
         </section></div>
       </div>
       <section class="bench" aria-label="Measured time and cost of JEV compared with GPT-4o-mini on 100 resumes">
