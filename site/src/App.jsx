@@ -1,13 +1,20 @@
 import { useEffect, useRef, useState } from "react";
+import { track } from "./analytics.js";
 import Logo from "./components/Logo.jsx";
 import PopupDemo from "./components/PopupDemo.jsx";
 import { PRIVACY_UPDATED, STORE_URL, buckets, checks, movePlan, privacy, savePoints, ways } from "./content.jsx";
 
 const maxBucket = Math.max(...buckets.map((b) => b.count));
 
-function StoreButton({ className = "btn" }) {
+function StoreButton({ className = "btn", placement }) {
   return (
-    <a className={className} href={STORE_URL} target="_blank" rel="noopener">
+    <a
+      className={className}
+      href={STORE_URL}
+      target="_blank"
+      rel="noopener"
+      onClick={() => track("add_to_chrome_click", { placement })}
+    >
       Add to Chrome
     </a>
   );
@@ -27,7 +34,7 @@ function Header() {
           <a href="#checkup">Checkup</a>
           <a href="./privacypolicy/">Privacy</a>
         </nav>
-        <StoreButton />
+        <StoreButton placement="header" />
       </div>
     </header>
   );
@@ -47,7 +54,7 @@ function Hero() {
           or sort years of loose bookmarks in one pass.
         </p>
         <div className="cta">
-          <StoreButton />
+          <StoreButton placement="hero" />
           <a className="btn ghost" href="#tidy">
             See the four ways to tidy
           </a>
