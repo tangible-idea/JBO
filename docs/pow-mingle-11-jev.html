@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pow Mingle #11: JEV(Decisions API)</title>
+  <title>Pow Mingle #11: JEV(Decision Model)</title>
   <style>
     @page { size: A4 portrait; margin: 0; }
     * { box-sizing: border-box; }
@@ -15,7 +15,7 @@
     .details-link { flex-shrink: 0; width: 22mm; text-align: center; }
     .details-link img { display: block; width: 15mm; height: 15mm; margin: 0 auto; }
     .details-link span { display: block; font-size: 7pt; line-height: 1.3; color: var(--muted); white-space: nowrap; }
-    h1 { margin: 0 0 2.5mm; font-size: 24pt; line-height: 1.2; font-weight: 700; }
+    h1 { margin: 0 0 2.5mm; font-size: 21pt; line-height: 1.2; font-weight: 700; }
     .subtitle { margin: 0; color: var(--muted); font-size: 11pt; }
     .columns { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 11mm; flex: 1; min-height: 0; padding: 7mm 0 5mm; }
     .column { min-height: 0; }
@@ -44,6 +44,13 @@
     .answers { border: 1px solid var(--line); padding: 0 3mm; margin-top: 4mm; }
     .answer { padding: 3mm 0; }
     .chart-img { display: block; width: 100%; height: auto; }
+    .lead { font-size: 11pt; }
+    .lead b { color: var(--ink); }
+    .who { list-style: none; margin: 0 0 3mm; padding: 0; }
+    .who li { display: flex; gap: 2.5mm; align-items: flex-start; padding: 1.8mm 0; font-size: 9.5pt; line-height: 1.4; color: var(--muted); }
+    .who li + li { border-top: 1px solid var(--line); }
+    .who b { display: block; color: var(--ink); font-size: 10pt; }
+    .who-ico { width: 6.5mm; height: 6.5mm; flex-shrink: 0; padding: 1.2mm; border-radius: 50%; background: var(--tint); color: var(--diagram); }
     .answer + .answer { border-top: 1px solid var(--line); }
     .answer-heading { display: flex; justify-content: space-between; gap: 2mm; margin-bottom: 2mm; font-size: 9.5pt; }
     .answer-heading span { color: var(--muted); font-size: 8pt; }
@@ -139,10 +146,10 @@
   <main class="page front" aria-label="Front: introduction and JEV overview">
     <header class="title-row">
       <div>
-        <h1>Pow Mingle #11: JEV(Decisions API)</h1>
+        <h1>Pow Mingle #11: JEV(Decision Model)</h1>
         <p class="subtitle">A shared meal, a new technology, and something to try</p>
       </div>
-      <a class="details-link" href="http://127.0.0.1:4173/thread?id=mingle-11-jev&amp;category=Mingle" aria-label="More details about this Pow Mingle">
+      <a class="details-link" href="https://thepowapp.com/thread?utm_source=qr&amp;utm_medium=print&amp;utm_campaign=mingle11&amp;utm_content=details-en" aria-label="More details about this Pow Mingle">
         <img src="assets/pow-mingle-11-jev/details-qr.svg" alt="QR code for more details about Pow Mingle #11">
         <span>More details</span>
       </a>
@@ -150,9 +157,12 @@
     <div class="columns">
       <div class="column"><section>
           <h2>About Pow Mingle</h2>
-          <p>Our group is open to everyone interested in making interesting things, whether or not you work in tech.</p>
-          <p>AI tools and insights arrive every day. It can be hard to find time to understand them, let alone try them. Each month, we explore one new AI technology and apply it to our own ideas.</p>
-          <p>Bring your curiosity, an everyday frustration, or something you want to make. You do not need a technical background or a finished project.</p>
+          <p class="lead">A monthly table where <b>tech people</b> and <b>founders</b> meet, try one new AI tool, and turn ideas into something real.</p>
+          <ul class="who">
+            <li><svg class="who-ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg><span><b>Tech people</b>Engineers, designers, PMs</span></li>
+            <li><svg class="who-ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg><span><b>Founders</b>Building something, facing real problems</span></li>
+            <li><svg class="who-ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg><span><b>One AI tool a month</b>Tried together, applied to our ideas</span></li>
+          </ul>
         </section>
         <section>
           <h2>Why meet at a restaurant?</h2>
@@ -226,7 +236,7 @@
   </main>
   <main class="page back" aria-label="Back: two projects and a sharing invitation">
     <header>
-      <h1>JEV(Decisions API) in practice</h1>
+      <h1>JEV(Decision Model) in practice</h1>
       <p class="subtitle">Pow Mingle #11 · Two projects using small AI decisions</p>
     </header>
     <div class="back-content">
@@ -234,7 +244,7 @@
         <div class="column"><section>
           <div class="case-heading">
             <div><h2>1. Tidymark</h2><p class="description">Organizing bookmarks</p></div>
-            <a class="website" href="http://tidy.tmtt.link/" aria-label="Visit the Tidymark website">
+            <a class="website" href="http://tidy.tmtt.link/?utm_source=qr&amp;utm_medium=print&amp;utm_campaign=mingle11&amp;utm_content=tidymark-en" aria-label="Visit the Tidymark website">
               <img src="assets/pow-mingle-11-jev/tidymark-qr.svg" alt="QR code for http://tidy.tmtt.link/">
               <span>tidy.tmtt.link</span>
             </a>
@@ -257,7 +267,7 @@
         <div class="column"><section>
           <div class="case-heading">
             <div><h2>2. ResumeDot</h2><p class="description">Scoring resumes against a job post</p></div>
-            <a class="website" href="http://resumedot.com/" aria-label="Visit the ResumeDot website">
+            <a class="website" href="http://resumedot.com/?utm_source=qr&amp;utm_medium=print&amp;utm_campaign=mingle11&amp;utm_content=resumedot-en" aria-label="Visit the ResumeDot website">
               <img src="assets/pow-mingle-11-jev/resumedot-qr.svg" alt="QR code for http://resumedot.com/">
               <span>resumedot.com</span>
             </a>
