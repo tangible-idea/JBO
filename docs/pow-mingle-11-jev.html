@@ -11,6 +11,10 @@
     body { margin: 0; background: #e9ebed; color: var(--ink); font-family: Arial, Helvetica, sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .page { width: 210mm; height: 297mm; padding: 17mm 17mm 14mm; margin: 24px auto; background: white; display: flex; flex-direction: column; }
     header { padding-bottom: 5mm; border-bottom: 1px solid var(--line); }
+    .title-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 6mm; }
+    .details-link { flex-shrink: 0; width: 22mm; text-align: center; }
+    .details-link img { display: block; width: 15mm; height: 15mm; margin: 0 auto; }
+    .details-link span { display: block; font-size: 7pt; line-height: 1.3; color: var(--muted); white-space: nowrap; }
     h1 { margin: 0 0 2.5mm; font-size: 24pt; line-height: 1.2; font-weight: 700; }
     .subtitle { margin: 0; color: var(--muted); font-size: 11pt; }
     .columns { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 11mm; flex: 1; min-height: 0; padding: 7mm 0 5mm; }
@@ -133,9 +137,15 @@
 </head>
 <body>
   <main class="page front" aria-label="Front: introduction and JEV overview">
-    <header>
-      <h1>Pow Mingle #11: JEV(Decisions API)</h1>
-      <p class="subtitle">A shared meal, a new technology, and something to try</p>
+    <header class="title-row">
+      <div>
+        <h1>Pow Mingle #11: JEV(Decisions API)</h1>
+        <p class="subtitle">A shared meal, a new technology, and something to try</p>
+      </div>
+      <a class="details-link" href="http://127.0.0.1:4173/thread?id=mingle-11-jev&amp;category=Mingle" aria-label="More details about this Pow Mingle">
+        <img src="assets/pow-mingle-11-jev/details-qr.svg" alt="QR code for more details about Pow Mingle #11">
+        <span>More details</span>
+      </a>
     </header>
     <div class="columns">
       <div class="column"><section>

@@ -1,0 +1,318 @@
+[
+ {
+  "role": "main",
+  "user": "choi.openai",
+  "code": "DdckNs5k8qw",
+  "url": "https://www.threads.com/@choi.openai/post/DdckNs5k8qw",
+  "text": "와.. 진짜 미쳤네..\n\n이번 주 가장 핫한 소식은 역시나 Jev입니다.\n\n항공권을 7초 만에 찾고, 광고 724개를 40초 만에 분석하고, 1,018개 논문을 단 $0.08에 분류했습니다.\n\n게임, 채용, 코딩, 트레이딩까지 벌써 별별 사례가 나오고 있는데요.\n\nJev의 미친 활용 사례 15가지를 정리했습니다🧵",
+  "media": [],
+  "media_source_urls": []
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "DdcitFCoH2Z",
+  "url": "https://www.threads.com/@choi.openai/post/DdcitFCoH2Z",
+  "text": "1/ Jev로 가상의 소비자 150명에게 제품 도입 의향을 조사하는 시스템을 만든 사례가 공개됐습니다.\n\n1인당 12개씩 총 1,800개 질문을 처리하는 데 약 5초가 걸렸고, 비용은 1.8엔이었습니다.\n\nx@ytiskw",
+  "media": [
+   "media/01_choi.openai_DdcitFCoH2Z.mp4"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/o1/v/t16/f2/m84/AQMVhjJcL40NgYoz5HYkzxOH2ErtleHyYY-oBedls0ljPC9hgUgBMMc18gAeuZk1D8p3KfKpoyEaDnYVl2RZVhyT_3P683VXtMTI6KE.mp4?_nc_cat=103&_nc_sid=1d576d&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_ohc=wq5rpEFOjWEQ7kNvwGKN_Tp&efg=eyJ2ZW5jb2RlX3RhZyI6InZ0c192b2RfdXJsZ2VuLmZlZWQudW5rbm93bi1DMy4xMjgwLmRhc2hfYmFzZWxpbmVfMV92MSIsInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D&ccb=17-1&vs=17987764107112832_2462180900&_nc_vs=HBkcFQIYTGlnX2JhY2tmaWxsX3RpbWVsaW5lX3ZvZC83RjRBNEEzMTA5OEY4RDMzRTIxOEI3QjM1NjAxMTNBRl92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAKAAYABsBiAd1c2Vfb2lsATEVAAAmgNnc3NXx8z8VAigCQzMsF0AWAAAAAAAAGBJkYXNoX2Jhc2VsaW5lXzFfdjERAHXqB2XongEA&_nc_gid=P456w1ZL1eM5aaLq61gi_g&_nc_ss=7920f&_nc_zt=28&oh=00_AQNboLShIo1UGWBRWYZnhbbVZ-NtS9AXh_yFzQbNySxJLg&oe=6ABF95E1"
+  ]
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "DdcivP3nRM_",
+  "url": "https://www.threads.com/@choi.openai/post/DdcivP3nRM_",
+  "text": "2/ Jev와 Browser Use를 연결해 항공편을 검색하는 브라우저 에이전트를 만든 사례가 공개됐습니다.\n\n웹사이트를 직접 조작해 항공편을 찾는 데 약 7초가 걸렸고, 비용은 0.0039달러였습니다.\n\nx@gregpr07",
+  "media": [
+   "media/02_choi.openai_DdcivP3nRM_.mp4"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/o1/v/t16/f2/m84/AQOBKa2Hk0Zrz88F6X9QbcjlsxT73Km2oTmJsypaar5KsVzlssms52PYgWo0ratFHN9Yo4Us0QkxNdWp62biXHmgJGnJW_Pn3jzLF8s.mp4?_nc_cat=109&_nc_sid=1d576d&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_ohc=tvGOw1Q2V9QQ7kNvwGYvxsd&efg=eyJ2ZW5jb2RlX3RhZyI6InZ0c192b2RfdXJsZ2VuLmZlZWQudW5rbm93bi1DMy4xMTA0LmRhc2hfYmFzZWxpbmVfMV92MSIsInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D&ccb=17-1&vs=17987764182112832_311301672&_nc_vs=HBkcFQIYTGlnX2JhY2tmaWxsX3RpbWVsaW5lX3ZvZC8wMDRBRTNGRUE2NjRBQ0Y2OEJGQzREQjhCMTYwMjBCNl92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAKAAYABsBiAd1c2Vfb2lsATEVAAAmgM3qrNbx8z8VAigCQzMsF0AeQ5WBBiTdGBJkYXNoX2Jhc2VsaW5lXzFfdjERAHXqB2XongEA&_nc_gid=znc9abPpTBQs3rIlrJp_Cg&_nc_ss=7920f&_nc_zt=28&oh=00_AQM65rMwoy5PBz4Wa6hGP2X6xoehFeGfKPKFxK5BUV_Fag&oe=6ABFBF4F"
+  ]
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "Ddcix-MDrXT",
+  "url": "https://www.threads.com/@choi.openai/post/Ddcix-MDrXT",
+  "text": "3/ Jev로 한 사람의 경력과 400개 기업을 비교해 취업 가능성이 높은 일자리를 찾는 시스템을 만든 사례가 공개됐습니다.\n\n직무 적합도와 불일치를 분석해 신뢰도까지 매기는 데 12초가 걸렸고, 비용은 0.0005달러였습니다.\n\nx@sarvagya_kul",
+  "media": [
+   "media/03_choi.openai_Ddcix-MDrXT.mp4"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/o1/v/t16/f2/m84/AQOYLqnrNUkEzpkinkDDrQwMvSmC-QMtoYvZd5PTY6zTcId_KhHJenwcsHTDJ1Vvo5ygOiMVYglDfgbX8Gx9BNntnPMM1OAqkMO9ctw.mp4?_nc_cat=110&_nc_sid=1d576d&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_ohc=llLvPR8vJ6YQ7kNvwFT0e83&efg=eyJ2ZW5jb2RlX3RhZyI6InZ0c192b2RfdXJsZ2VuLmZlZWQudW5rbm93bi1DMy4xMjgwLmRhc2hfYmFzZWxpbmVfMV92MSIsInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D&ccb=17-1&vs=17987764410112832_1475485590&_nc_vs=HBkcFQIYTGlnX2JhY2tmaWxsX3RpbWVsaW5lX3ZvZC9DNzQ5MEM2NjJCNDZBMEZDODlDMzVEOUVDNzhDMkQ4MF92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAKAAYABsBiAd1c2Vfb2lsATEVAAAmgLrR7tbx8z8VAigCQzMsF0AnWZmZmZmaGBJkYXNoX2Jhc2VsaW5lXzFfdjERAHXqB2XongEA&_nc_gid=Uv3Eott8wdcVHWwEPAioQg&_nc_ss=7920f&_nc_zt=28&oh=00_AQP_cHkJI1XrLIwsjrNrVpCJaOj7vAFkyn1_eYvfwTMH5w&oe=6ABFB8BE"
+  ]
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "DdcjWMjCW_P",
+  "url": "https://www.threads.com/@choi.openai/post/DdcjWMjCW_P",
+  "text": "4/ Jev로 음성만으로 Mac을 조작하는 컴퓨터 사용 시스템을 만든 사례가 공개됐습니다.\n\n“메모 앱을 열고 작성해줘”라고 말하면 문장이 끝나기도 전에 요청을 파악해 앱을 실행할 정도로 빠르게 동작합니다.\n\nx@instantricecook",
+  "media": [
+   "media/04_choi.openai_DdcjWMjCW_P.mp4"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/o1/v/t16/f2/m84/AQOmSeymOBWw-xSxPZP_7CEyuEqFwOrwPqy6mJcLk8IgXxgg0hahfXcQf4TgFXHZscH6NEkAkRa0Izeuhs0j3utvsMabGYY7enVHRKM.mp4?_nc_cat=104&_nc_sid=1d576d&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_ohc=FBvdwfe_jPUQ7kNvwG_XbK_&efg=eyJ2ZW5jb2RlX3RhZyI6InZ0c192b2RfdXJsZ2VuLmZlZWQudW5rbm93bi1DMy4xMjgwLmRhc2hfYmFzZWxpbmVfMV92MSIsInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D&ccb=17-1&vs=17987765586112832_2907722884&_nc_vs=HBksFQIYTGlnX2JhY2tmaWxsX3RpbWVsaW5lX3ZvZC81RTRGMzA1QkM0QUI5NkNERjQ2RjFCNEU4RDlFQTVBQ192aWRlb19kYXNoaW5pdC5tcDQVAALIARIAFQIYUWlnX3hwdl9wbGFjZW1lbnRfcGVybWFuZW50X3YyL0U2NEI2ODFDNjQzOTc4N0I1M0UxNEFDMzU2QUQyRkJBX2F1ZGlvX2Rhc2hpbml0Lm1wNBUCAsgBEgAoABgAGwGIB3VzZV9vaWwBMRUAACaAxNPq4PHzPxUCKAJDMywXQEgQYk3S8aoYEmRhc2hfYmFzZWxpbmVfMV92MREAdeoHZeieAQA%3D&_nc_gid=VHC-spp9qx5HFxAnCLZ1ew&_nc_ss=7920f&_nc_zt=28&oh=00_AQNVnx8Cu-dMq2RCXF-SuXYckWLZjAKH66x5UnmgdVctsw&oe=6ABFAE94"
+  ]
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "Ddci3ROjfvR",
+  "url": "https://www.threads.com/@choi.openai/post/Ddci3ROjfvR",
+  "text": "5/ Jev가 실시간 가격을 보고 매수·매도를 결정해 실제 거래까지 실행하는 트레이딩 봇이 만들어졌습니다.\n\nMonad의 300ms 블록마다 Kuru 온체인 주문장에 주문을 넣도록 구현했지만, 현재 구조는 스프레드 때문에 손실 가능성이 높다고 밝혔습니다.\n\nx@jarrodwatts",
+  "media": [
+   "media/05_choi.openai_Ddci3ROjfvR.mp4"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/o1/v/t16/f2/m84/AQOfDDsgFzAcLP1qQEEute1J-VHxfflod_3GHDd7vgkycd3l0C6g6zB07FLNh8OurwzWbU8C1ka_lk37st_U7idl55vvdvDaI2kUv-M.mp4?_nc_cat=111&_nc_sid=1d576d&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_ohc=47l0CKvXICQQ7kNvwEIwinC&efg=eyJ2ZW5jb2RlX3RhZyI6InZ0c192b2RfdXJsZ2VuLmZlZWQudW5rbm93bi1DMy4xMjA4LmRhc2hfYmFzZWxpbmVfMV92MSIsInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D&ccb=17-1&vs=17987764581112832_36052997&_nc_vs=HBkcFQIYTGlnX2JhY2tmaWxsX3RpbWVsaW5lX3ZvZC81NjQ4RDE2MkRFNEQxNUQyNzMwRDczQzlENUMzQTlCNF92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAKAAYABsBiAd1c2Vfb2lsATEVAAAmgKX3sdnx8z8VAigCQzMsF0AkmZmZmZmaGBJkYXNoX2Jhc2VsaW5lXzFfdjERAHXqB2XongEA&_nc_gid=ow3Lh-E4VKXNf-_YH6-Cgw&_nc_ss=7920f&_nc_zt=28&oh=00_AQObFvnl0KROZ8No12kHKB1mg6tLp3bRu8dJ8OqqMaft4Q&oe=6ABF9DB5"
+  ]
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "DdcjAJ8CWFa",
+  "url": "https://www.threads.com/@choi.openai/post/DdcjAJ8CWFa",
+  "text": "6/ Jev로 37개 브랜드의 실제 광고 724개를 한꺼번에 분석하는 시스템을 만든 사례가 공개됐습니다.\n\n광고 형식·제안·CTA·랜딩페이지 불일치 등을 분류하는 데 40초가 걸렸고, 토큰 비용은 0.09달러였습니다.\n\nx@TheMattBerman",
+  "media": [
+   "media/06_choi.openai_DdcjAJ8CWFa.mp4"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/o1/v/t16/f2/m84/AQPwUfWRdaMHVsmCjaPPwScUEg6PommLUmUeX1CCF3ujzHw51-qKOlhTvFiA07taV8d8oV9Vl3_HkzSyOzPqYnXMUX4lmcDHM4Ygx2M.mp4?_nc_cat=106&_nc_sid=1d576d&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_ohc=hYDTx65ALXAQ7kNvwHtmm0J&efg=eyJ2ZW5jb2RlX3RhZyI6InZ0c192b2RfdXJsZ2VuLmZlZWQudW5rbm93bi1DMy4xMjgwLmRhc2hfYmFzZWxpbmVfMV92MSIsInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D&ccb=17-1&vs=17987764827112832_2857206439&_nc_vs=HBkcFQIYTGlnX2JhY2tmaWxsX3RpbWVsaW5lX3ZvZC85NjQ2QjA0MTRCRTcyQTg0OUE4NzI0NjkwMzgxRkZBMl92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAKAAYABsBiAd1c2Vfb2lsATEVAAAmgI7BiNvx8z8VAigCQzMsF0BIIgxJul41GBJkYXNoX2Jhc2VsaW5lXzFfdjERAHXqB2XongEA&_nc_gid=tTssZl1peq6WzO4uczuCOg&_nc_ss=7920f&_nc_zt=28&oh=00_AQP8BeLsQSWQ8Pf7bcmbeZeP22XCgxAX_I5TC9tnG3-JLw&oe=6ABFA9AE"
+  ]
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "Ddci8vAAL0F",
+  "url": "https://www.threads.com/@choi.openai/post/Ddci8vAAL0F",
+  "text": "7/ Jev가 실시간으로 Super Mario Bros.를 직접 플레이하도록 만든 사례가 공개됐습니다.\n\n게임을 멈추지 않은 상태에서 계속 조작을 결정하며 플레이했고, 현재 성공률은 약 4번 중 1번 수준입니다.\n\nx@faadilhshaik",
+  "media": [
+   "media/07_choi.openai_Ddci8vAAL0F.mp4"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/o1/v/t16/f2/m84/AQNcnqH33a-WspHDk6iwvpkn8vcpt9PsKKXd_2yMFittVyruzC-GTroAmemkPFkk9WyBCU_WIR2mbF2H3Mzvdmm5-0nitmk_OS8wcQ4.mp4?_nc_cat=101&_nc_sid=1d576d&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_ohc=U53aVBoeDpcQ7kNvwFizKEC&efg=eyJ2ZW5jb2RlX3RhZyI6InZ0c192b2RfdXJsZ2VuLmZlZWQudW5rbm93bi1DMy4xMjgwLmRhc2hfYmFzZWxpbmVfMV92MSIsInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D&ccb=17-1&vs=17987764731112832_2466421684&_nc_vs=HBksFQIYTGlnX2JhY2tmaWxsX3RpbWVsaW5lX3ZvZC9CQjQ3RUREMDJCOTcyRjUwNTUwMERFQzUxMjUwODI5RV92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAFQIYUWlnX3hwdl9wbGFjZW1lbnRfcGVybWFuZW50X3YyLzQxNDgxNkU3M0ZBNzA2N0Q2REIzOEZCMTNEMTY1NUIyX2F1ZGlvX2Rhc2hpbml0Lm1wNBUCAsgBEgAoABgAGwGIB3VzZV9vaWwBMRUAACaAtaG72vHzPxUCKAJDMywXQD%2B41P3ztkYYEmRhc2hfYmFzZWxpbmVfMV92MREAdeoHZeieAQA%3D&_nc_gid=c192xHFIYdTJ0Mcp1DTHJw&_nc_ss=7920f&_nc_zt=28&oh=00_AQP5wvc9_id5WQ6rJknZ-9Q80pjGNwFdWzEPLXJaXi2LjA&oe=6ABF995B"
+  ]
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "DdcjSwKDgje",
+  "url": "https://www.threads.com/@choi.openai/post/DdcjSwKDgje",
+  "text": "8/ Jev로 tldraw 캔버스에서 사용자의 요청에 맞는 도형과 요소를 빠르게 선택하고 배치하는 사례가 공개됐습니다.\n\n텍스트를 한 토큰씩 생성하는 방식이 아니라 정해진 선택지에서 결과를 고르는 구조를 활용했습니다.\n\nx@jackcheng",
+  "media": [
+   "media/08_choi.openai_DdcjSwKDgje.mp4"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/o1/v/t16/f2/m84/AQMAPHT9oNDXVOpmFBnGzANhvBUiEZxdIZ7uVIcb33f4NZweLkH9N0hvRmzcw1YGmKk6Oun0gxZNijqbSkx6ZNP0ETb9BrvV3HLXzr8.mp4?_nc_cat=103&_nc_sid=1d576d&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_ohc=uvesdQvwhc4Q7kNvwHIgAx7&efg=eyJ2ZW5jb2RlX3RhZyI6InZ0c192b2RfdXJsZ2VuLmZlZWQudW5rbm93bi1DMy45NDguZGFzaF9iYXNlbGluZV8xX3YxIiwidXJsZ2VuX3NvdXJjZSI6Ind3dyJ9&ccb=17-1&vs=17987765490112832_1037569300&_nc_vs=HBksFQIYTGlnX2JhY2tmaWxsX3RpbWVsaW5lX3ZvZC9BNjQ2RUJFOEIxMzNGRkQxMDYzOEY0QjNBNTE2MEFBNF92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAFQIYUWlnX3hwdl9wbGFjZW1lbnRfcGVybWFuZW50X3YyL0JBNEZBNzVDNzA2RTIwNDFFNkU4QzlEQjI4QkNERThDX2F1ZGlvX2Rhc2hpbml0Lm1wNBUCAsgBEgAoABgAGwGIB3VzZV9vaWwBMRUAACaAuqK53%2FHzPxUCKAJDMywXQEN%2FnbItDlYYEmRhc2hfYmFzZWxpbmVfMV92MREAdeoHZeieAQA%3D&_nc_gid=IJxEKvRPG1Xyg18qTRKfGQ&_nc_ss=7920f&_nc_zt=28&oh=00_AQOj_OVKlfshxc6Vvrdl5bwS0RZ_WEoX_qrcnPUN6katIw&oe=6ABF8F7D"
+  ]
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "Ddci57jF6tF",
+  "url": "https://www.threads.com/@choi.openai/post/Ddci57jF6tF",
+  "text": "9/ 텍스트 생성 모델이 아닌 Jev에 수백 개의 영어 단어와 문장부호를 선택지로 주고 문장을 만들게 한 사례가 공개됐습니다.\n\nJev가 매번 다음에 올 단어를 선택하도록 반복해 문장을 이어가는 방식으로 구현했습니다.\n\nx@hi_im_isaac_",
+  "media": [
+   "media/09_choi.openai_Ddci57jF6tF.mp4"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/o1/v/t16/f2/m84/AQO8zOE-ceQvyeQ25PdpFLZl4pr5Ldj3mmB6WHbvtneVZW2zNbWDpefSoeVsAOZGdxyj8ZJWcNKpa93Oi0tP-OKXfURbWV-_zCF5fww.mp4?_nc_cat=102&_nc_sid=1d576d&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_ohc=KBJgDg6MVKgQ7kNvwGOmwEo&efg=eyJ2ZW5jb2RlX3RhZyI6InZ0c192b2RfdXJsZ2VuLmZlZWQudW5rbm93bi1DMy42MjAuZGFzaF9iYXNlbGluZV8xX3YxIiwidXJsZ2VuX3NvdXJjZSI6Ind3dyJ9&ccb=17-1&vs=17987764665112832_2952623703&_nc_vs=HBkcFQIYTGlnX2JhY2tmaWxsX3RpbWVsaW5lX3ZvZC9BQzQxQ0NBRTg0NDZBQzhDQzA4RkM1ODg4NTI1Q0JCMV92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAKAAYABsBiAd1c2Vfb2lsATEVAAAmgJLe89nx8z8VAigCQzMsF0A87Em6XjU%2FGBJkYXNoX2Jhc2VsaW5lXzFfdjERAHXqB2XongEA&_nc_gid=xX2RizMOllL7T_RzBYG4AA&_nc_ss=7920f&_nc_zt=28&oh=00_AQNmnP8xyMsmJtH0Fj6mCvKfNB3zEgTC_sV5lZ2GjZ8Pog&oe=6ABFB322"
+  ]
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "DdcjOsrjXvD",
+  "url": "https://www.threads.com/@choi.openai/post/DdcjOsrjXvD",
+  "text": "10/ Jev와 json-render를 연결해 사용자의 요청에 따라 웹 UI를 실시간으로 구성하는 사례가 공개됐습니다.\n\n미리 정의한 컴포넌트와 동작, 디자인 시스템을 조합해 수 밀리초 단위로 화면을 렌더링하도록 구현했습니다.\n\nx@ctatedev",
+  "media": [
+   "media/10_choi.openai_DdcjOsrjXvD.mp4"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/o1/v/t16/f2/m84/AQNOP4EnZSz29QiWa1qszrtAJe_qA2vlYi3NAM1DfI3xE1df2vZSAC75gsjoRRt-5pBcEnyyfhXQttLIFbcc7Jwo59v0ZMLC74r0Io8.mp4?_nc_cat=103&_nc_sid=1d576d&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_ohc=ZeSZHJubed0Q7kNvwE4MNAs&efg=eyJ2ZW5jb2RlX3RhZyI6InZ0c192b2RfdXJsZ2VuLmZlZWQudW5rbm93bi1DMy43MjAuZGFzaF9iYXNlbGluZV8xX3YxIiwidXJsZ2VuX3NvdXJjZSI6Ind3dyJ9&ccb=17-1&vs=17987765226112832_4155716290&_nc_vs=HBkcFQIYTGlnX2JhY2tmaWxsX3RpbWVsaW5lX3ZvZC9BNzQ2MjNDNEQ2MTYzMTRCNjJBNjRCQzY4RkM3QkZBM192aWRlb19kYXNoaW5pdC5tcDQVAALIARIAKAAYABsBiAd1c2Vfb2lsATEVAAAmgJWDhd7x8z8VAigCQzMsF0AyjMzMzMzNGBJkYXNoX2Jhc2VsaW5lXzFfdjERAHXqB2XongEA&_nc_gid=FTNsRPwfr-kLMmzRDfubqg&_nc_ss=7920f&_nc_zt=28&oh=00_AQNyY_DNL44J1aT47RfigG0M-vYIEXtZOWdRsg4Kc5QtDg&oe=6ABF8B49"
+  ]
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "Ddci0l4DYFO",
+  "url": "https://www.threads.com/@choi.openai/post/Ddci0l4DYFO",
+  "text": "11/ Jev로 코드 변경사항(PR)을 자동 검토해 보안 문제와 API 변경, 테스트 삭제 등을 확인하는 시스템을 만든 사례가 공개됐습니다.\n\nPR 1건당 약 0.5초, 0.00007달러가 들었으며 판단이 애매한 항목만 사람이나 대형 모델에 넘깁니다.\n\nx@redp314",
+  "media": [
+   "media/11_choi.openai_Ddci0l4DYFO.mp4"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/o1/v/t16/f2/m84/AQOj7O-XMnQRHsLfTvvB-c_jcn2JQWU9W9H4LT-aorTQvdHy9D6sTW4lfp15Ws1z8W8kxQNcz4ht6McFNymyE_6v_390e3MMOfU49CQ.mp4?_nc_cat=111&_nc_sid=1d576d&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_ohc=fSeteXE5wZQQ7kNvwEyHrx1&efg=eyJ2ZW5jb2RlX3RhZyI6InZ0c192b2RfdXJsZ2VuLmZlZWQudW5rbm93bi1DMy4xMjgwLmRhc2hfYmFzZWxpbmVfMV92MSIsInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D&ccb=17-1&vs=17987764512112832_1657451382&_nc_vs=HBkcFQIYTGlnX2JhY2tmaWxsX3RpbWVsaW5lX3ZvZC8wMzQ0NEMyNkFDRjQyRUNBNDNFRDg2RkU1RDQ1Qzk4RV92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAKAAYABsBiAd1c2Vfb2lsATEVAAAmgLHp4djx8z8VAigCQzMsF0BAMzMzMzMzGBJkYXNoX2Jhc2VsaW5lXzFfdjERAHXqB2XongEA&_nc_gid=W6XzUpoLqaNFp6Bh93AfXA&_nc_ss=7920f&_nc_zt=28&oh=00_AQMCB98kM1vW8iv1sHKohR6XaM21iNm0jFX-v9appaoWfg&oe=6ABF98C1"
+  ]
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "DdcjLIRjMw_",
+  "url": "https://www.threads.com/@choi.openai/post/DdcjLIRjMw_",
+  "text": "12/ Jev로 아침 뉴스 384건을 분석해 15개 브랜드가 당일 활용할 만한 기사를 찾아주는 시스템도 만들어졌습니다.\n\n전체 분석에 24.9초와 0.19달러가 들었으며, 같은 조건의 Claude Opus 5는 384건 중 4건을 처리했습니다.\n\nx@elvissun",
+  "media": [
+   "media/12_choi.openai_DdcjLIRjMw_.mp4"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/o1/v/t16/f2/m84/AQMB1lUXjVoTgQkaZmACpZInu176Km3nJq3ee8wI8xxuKbzuXpc6HDFDD3jdTa0KrEATU3xTB9ure3zERvUyuuvy_pAsckClEJTyp94.mp4?_nc_cat=106&_nc_sid=1d576d&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_ohc=kIdJi74hQK8Q7kNvwE6sQk2&efg=eyJ2ZW5jb2RlX3RhZyI6InZ0c192b2RfdXJsZ2VuLmZlZWQudW5rbm93bi1DMy4xMjgwLmRhc2hfYmFzZWxpbmVfMV92MSIsInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D&ccb=17-1&vs=17987765133112832_573250904&_nc_vs=HBksFQIYTGlnX2JhY2tmaWxsX3RpbWVsaW5lX3ZvZC84QzQyQjc3RUFCN0I2MUEzOTdFODgyOTMzMkMyODVCRl92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAFQIYUWlnX3hwdl9wbGFjZW1lbnRfcGVybWFuZW50X3YyL0JENDBERTM3MjdFOUY5M0VFNTE3Q0QzNUE5NkZDNDhEX2F1ZGlvX2Rhc2hpbml0Lm1wNBUCAsgBEgAoABgAGwGIB3VzZV9vaWwBMRUAACaAhoey3fHzPxUCKAJDMywXQDzHKwIMSboYEmRhc2hfYmFzZWxpbmVfMV92MREAdeoHZeieAQA%3D&_nc_gid=jV6K_Fy7GnWBVJo1XxVOzw&_nc_ss=7920f&_nc_zt=28&oh=00_AQMinXF2206wvpHxNv4sdii7DZfhs6Pv8_kN79AU0g9xCg&oe=6ABFBE5A"
+  ]
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "DdcjC-RHG24",
+  "url": "https://www.threads.com/@choi.openai/post/DdcjC-RHG24",
+  "text": "13/ Jev로 AI 연구 논문 1,018개를 24개 주제로 자동 분류하는 시스템을 만든 사례가 공개됐습니다.\n\nDeepSeek V4 Flash 2로 논문을 요약한 뒤 Jev가 분류했으며, 분류 비용은 전체 0.08달러, 논문당 중앙값 256ms가 걸렸습니다.\n\nx@nutlope",
+  "media": [
+   "media/13_choi.openai_DdcjC-RHG24.mp4"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/o1/v/t16/f2/m84/AQM4sQPZDvpkY4hn7I5H6NK6q99i9QQvRpbdLy01h3I55X159U0J0hoPvHHiieKB4-oqsBJMbtEN55DkVMU2C9EcB8EqYPWTX-RHUQ8.mp4?_nc_cat=107&_nc_sid=1d576d&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_ohc=S00rrtogtSQQ7kNvwGcTVew&efg=eyJ2ZW5jb2RlX3RhZyI6InZ0c192b2RfdXJsZ2VuLmZlZWQudW5rbm93bi1DMy45NzIuZGFzaF9iYXNlbGluZV8xX3YxIiwidXJsZ2VuX3NvdXJjZSI6Ind3dyJ9&ccb=17-1&vs=17987764905112832_586337347&_nc_vs=HBkcFQIYTGlnX2JhY2tmaWxsX3RpbWVsaW5lX3ZvZC82NTRCRjJENkU0OUU1ODE0RDFERURCNUE5NUI0NTI5OF92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAKAAYABsBiAd1c2Vfb2lsATEVAAAmgOC5x9vx8z8VAigCQzMsF0Akqn752yLRGBJkYXNoX2Jhc2VsaW5lXzFfdjERAHXqB2XongEA&_nc_gid=BMMMWatAhIpbsSMksUygcg&_nc_ss=7920f&_nc_zt=28&oh=00_AQPqtb6h_Zlojy-utlo-GAatR4fU_NgrBxWDSpj9YvrdyQ&oe=6ABFB879"
+  ]
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "DdcjFdoGBEC",
+  "url": "https://www.threads.com/@choi.openai/post/DdcjFdoGBEC",
+  "text": "14/ Jev가 Minecraft에서 엔더 드래곤을 잡을 때까지 24시간 계속 플레이하는 실험이 시작됐습니다.\n\n매 순간 다음 행동을 하나씩 결정하며 자원 채집과 제작을 진행하고, 전체 플레이 과정은 Twitch에서 실시간으로 방송됩니다.\n\nx@jarrodwatts",
+  "media": [
+   "media/14_choi.openai_DdcjFdoGBEC.mp4"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/o1/v/t16/f2/m84/AQPzdATeEuiynyMboaNKfyVVG76fMmPlGfGEbbjjCCk6NfG9m3TnRMJTSqKqayN5DCZ-9lQOEOtbgdYsMIsWvxyigo6Fjhk6eNk_u4g.mp4?_nc_cat=108&_nc_sid=1d576d&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_ohc=riooh0XgFFcQ7kNvwE8Qs_C&efg=eyJ2ZW5jb2RlX3RhZyI6InZ0c192b2RfdXJsZ2VuLmZlZWQudW5rbm93bi1DMy4xMjI0LmRhc2hfYmFzZWxpbmVfMV92MSIsInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D&ccb=17-1&vs=17987764989112832_3029129969&_nc_vs=HBksFQIYTGlnX2JhY2tmaWxsX3RpbWVsaW5lX3ZvZC8wNzQyMkVBQjM5OEU0N0EzMkM3QzE3OUY3Mjc0RTFCNF92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAFQIYUWlnX3hwdl9wbGFjZW1lbnRfcGVybWFuZW50X3YyLzFBNDcxRTY1NkQ3QTZCNjJFMjlBQkM5RDE3M0JBNzk4X2F1ZGlvX2Rhc2hpbml0Lm1wNBUCAsgBEgAoABgAGwGIB3VzZV9vaWwBMRUAACaApZKg3PHzPxUCKAJDMywXQChysCDEm6YYEmRhc2hfYmFzZWxpbmVfMV92MREAdeoHZeieAQA%3D&_nc_gid=RSldbvAjTnUxrC9w7ogMfQ&_nc_ss=7920f&_nc_zt=28&oh=00_AQP8nTN_g-Y_zAT7U0Rwqsno-t73-tu2cGfRyRYWf_G4fQ&oe=6ABFA8D4"
+  ]
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "DdcjIisjE2v",
+  "url": "https://www.threads.com/@choi.openai/post/DdcjIisjE2v",
+  "text": "15/ Jev로 잠재 고객 700명에게 보낼 맞춤형 영업 메시지의 반응을 예측하는 시스템을 만든 사례가 공개됐습니다.\n\n과거 데이터를 바탕으로 메시지 적합도와 신뢰도를 분석하는 데 40초가 걸렸고, 비용은 0.09달러였습니다.\n\nx@romanbuildsaas",
+  "media": [
+   "media/15_choi.openai_DdcjIisjE2v.mp4"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/o1/v/t16/f2/m84/AQOEKvLAKtMPyMJkLUG4WV1x_j9-4hMEKoRDqjn8d73Gki_-17DjhF8c_wKna31MZoHfWF04y1cM7kauAuEgymTEEOECpkfIm1rXwwk.mp4?_nc_cat=103&_nc_sid=1d576d&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_ohc=rIo-xMoBO-0Q7kNvwHN_f6W&efg=eyJ2ZW5jb2RlX3RhZyI6InZ0c192b2RfdXJsZ2VuLmZlZWQudW5rbm93bi1DMy4xMjgwLmRhc2hfYmFzZWxpbmVfMV92MSIsInVybGdlbl9zb3VyY2UiOiJ3d3cifQ%3D%3D&ccb=17-1&vs=17987765064112832_719190950&_nc_vs=HBksFQIYTGlnX2JhY2tmaWxsX3RpbWVsaW5lX3ZvZC9EMzQxNDFDNEZCMTI1MDcwQ0U1MzdCNTA1QzlDMEU4Nl92aWRlb19kYXNoaW5pdC5tcDQVAALIARIAFQIYUWlnX3hwdl9wbGFjZW1lbnRfcGVybWFuZW50X3YyLzNCNDM1MTUwMEU5RDkyQkM4MDdFMjZFNDFCNUYwOTkzX2F1ZGlvX2Rhc2hpbml0Lm1wNBUCAsgBEgAoABgAGwGIB3VzZV9vaWwBMRUAACaAmaDw3PHzPxUCKAJDMywXQCHKwIMSbpgYEmRhc2hfYmFzZWxpbmVfMV92MREAdeoHZeieAQA%3D&_nc_gid=MChWemjRrTDa_avLnLwtgA&_nc_ss=7920f&_nc_zt=28&oh=00_AQNKJg_GVX4Plil2OZYiLOF2AJWjrhNBkvpMMn1SYurVfQ&oe=6ABF89F9"
+  ]
+ },
+ {
+  "role": "thread",
+  "user": "choi.openai",
+  "code": "DdckecxkwH0",
+  "url": "https://www.threads.com/@choi.openai/post/DdckecxkwH0",
+  "text": "Jev :",
+  "media": [],
+  "media_source_urls": []
+ },
+ {
+  "role": "quoted",
+  "user": "choi.openai",
+  "code": "DdV8yzpD-BQ",
+  "url": "https://www.threads.com/@choi.openai/post/DdV8yzpD-BQ",
+  "text": "🚨 와.. 이건 진짜 대단한 것 같습니다.\n\n앞서 짧게 소개했는데, 이건 가볍게 소개하고 넘어갈 내용이 아닌 것 같습니다.\n\n이 가격과 속도로 판단을 맡길 수 있다면, 우리가 쓰는 프로그램에 AI를 붙이는 방식도 꽤 달라질 것 같은데요.\n\n좀 더 상세하게 소개해드립니다 :",
+  "media": [
+   "media/DdV8yzpD-BQ_choi.openai_DdV8yzpD-BQ.jpg"
+  ],
+  "media_source_urls": [
+   "https://scontent-ssn1-1.cdninstagram.com/v/t51.82787-15/800642833_17987398503112832_7823209111744388856_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=111&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiRkVFRC5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_ohc=qOyBCgFQu_IQ7kNvwGXFxLj&_nc_oc=AdrDTs0vEWtkrcFvWoPbYELfV_e8w_mSDiXEb5YzpREPFYqBIQvcawwiarT4sbwqFgdWeCdMd_5g8SB2Fb1Wxddy&_nc_zt=23&_nc_ht=scontent-ssn1-1.cdninstagram.com&_nc_gid=AI_6CpXAbxZTTJd7vcD6Mw&_nc_ss=7920f&oh=00_AQPtlzfc6BpWv6a4_vIZjz4pVqs_F7-eUS2SdMZ9ShQiRA&oe=6AC380E9"
+  ]
+ },
+ {
+  "role": "comment",
+  "user": "exe_txt",
+  "code": "Dddl7H0mun4",
+  "url": "https://www.threads.com/@exe_txt/post/Dddl7H0mun4",
+  "text": "Jev로 떠들썩한데, 걍 저거는 소형 모델에서 빠르게 결정만시키는 시스템형이고 나는 이미 저런 비슷한 거 작년부터 내부적으로 만들어서 쓰게 했음. 저건 혁신이 아니라 걍 원래 저수준 판별 모델 AI 시스템에 붙여서 쓰던 건데 언플하는 거에 가까움. 예를 들어서 에브리띵으로 검색하면 ㄹㅇ 개 빠른데, AI 클래시파이어나 리랭커 붙여서 쓰는 사람 옛날부터 있었는데. 저거랑 크게 다를 것도 없고 혁신이라는건 좀 에바임. 걍 불필요한 연산 줄이고 빠르게 처리하려면 당연한 수순임. 대부분의 도메인에서 AI는 크게 높은 모델일 필요도 없이 벡터 값만 가지고 확률적으로 정하기만 하면 저렇게 빠르게 처리 가능해서, 에이전트 수만개 띄워서 하는 거 자체가 개뻘짓이고 시간만 오래 걸림. 대부분의 문제는 추론이 아니라 선택/분류와 방향성 문제로 단순화 가능함. 앞으로는 걍 주요 처리를 통째로 db화된걸 선택만해서 불러오는 식으로 하면 초당 100만 토큰 분량 처리도 가능해짐. 솔루션 자체를 컴파일함.",
+  "media": [],
+  "media_source_urls": []
+ },
+ {
+  "role": "comment",
+  "user": "kyleoh_2001",
+  "code": "DdcouiZH8u8",
+  "url": "https://www.threads.com/@kyleoh_2001/post/DdcouiZH8u8",
+  "text": "맞아요.  오픈클로는 비교도 안되는 더 폭발적인 개발같아요",
+  "media": [],
+  "media_source_urls": []
+ },
+ {
+  "role": "comment",
+  "user": "don.kim1188",
+  "code": "Ddc3_12mQWU",
+  "url": "https://www.threads.com/@don.kim1188/post/Ddc3_12mQWU",
+  "text": "jev 이상의 방법론적인 무언가가 2년 내의 조만간 반드시 나올거라 생각됩니다.\n\n입력의 형식을 바꾸어 로봇 제어에 있어서 부분적으로 쓰이면 어떨까요? 빠른 반사층과, 느린 추론층 사이의 적절히 빠른 무언가로 자리매김할 수 있지 않을까 싶습니다",
+  "media": [],
+  "media_source_urls": []
+ },
+ {
+  "role": "comment",
+  "user": "g1_ai_teacher",
+  "code": "Ddcl_jwn1gi",
+  "url": "https://www.threads.com/@g1_ai_teacher/post/Ddcl_jwn1gi",
+  "text": "기술 발전 속도가 로그 스케일로 가는구나 큰일났다..",
+  "media": [],
+  "media_source_urls": []
+ },
+ {
+  "role": "comment",
+  "user": "june_0116",
+  "code": "DdcxTNviYXv",
+  "url": "https://www.threads.com/@june_0116/post/DdcxTNviYXv",
+  "text": "와아 이건 또 몬가요",
+  "media": [],
+  "media_source_urls": []
+ },
+ {
+  "role": "comment",
+  "user": "19474a83842fv72638b33847377",
+  "code": "DdcoElGgTYg",
+  "url": "https://www.threads.com/@19474a83842fv72638b33847377/post/DdcoElGgTYg",
+  "text": "저 선생님 Jev는 코덱스에 연동해서 쓰는건가요? 사용방법이 어떻게 되는지 궁금하네요",
+  "media": [],
+  "media_source_urls": []
+ },
+ {
+  "role": "comment",
+  "user": "kairang.ceo",
+  "code": "Ddc2sWhiR8C",
+  "url": "https://www.threads.com/@kairang.ceo/post/Ddc2sWhiR8C",
+  "text": "이게 LLM을 대체하지는 못합니다. \n반복적이면서 대량 작업 그리고 이미 정해진 패턴에 따른 답이 있는 경우에 가능합니다. \n\n즉 글쓰기,코딩은 LLM을 대체하지 못하므로 \n결국 JEV + LLM 으로 상황에 맞게 최적화 작업이 필요하다는겁니다.\n\n LLM은 AI발전의 하나의 단계이고 \n최적화를 위해 결국 여러가지 아이디어와 방법론이 계속 나올것이고 \n이걸 어떻게 믹스해서 최적화를 할것이냐가 앞으로의 관건입니다.",
+  "media": [],
+  "media_source_urls": []
+ },
+ {
+  "role": "comment",
+  "user": "john_and_claude",
+  "code": "Ddc2cDoEktD",
+  "url": "https://www.threads.com/@john_and_claude/post/Ddc2cDoEktD",
+  "text": "속도랑 가격보다 \"가상 소비자 150명\" 사례가 제일 오래 남네요. 1.8엔이면 설문 초안을 미리 돌려보는 용도로는 부담이 없겠어요. 실제 사람 응답이랑 얼마나 비슷하게 나오는지 비교한 결과가 있으면 그것도 궁금해요.",
+  "media": [],
+  "media_source_urls": []
+ },
+ {
+  "role": "comment",
+  "user": "donghyun1001",
+  "code": "DdczxrmE5yQ",
+  "url": "https://www.threads.com/@donghyun1001/post/DdczxrmE5yQ",
+  "text": "Jev 가 먼가요??",
+  "media": [],
+  "media_source_urls": []
+ },
+ {
+  "role": "comment",
+  "user": "dovidovidat",
+  "code": "DddEmbMEqDA",
+  "url": "https://www.threads.com/@dovidovidat/post/DddEmbMEqDA",
+  "text": "LLM(gpt,claude...) : 추론해서 서술하는 방식 / Jev : O X 퀴즈 맞춰 바로 결과 냄(어마어마하게 빠름)\n아주 함축적이니 다양한 글 쓰레드에서 만나보세용",
+  "media": [],
+  "media_source_urls": []
+ }
+]
