@@ -1,0 +1,15 @@
+{
+  "name": "tidymark-playground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.8.111 preview",
+    "check": "npx --yes hyperframes@0.8.111 check",
+    "render": "npx --yes hyperframes@0.8.111 render",
+    "publish": "npx --yes hyperframes@0.8.111 publish"
+  },
+  "devDependencies": {
+    "gsap": "^3.15.0",
+    "puppeteer-core": "^25.12.0"
+  }
+}

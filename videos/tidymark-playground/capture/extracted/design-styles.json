@@ -1,0 +1,303 @@
+{
+  "typography": [
+    {
+      "role": "display",
+      "fontFamily": "Bricolage Grotesque",
+      "fontSize": "70px",
+      "fontWeight": "800",
+      "lineHeight": "72.8px",
+      "letterSpacing": "-1.75px",
+      "color": "#18181A",
+      "sampleText": "You saved it for later. Now where is it?"
+    },
+    {
+      "role": "heading",
+      "fontFamily": "Bricolage Grotesque",
+      "fontSize": "56px",
+      "fontWeight": "800",
+      "lineHeight": "58.24px",
+      "letterSpacing": "-1.4px",
+      "color": "#18181A",
+      "sampleText": "One click and it picks the folder."
+    },
+    {
+      "role": "link",
+      "fontFamily": "Bricolage Grotesque",
+      "fontSize": "22px",
+      "fontWeight": "800",
+      "lineHeight": "22px",
+      "letterSpacing": "-0.66px",
+      "color": "#18181A",
+      "sampleText": "Tidymark"
+    },
+    {
+      "role": "body",
+      "fontFamily": "Instrument Sans",
+      "fontSize": "19px",
+      "fontWeight": "400",
+      "lineHeight": "30.4px",
+      "letterSpacing": "normal",
+      "color": "#3A3935",
+      "sampleText": "The recipe from last spring, the hotel you almost booked, th"
+    },
+    {
+      "role": "body-small",
+      "fontFamily": "Bricolage Grotesque",
+      "fontSize": "18px",
+      "fontWeight": "700",
+      "lineHeight": "21.6px",
+      "letterSpacing": "-0.18px",
+      "color": "#18181A",
+      "sampleText": "BInto your foldersPause tour"
+    },
+    {
+      "role": "label",
+      "fontFamily": "JetBrains Mono",
+      "fontSize": "10.5px",
+      "fontWeight": "700",
+      "lineHeight": "10.5px",
+      "letterSpacing": "0.63px",
+      "color": "#C8F25A",
+      "sampleText": "Best"
+    }
+  ],
+  "spacing": {
+    "observed": [
+      1,
+      4,
+      6,
+      8,
+      9,
+      10,
+      12,
+      14,
+      15,
+      16,
+      18,
+      20,
+      22,
+      24,
+      26
+    ],
+    "baseUnit": 8
+  },
+  "radius": [
+    "12px",
+    "999px"
+  ],
+  "shadows": [
+    {
+      "value": "rgb(220, 215, 201) 0px 0px 0px 1.5px inset",
+      "count": 1
+    },
+    {
+      "value": "rgba(40, 34, 20, 0.35) 0px 18px 40px -22px",
+      "count": 1
+    },
+    {
+      "value": "rgb(169, 216, 255) 8px 9px 0px 0px",
+      "count": 1
+    }
+  ],
+  "buttons": [
+    {
+      "label": "Add to Chrome",
+      "background": "#18181A",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#F3F0E7",
+      "padding": "11px 16px",
+      "borderRadius": "12px",
+      "border": "0px none rgb(243, 240, 231)",
+      "boxShadow": "none",
+      "fontSize": "15px",
+      "fontWeight": "600",
+      "height": "37px"
+    },
+    {
+      "label": "Add to ChromeSee the four ways to tidy",
+      "background": "transparent",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#18181A",
+      "padding": "0px",
+      "borderRadius": "0px",
+      "border": "0px none rgb(24, 24, 26)",
+      "boxShadow": "none",
+      "fontSize": "17px",
+      "fontWeight": "400",
+      "height": "46px"
+    },
+    {
+      "label": "See the four ways to tidy",
+      "background": "transparent",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#18181A",
+      "padding": "15px 22px",
+      "borderRadius": "12px",
+      "border": "0px none rgb(24, 24, 26)",
+      "boxShadow": "rgb(220, 215, 201) 0px 0px 0px 1.5px inset",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "height": "46px"
+    },
+    {
+      "label": "Weeknight lasagna",
+      "background": "#FFFDF7",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#18181A",
+      "padding": "9px 12px",
+      "borderRadius": "999px",
+      "border": "1px solid rgb(24, 24, 26)",
+      "boxShadow": "none",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "height": "34px"
+    },
+    {
+      "label": "Running shoes review",
+      "background": "#FFFDF7",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#3A3935",
+      "padding": "9px 12px",
+      "borderRadius": "999px",
+      "border": "1px solid rgb(220, 215, 201)",
+      "boxShadow": "none",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "height": "34px"
+    },
+    {
+      "label": "Pause tour",
+      "background": "transparent",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#3A3935",
+      "padding": "7px 14px",
+      "borderRadius": "999px",
+      "border": "1px solid rgb(220, 215, 201)",
+      "boxShadow": "none",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "height": "30px"
+    }
+  ],
+  "cards": [],
+  "nav": {
+    "label": "navigation",
+    "background": "color(srgb 0.952941 0.941177 0.905882 / 0.88)",
+    "backgroundImage": "",
+    "backdropFilter": "blur(10px)",
+    "color": "#18181A",
+    "padding": "0px",
+    "borderRadius": "0px",
+    "border": "",
+    "boxShadow": "none",
+    "fontSize": "17px",
+    "fontWeight": "400",
+    "height": "66px"
+  },
+  "chips": [
+    {
+      "label": "Weeknight lasagna",
+      "background": "#FFFDF7",
+      "color": "#18181A",
+      "padding": "9px 12px",
+      "borderRadius": "999px",
+      "border": "1px solid rgb(24, 24, 26)",
+      "boxShadow": "none",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "height": "34px"
+    },
+    {
+      "label": "Running shoes review",
+      "background": "#FFFDF7",
+      "color": "#3A3935",
+      "padding": "9px 12px",
+      "borderRadius": "999px",
+      "border": "1px solid rgb(220, 215, 201)",
+      "boxShadow": "none",
+      "fontSize": "14px",
+      "fontWeight": "600",
+      "height": "34px"
+    },
+    {
+      "label": "Best",
+      "background": "#18181A",
+      "color": "#C8F25A",
+      "padding": "3px 6px",
+      "borderRadius": "5px",
+      "border": "0px none rgb(200, 242, 90)",
+      "boxShadow": "none",
+      "fontSize": "10.5px",
+      "fontWeight": "700",
+      "height": "auto"
+    },
+    {
+      "label": "Apply 3 moves",
+      "background": "transparent",
+      "color": "#D6D2C6",
+      "padding": "9px 12px",
+      "borderRadius": "999px",
+      "border": "1px solid rgb(58, 57, 53)",
+      "boxShadow": "none",
+      "fontSize": "13px",
+      "fontWeight": "600",
+      "height": "33px"
+    }
+  ],
+  "statCells": [],
+  "tabs": [
+    {
+      "label": "B",
+      "background": "#A9D8FF",
+      "color": "#18181A",
+      "padding": "0px",
+      "borderRadius": "8px",
+      "border": "1px solid rgb(24, 24, 26)",
+      "boxShadow": "none",
+      "fontSize": "14px",
+      "fontWeight": "700",
+      "height": "30px"
+    },
+    {
+      "label": "A",
+      "background": "#EBE7DB",
+      "color": "#18181A",
+      "padding": "0px 18px",
+      "borderRadius": "8px 8px 0px 0px",
+      "border": "",
+      "boxShadow": "none",
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "height": "24px"
+    },
+    {
+      "label": "B",
+      "background": "#A9D8FF",
+      "color": "#18181A",
+      "padding": "0px 18px",
+      "borderRadius": "8px 8px 0px 0px",
+      "border": "",
+      "boxShadow": "none",
+      "fontSize": "12px",
+      "fontWeight": "700",
+      "height": "24px"
+    }
+  ],
+  "backgrounds": [],
+  "glass": [
+    {
+      "backdropFilter": "blur(10px)",
+      "background": "color(srgb 0.952941 0.941177 0.905882 / 0.88)",
+      "border": "",
+      "borderRadius": "0px",
+      "boxShadow": "",
+      "area": 125664
+    }
+  ]
+}

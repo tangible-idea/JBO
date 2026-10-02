@@ -1,0 +1,172 @@
+{
+  "summary": {
+    "webAnimations": 4,
+    "cssDeclarations": 9,
+    "scrollTargets": 0,
+    "cdpAnimations": 12,
+    "canvases": 0
+  },
+  "namedAnimations": [
+    "grow",
+    "way-progress"
+  ],
+  "scrollTriggeredElements": 0,
+  "representativeAnimations": [
+    {
+      "type": "CSSAnimation",
+      "playState": "finished",
+      "animationName": "grow",
+      "targetSelector": "span.meter",
+      "targetRect": {
+        "x": 1033.390625,
+        "y": 447.765625,
+        "width": 416.03125,
+        "height": 4,
+        "top": 447.765625,
+        "right": 1449.421875,
+        "bottom": 451.765625,
+        "left": 1033.390625
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+          "composite": "auto",
+          "width": "0px",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+          "composite": "replace",
+          "width": "94%",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 1000,
+        "delay": 0,
+        "iterations": 1,
+        "easing": "linear",
+        "direction": "normal"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "finished",
+      "animationName": "grow",
+      "targetSelector": "span.meter",
+      "targetRect": {
+        "x": 1033.390625,
+        "y": 528.953125,
+        "width": 269.96875,
+        "height": 4,
+        "top": 528.953125,
+        "right": 1303.359375,
+        "bottom": 532.953125,
+        "left": 1033.390625
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+          "composite": "auto",
+          "width": "0px",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+          "composite": "replace",
+          "width": "61%",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 1000,
+        "delay": 0,
+        "iterations": 1,
+        "easing": "linear",
+        "direction": "normal"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "finished",
+      "animationName": "grow",
+      "targetSelector": "span.meter",
+      "targetRect": {
+        "x": 1033.390625,
+        "y": 610.140625,
+        "width": 97.359375,
+        "height": 4,
+        "top": 610.140625,
+        "right": 1130.75,
+        "bottom": 614.140625,
+        "left": 1033.390625
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+          "composite": "auto",
+          "width": "0px",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+          "composite": "replace",
+          "width": "22%",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 1000,
+        "delay": 0,
+        "iterations": 1,
+        "easing": "linear",
+        "direction": "normal"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "running",
+      "animationName": "way-progress",
+      "targetSelector": "span.progress",
+      "targetRect": {
+        "x": 978,
+        "y": 2677.796875,
+        "width": 43.97900390625,
+        "height": 4,
+        "top": 2677.796875,
+        "right": 1021.97900390625,
+        "bottom": 2681.796875,
+        "left": 978
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "linear",
+          "composite": "auto",
+          "transform": "scaleX(0)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "linear",
+          "composite": "auto",
+          "transform": "scaleX(1)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 4500,
+        "delay": 0,
+        "iterations": 1,
+        "easing": "linear",
+        "direction": "normal"
+      }
+    }
+  ]
+}

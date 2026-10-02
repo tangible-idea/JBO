@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<style>/* vietnamese */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGHInHWVyNJtvI.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGGInHWVyNJtvI.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInHWVyNJ.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGHInHWVyNJtvI.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGGInHWVyNJtvI.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInHWVyNJ.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 800;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGHInHWVyNJtvI.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 800;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGGInHWVyNJtvI.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 800;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInHWVyNJ.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/pxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0She1ZuWi3hKpA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/pxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/pxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0She1ZuWi3hKpA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/pxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/pxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0She1ZuWi3hKpA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/pxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/pxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0She1ZuWi3hKpA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url(assets/fonts/pxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(assets/fonts/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx3cwgknk-6nFg.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(assets/fonts/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxTcwgknk-6nFg.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(assets/fonts/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxPcwgknk-6nFg.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(assets/fonts/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx_cwgknk-6nFg.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(assets/fonts/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx7cwgknk-6nFg.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(assets/fonts/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxDcwgknk-4.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(assets/fonts/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx3cwgknk-6nFg.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(assets/fonts/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxTcwgknk-6nFg.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(assets/fonts/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxPcwgknk-6nFg.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(assets/fonts/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx_cwgknk-6nFg.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(assets/fonts/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPx7cwgknk-6nFg.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(assets/fonts/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxDcwgknk-4.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>:root{--lightningcss-light:initial;--lightningcss-dark: ;color-scheme:light only;--paper:#f3f0e7;--paper-2:#ebe7db;--card:#fffdf7;--ink:#18181a;--ink-2:#3a3935;--muted:#5c5850;--line:#dcd7c9;--lime:#c8f25a;--lime-soft:#eef9cf;--lime-ink:#283a06;--sky:#a9d8ff;--sky-soft:#e3f2ff;--sky-ink:#0d3656;--amber:#f5c451;--amber-soft:#fbf0d4;--amber-ink:#7a5406;--violet:#cbb6ff;--violet-soft:#f0eaff;--violet-ink:#3b2470;--danger:#b42318;--btn:#18181a;--btn-ink:#f3f0e7;--shadow:0 18px 40px -22px #28221459;--display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;--body:"Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;--mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace}*{box-sizing:border-box}body{background:var(--paper);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;font-size:17px;line-height:1.6}.wrap{max-width:1120px;margin-inline:auto;padding-inline:24px}@media (width<=480px){.wrap{padding-inline:16px}}h1,h2,h3{font-family:var(--display);letter-spacing:-.025em;text-wrap:balance;margin:0;line-height:1.04}p{margin:0}a{color:inherit}:focus-visible{outline:3px solid var(--sky);outline-offset:3px;border-radius:6px}.eyebrow{font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-size:12.5px;font-weight:700}.lede{color:var(--ink-2);max-width:34em;font-size:19px}.btn{font:600 16px/1 var(--body);background:var(--btn);color:var(--btn-ink);cursor:pointer;border:0;border-radius:12px;align-items:center;gap:10px;padding:15px 22px;text-decoration:none;display:inline-flex}.btn:hover{transform:translateY(-1px)}.btn.ghost{color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line);background:0 0}.num{font-family:var(--mono);font-variant-numeric:tabular-nums}header{top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--paper) 88%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);position:sticky}.bar{justify-content:space-between;align-items:center;gap:16px;padding-block:14px;display:flex}.brand{font:800 22px/1 var(--display);letter-spacing:-.03em;align-items:center;gap:10px;text-decoration:none;display:flex}.brand svg{flex:none;width:34px;height:34px}nav{gap:26px;font-size:15px;font-weight:500;display:flex}nav a{color:var(--ink-2);text-decoration:none}nav a:hover{color:var(--ink)}.bar .btn{padding:11px 16px;font-size:15px}@media (width<=820px){nav{display:none}}.hero{grid-template-columns:1.05fr .95fr;align-items:center;gap:56px;padding-block:72px 88px;display:grid}.hero h1{font-size:clamp(42px,5.6vw,70px);font-weight:800}.hero h1 .count{background:var(--lime);color:#18181a;font-variant-numeric:tabular-nums;border-radius:.12em;padding:0 .12em}.hero .lede{margin-top:24px}.cta{flex-wrap:wrap;gap:12px;margin-top:34px;display:flex}.fine{color:var(--muted);margin-top:16px;font-size:14px}@media (width<=900px){.hero{grid-template-columns:1fr;gap:40px;padding-block:48px 64px}}.demo{gap:14px;display:grid}.pages{flex-wrap:wrap;gap:8px;display:flex}.chip{font:600 14px/1 var(--body);border:1.5px solid var(--line);background:var(--card);color:var(--ink-2);cursor:pointer;border-radius:999px;align-items:center;gap:8px;padding:9px 12px;display:inline-flex}.chip i{background:var(--c);border-radius:3px;width:10px;height:10px}.chip[aria-pressed=true]{border-color:var(--ink);color:var(--ink)}.popup{background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:22px;padding:18px}.page{background:var(--paper-2);border-radius:14px;align-items:center;gap:12px;padding:12px 14px;display:flex}.page .fav{background:var(--c);border-radius:10px;flex:none;width:34px;height:34px}.page b{font-size:15.5px;display:block}.page small{font-family:var(--mono);color:var(--muted);font-size:12px}.label{margin:16px 4px 10px}.recs{gap:8px;display:grid}.rec{border:1.5px solid var(--line);background:var(--card);border-radius:12px;align-items:center;gap:12px;padding:12px 14px;display:flex;position:relative;overflow:hidden}.rec.top{border-color:var(--ink);background:var(--sky-soft)}.rec .folder{background:var(--amber);border-radius:3px;flex:none;width:22px;height:17px;position:relative}.rec .folder:before{content:"";background:var(--amber);border-radius:2px 2px 0 0;width:10px;height:5px;position:absolute;top:-4px;left:0}.rec .name{flex:1;min-width:0}.rec .name b{font-size:15px}.rec .name small{color:var(--muted);font-size:12.5px;display:block}.tag{font:700 10.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--lime);vertical-align:2px;background:#18181a;border-radius:5px;margin-left:6px;padding:3px 6px}.rec .pct{font:700 15px/1 var(--mono)}.rec .meter{background:var(--sky);height:4px;width:var(--w);transition:width .7s cubic-bezier(.2,.8,.2,1);position:absolute;bottom:0;left:0}.save{color:#f3f0e7;background:#18181a;justify-content:center;width:100%;margin-top:14px}.nofit{border:1.5px solid var(--lime-ink);background:var(--lime-soft);color:var(--lime-ink);border-radius:14px;margin-top:16px;padding:14px 16px}.nofit b{font-family:var(--display);margin-bottom:4px;font-size:18px;display:block}.nofit p{font-size:14px}.nofit .btn{color:var(--lime);background:#18181a;margin-top:12px;padding:10px 14px;font-size:14px}section.block{border-top:1px solid var(--line);padding-block:88px}.head{gap:14px;max-width:720px;margin-bottom:48px;display:grid}.head h2{font-size:clamp(34px,4.6vw,56px);font-weight:800}.split{grid-template-columns:1fr 1fr;align-items:start;gap:56px;display:grid}@media (width<=860px){.split{grid-template-columns:1fr;gap:36px}}.points{gap:22px;margin:0;padding:0;list-style:none;display:grid}.points li{border-left:2px solid var(--line);gap:4px;padding-left:18px;display:grid}.points b{font-size:17.5px}.points span{color:var(--ink-2)}.ways{grid-template-columns:repeat(4,1fr);gap:22px;display:grid}@media (width<=980px){.ways{grid-template-columns:repeat(2,1fr)}}@media (width<=560px){.ways{grid-template-columns:1fr}}.way{text-align:left;font:inherit;color:inherit;cursor:pointer;background:0 0;border:0;padding-top:20px;position:relative}.way .body{transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden}.way:hover .body{transform:translateY(-2px)}.way[aria-selected=false] .body{box-shadow:none;border-color:var(--line);background:var(--card)}.way[aria-selected=false] .tab{border-color:var(--line);background:var(--paper-2)}.way .progress{background:var(--c);transform-origin:0;width:100%;height:4px;animation:way-progress var(--d) linear both;position:absolute;bottom:0;left:0}@keyframes way-progress{0%{transform:scaleX(0)}to{transform:scaleX(1)}}.way-player{border:1.5px solid var(--ink);background:var(--card);box-shadow:8px 9px 0 var(--c);border-radius:20px;margin:0 0 34px;transition:box-shadow .3s;overflow:hidden}.way-player video{aspect-ratio:16/9;background:var(--paper);width:100%;display:block}.way-player figcaption{border-top:1.5px solid var(--ink);font:700 18px/1.2 var(--display);letter-spacing:-.01em;align-items:center;gap:12px;padding:14px 18px;display:flex}.way-player figcaption .tab{border:1.5px solid var(--ink);background:var(--c);width:30px;height:30px;font:700 14px/1 var(--mono);color:#18181a;border-radius:8px;place-items:center;display:inline-grid}.way-toggle{border:1.5px solid var(--line);font:600 14px/1 var(--body);color:var(--ink-2);cursor:pointer;background:0 0;border-radius:999px;margin-left:auto;padding:7px 14px}.way-toggle:hover{border-color:var(--ink);color:var(--ink)}@media (prefers-reduced-motion:reduce){.way .progress{animation:none}}.way .tab{border:1.5px solid var(--ink);background:var(--c);height:24px;font:700 12px/22px var(--mono);color:#18181a;border-bottom:0;border-radius:8px 8px 0 0;padding:0 18px;position:absolute;top:0;left:0}.way .body{border:1.5px solid var(--ink);background:linear-gradient(180deg,var(--soft),var(--card) 70%);height:100%;box-shadow:6px 7px 0 var(--c);border-radius:0 16px 16px;flex-direction:column;gap:10px;padding:22px 20px 20px;display:flex}.way .way-title{font:700 24px/1.04 var(--display);letter-spacing:-.025em;text-wrap:balance}.way .way-text{color:var(--ink-2);font-size:15.5px;line-height:1.6}.way .way-sample{font:500 13px/1.7 var(--mono);color:var(--muted);white-space:pre-wrap;margin-top:auto;padding-top:12px}.buckets{gap:10px;display:grid}.bucket{background:var(--card);border:1px solid var(--line);border-radius:14px;justify-content:space-between;align-items:center;gap:16px;padding:16px 18px;display:flex;position:relative;overflow:hidden}.bucket .fill{width:var(--w);background:var(--amber-soft);position:absolute;inset:0 auto 0 0}.bucket>:not(.fill){position:relative}.bucket b{font-size:17px;display:block}.bucket small{font-family:var(--mono);color:var(--muted);font-size:12.5px}.bucket .n{font:700 22px/1 var(--mono);font-variant-numeric:tabular-nums}.checks{grid-template-columns:repeat(4,1fr);gap:16px;display:grid}@media (width<=900px){.checks{grid-template-columns:repeat(2,1fr)}}@media (width<=440px){.checks{grid-template-columns:1fr}}.check{background:var(--amber-soft);border:1.5px solid var(--amber);border-radius:16px;flex-direction:column;gap:8px;padding:20px;display:flex}.check .n{font:800 46px/1 var(--display);color:var(--amber-ink);font-variant-numeric:tabular-nums}.check b{color:var(--amber-ink);font-size:17px}.check p{color:var(--ink-2);font-size:14.5px}.check .act{font:700 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--card);color:var(--danger);border-radius:6px;align-self:flex-start;margin-top:auto;padding:5px 8px}.check .act.move{color:var(--ink-2)}.note{color:var(--muted);margin-top:22px;font-size:14.5px}.safe{color:#f3f0e7;background:#18181a;border-radius:28px;grid-template-columns:1fr 1.1fr;align-items:center;gap:48px;padding:56px 48px;display:grid}.safe h2{color:#f3f0e7;font-size:clamp(34px,4.4vw,54px);font-weight:800}.safe h2 em{color:var(--lime);font-style:normal}.safe .eyebrow{color:#a19c8f}.plan{gap:10px;font-size:15px;display:grid}.plan .row{background:#242422;border-radius:12px;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;display:flex}.plan .row span:first-child{text-overflow:ellipsis;white-space:nowrap;min-width:0;overflow:hidden}.plan .to{font-family:var(--mono);color:#c8f25a;white-space:nowrap;font-size:13px}.plan .row.review .to{color:#f5c451}.plan .foot{flex-wrap:wrap;gap:10px;margin-top:6px;display:flex}.plan .foot span{font:600 13px/1 var(--body);color:#d6d2c6;border:1px solid #3a3935;border-radius:999px;padding:9px 12px}@media (width<=860px){.safe{border-radius:22px;grid-template-columns:1fr;padding:40px 24px}}.privacy{grid-template-columns:260px 1fr;gap:48px;display:grid}@media (width<=860px){.privacy{grid-template-columns:1fr;gap:24px}}.privacy dl{gap:26px;max-width:680px;margin:0;display:grid}.privacy dt{margin-bottom:6px;font-size:17.5px;font-weight:700}.privacy dd{color:var(--ink-2);margin:0}.privacy code{font-family:var(--mono);background:var(--paper-2);border-radius:5px;padding:1px 6px;font-size:.86em}.updated{color:var(--muted);font-size:14px}footer{border-top:1px solid var(--line);padding-block:36px 48px}footer .wrap{color:var(--muted);flex-wrap:wrap;justify-content:space-between;gap:16px;font-size:14.5px;display:flex}@media (prefers-reduced-motion:no-preference){.rec .meter{animation:1s cubic-bezier(.2,.8,.2,1) both grow}@keyframes grow{0%{width:0}}}@media (prefers-reduced-motion:reduce){.rec .meter{transition:none}}.policy{gap:18px;max-width:760px;padding-block:64px 88px;display:grid}.policy h1{font-size:clamp(36px,5vw,56px);font-weight:800}.policy dl{gap:28px;margin:24px 0 0;display:grid}.policy dt{margin-bottom:6px;font-size:18px;font-weight:700}.policy dd{color:var(--ink-2);margin:0}.policy code{font-family:var(--mono);background:var(--paper-2);border-radius:5px;padding:1px 6px;font-size:.86em}.policy dd a{text-underline-offset:3px}.policy-link{text-underline-offset:3px;font-weight:600}
+</style>
+<script type="module" crossorigin="" src="./assets/main-CQCtTFrU.js"></script>
+</head>
+<body>
+
+    <div id="root"><header><div class="wrap bar"><a class="brand" href="#top"><svg viewBox="0 0 128 128" width="34" height="34" aria-hidden="true"><g stroke="#9a9588" stroke-width="7" stroke-linecap="round"><line x1="8" y1="52" x2="26" y2="52" /><line x1="4" y1="68" x2="20" y2="68" /><line x1="12" y1="84" x2="26" y2="84" /></g><polygon points="83.1,21.0 89.6,49.9 117.8,59.4 92.2,74.5 91.9,104.2 69.6,84.5 41.3,93.4 53.1,66.2 35.9,42.0 65.5,44.8" fill="#18181a" stroke="#18181a" stroke-width="20" stroke-linejoin="round" /><polygon points="83.1,21.0 89.6,49.9 117.8,59.4 92.2,74.5 91.9,104.2 69.6,84.5 41.3,93.4 53.1,66.2 35.9,42.0 65.5,44.8" fill="#c8f25a" stroke="#c8f25a" stroke-width="8" stroke-linejoin="round" /></svg>Tidymark</a><nav aria-label="Sections"><a href="#save">Save a page</a><a href="#tidy">Tidy everything</a><a href="#checkup">Checkup</a><a href="./privacypolicy/">Privacy</a></nav><a class="btn" href="https://chromewebstore.google.com/detail/nglhhhkgognkifklfokjakljcopimcjg" target="_blank" rel="noopener">Add to Chrome</a></div></header><main id="top"><div class="wrap hero"><div><p class="eyebrow">Bookmark organizer for Chrome</p><h1 style="margin-top: 18px;">You saved it <span class="count">for later.</span> Now where is it?</h1><p class="lede">The recipe from last spring, the hotel you almost booked, the article you meant to finish. Tidymark reads each page and files it where it belongs, so you can find it again. Save the page you're on with one click, or sort years of loose bookmarks in one pass.</p><div class="cta"><a class="btn" href="https://chromewebstore.google.com/detail/nglhhhkgognkifklfokjakljcopimcjg" target="_blank" rel="noopener">Add to Chrome</a><a class="btn ghost" href="#tidy">See the four ways to tidy</a></div><p class="fine">Works with the folders you already have. Nothing moves until you press Apply.</p></div><div class="demo" aria-label="Example of the Tidymark popup"><div class="pages" role="group" aria-label="Try an example page"><button type="button" class="chip" aria-pressed="true" style="--c: var(--amber);"><i></i>Weeknight lasagna</button><button type="button" class="chip" aria-pressed="false" style="--c: var(--sky);"><i></i>Running shoes review</button><button type="button" class="chip" aria-pressed="false" style="--c: var(--lime);"><i></i>3 days in Lisbon</button></div><div class="popup" aria-live="polite"><div class="page" style="--c: var(--amber);"><span class="fav"></span><div><b>Easy weeknight lasagna</b><small>a food blog</small></div></div><p class="eyebrow label">Suggested folders</p><div class="recs"><div class="rec top"><span class="folder"></span><span class="name"><b>Dinners</b><span class="tag">Best</span><small>Recipes</small></span><span class="pct">94%</span><span class="meter" style="--w: 94%;"></span></div><div class="rec"><span class="folder"></span><span class="name"><b>Recipes</b><small>Bookmarks bar</small></span><span class="pct">61%</span><span class="meter" style="--w: 61%;"></span></div><div class="rec"><span class="folder"></span><span class="name"><b>Meal planning</b><small>Home</small></span><span class="pct">22%</span><span class="meter" style="--w: 22%;"></span></div></div><span class="btn save">Save to “Dinners”</span></div></div></div><section class="block" id="save"><div class="wrap split"><div class="head" style="margin: 0px;"><p class="eyebrow">In the toolbar</p><h2>One click and it picks the folder.</h2><p class="lede">Open the popup on any page. Tidymark reads the title, the address and the page description, then ranks your existing folders by how well they fit.</p></div><ul class="points"><li><b>Your three best folders, with a confidence score</b><span>Tap one to save. The button tells you exactly where the bookmark will land.</span></li><li><b>It won't force a bad fit</b><span>When nothing scores high enough, it suggests a new folder, named after the site and placed next to the closest match.</span></li><li><b>No duplicates</b><span>Already saved that address? Tidymark moves the existing bookmark instead of making a second one.</span></li><li><b>Auto-save if you want it</b><span>Off by default. Turn it on and pages save themselves only when confidence clears your threshold.</span></li></ul></div></section><section class="block" id="tidy"><div class="wrap"><div class="head"><p class="eyebrow">Tidy studio</p><h2>Four ways to sort the pile.</h2><p class="lede">Pick a scope: only the loose bookmarks sitting outside any folder, everything, or one folder. Then pick how you want them sorted.</p></div><figure class="way-player" style="--c: var(--violet);"><video src="./videos/mode-d-en.mp4" playsinline preload="auto" aria-label="Into projects: Finds bursts of four or more bookmarks saved within hours of each other and groups them by purpose."></video><figcaption><span class="tab">D</span>Into projects<button type="button" class="way-toggle">Pause tour</button></figcaption></figure><div class="ways" role="tablist" aria-label="Organize modes"><button type="button" role="tab" aria-selected="false" class="way" style="--c: var(--lime); --soft: var(--lime-soft);"><span class="tab">A</span><span class="body"><span class="way-title">Into new folders</span><span class="way-text">Name the categories you want. Tidymark builds the structure and files each bookmark under it.</span><span class="way-sample">Tidymark
+├ Recipes
+├ Travel
+└ Home &amp; Garden</span></span></button><button type="button" role="tab" aria-selected="false" class="way" style="--c: var(--sky); --soft: var(--sky-soft);"><span class="tab">B</span><span class="body"><span class="way-title">Into your folders</span><span class="way-text">Keep the structure you have. Strays go to the best match among up to 100 folders you choose.</span><span class="way-sample">→ Recipes / Baking
+→ Family / School</span></span></button><button type="button" role="tab" aria-selected="false" class="way" style="--c: var(--amber); --soft: var(--amber-soft);"><span class="tab">C</span><span class="body"><span class="way-title">By how you use them</span><span class="way-text">Split by the last time you opened each bookmark. Plain rules, no AI.</span><span class="way-sample">Active
+Occasional
+Someday
+Archive</span></span></button><button type="button" role="tab" aria-selected="true" class="way" style="--c: var(--violet); --soft: var(--violet-soft);"><span class="tab">D</span><span class="body"><span class="way-title">Into projects</span><span class="way-text">Finds bursts of four or more bookmarks saved within hours of each other and groups them by purpose.</span><span class="way-sample">Projects
+└ 2026-04 · Kitchen remodel</span><span class="progress" style="--d: 4.5s;"></span></span></button></div></div></section><section class="block" id="usage"><div class="wrap split"><div class="head" style="margin: 0px;"><p class="eyebrow">Mode C in detail</p><h2>Sorted by the day you last opened it.</h2><p class="lede">Chrome remembers when you last used each bookmark. Tidymark turns that into four shelves. Anything saved in the last 14 days stays where it is.</p><p class="fine">Optionally add the last 90 days of browsing history for better accuracy. History stays in your browser.</p></div><div class="buckets"><div class="bucket" style="--w: 47.48210526315789%;"><span class="fill"></span><div><b>Active</b><small>opened in the last 30 days</small></div><span class="n">358</span></div><div class="bucket" style="--w: 63%;"><span class="fill"></span><div><b>Occasional</b><small>opened 30–180 days ago</small></div><span class="n">475</span></div><div class="bucket" style="--w: 33.423157894736846%;"><span class="fill"></span><div><b>Someday</b><small>saved, never opened</small></div><span class="n">252</span></div><div class="bucket" style="--w: 46.81894736842106%;"><span class="fill"></span><div><b>Archive</b><small>not opened in 180+ days</small></div><span class="n">353</span></div></div></div></section><section class="block" id="checkup"><div class="wrap"><div class="head"><p class="eyebrow">Checkup</p><h2>Find what to delete, and what to put away.</h2></div><div class="checks"><div class="check"><span class="n">37</span><b>Broken links</b><p>Pages that return 404 or 410, or whose domain is gone. Logins and temporary errors are left alone.</p><span class="act">Delete</span></div><div class="check"><span class="n">62</span><b>Duplicates</b><p>Same address, ignoring #, trailing slashes, www. and utm_ tags. Keeps the one that's filed or recently used.</p><span class="act">Delete</span></div><div class="check"><span class="n">11</span><b>Empty folders</b><p>Folders with nothing inside.</p><span class="act">Delete</span></div><div class="check"><span class="n">13</span><b>Stale folders</b><p>Not changed or opened in a period you pick, from 6 months to 5 years.</p><span class="act move">Move to Archive</span></div></div><p class="note">Numbers are from an example library. Deleted bookmarks come back if you undo.</p></div></section><section class="block" id="interests"><div class="wrap split"><div class="head" style="margin: 0px;"><p class="eyebrow">Interest report</p><h2>See what your bookmarks say about you.</h2></div><p class="lede" style="align-self: end;">Maybe it's 30% cooking, 20% travel plans and a surprising amount of houseplants. Tidymark reads every bookmark's title and description, maps out the topics you care about and how much of your library each takes up, then proposes a folder structure to match. One click sends that structure to mode A.</p></div></section><section class="block" style="border-top: 0px; padding-top: 24px;"><div class="wrap"><div class="safe"><div style="display: grid; gap: 16px;"><p class="eyebrow">Before anything moves</p><h2>Nothing changes until you <em>apply</em>.</h2><p style="color: rgb(214, 210, 198);">You get a move plan grouped by destination. Change any row, untick what you don't like. Low-confidence rows are flagged for review and left unticked. And the last tidy can always be undone.</p></div><div class="plan" aria-label="Example move plan"><div class="row"><span>One-bowl banana bread</span><span class="to">→ Recipes / Baking</span></div><div class="row"><span>Toddler sleep schedule by age</span><span class="to">→ Family / Kids</span></div><div class="row"><span>Standing desks compared</span><span class="to">→ Shopping / Home office</span></div><div class="row review"><span>Untitled</span><span class="to">Review · 41%</span></div><div class="foot"><span>Apply 3 moves</span><span>Undo last tidy</span></div></div></div></div></section><section class="block" id="privacy"><div class="wrap privacy"><div style="display: grid; gap: 12px; align-content: start;"><p class="eyebrow">Privacy</p><h2 style="font-size: 40px;">What leaves your browser.</h2><p class="updated">Last updated September 25, 2026</p><a class="policy-link" href="./privacypolicy/">Read the full privacy policy →</a></div><dl><div><dt>Where classification happens</dt><dd>Tidymark sends pages to the Tidymark server for classification. It runs on Google Cloud Run in Seoul, South Korea. You can instead run your own server and point the extension at it in Settings; Chrome asks for your permission before the extension can reach a new address.</dd></div><div><dt>What is sent</dt><dd>For each bookmark or page being classified: its title, address, and page description (or text you have selected on the page). For folder matching, the names of your folders. To read descriptions and check links, the server visits the bookmarked addresses.</dd></div><div><dt>The interest report</dt><dd>When you run the interest report or project grouping, bookmark titles, addresses and descriptions are sent from the server to a large language model through the Poe API. Classification uses the TypeSafe API. Nothing goes to these services unless you start that feature.</dd></div><div><dt>Browsing history</dt><dd>Optional, and only asked for when you turn it on in the sort-by-usage mode. History is read inside your browser to decide how recently you used a page. It is never sent to any server.</dd></div><div><dt>What is stored</dt><dd>Your settings live in Chrome's extension storage. The Tidymark server writes nothing to disk: it keeps page titles and descriptions only in a short-lived memory cache so it doesn't fetch the same page twice, and forgets them when it restarts. Nothing is tied to you, because there are no accounts.</dd></div><div><dt>What we don't do</dt><dd>No accounts, no ads, no analytics, no selling or sharing of your data. Data is used only to organize your bookmarks.</dd></div></dl></div></section></main><footer><div class="wrap"><span>Tidymark · a bookmark organizer for Chrome</span><span>For everyone who has ever saved something “for later”.</span></div></footer></div>
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon="{&quot;version&quot;:&quot;2024.11.0&quot;,&quot;token&quot;:&quot;c0f5d45524b947308b967e550205e578&quot;,&quot;r&quot;:1,&quot;spa&quot;:2}" crossorigin="anonymous"></script>
+
+
+
+</body>
+</html>

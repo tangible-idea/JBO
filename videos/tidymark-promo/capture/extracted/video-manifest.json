@@ -1,0 +1,55 @@
+[
+  {
+    "index": 0,
+    "url": "https://tidy.tmtt.link/videos/mode-d-en.mp4",
+    "filename": "mode-d-en.mp4",
+    "width": 1070,
+    "height": 602,
+    "sourceWidth": 1280,
+    "sourceHeight": 720,
+    "heading": "Four ways to sort the pile.",
+    "caption": "DInto projectsPause tour",
+    "ariaLabel": "Into projects: Finds bursts of four or more bookmarks saved within hours of each other and groups them by purpose.",
+    "localPath": "assets/videos/mode-d-en.mp4"
+  },
+  {
+    "index": 1,
+    "url": "https://tidy.tmtt.link/videos/mode-a-en.mp4",
+    "filename": "mode-a-en.mp4",
+    "width": 1070,
+    "height": 602,
+    "sourceWidth": 1280,
+    "sourceHeight": 720,
+    "heading": "Four ways to sort the pile.",
+    "caption": "AInto new foldersPause tour",
+    "ariaLabel": "Into new folders: Name the categories you want. Tidymark builds the structure and files each bookmark under it.",
+    "localPath": "assets/videos/mode-a-en.mp4"
+  },
+  {
+    "index": 2,
+    "url": "https://tidy.tmtt.link/videos/mode-b-en.mp4",
+    "filename": "mode-b-en.mp4",
+    "width": 1070,
+    "height": 602,
+    "sourceWidth": 1280,
+    "sourceHeight": 720,
+    "heading": "Four ways to sort the pile.",
+    "caption": "BInto your foldersPause tour",
+    "ariaLabel": "Into your folders: Keep the structure you have. Strays go to the best match among up to 100 folders you choose.",
+    "localPath": "assets/videos/mode-b-en.mp4"
+  },
+  {
+    "index": 3,
+    "url": "https://tidy.tmtt.link/videos/mode-c-en.mp4",
+    "filename": "mode-c-en.mp4",
+    "width": 1070,
+    "height": 602,
+    "sourceWidth": 1280,
+    "sourceHeight": 720,
+    "heading": "Four ways to sort the pile.",
+    "caption": "CBy how you use themPause tour",
+    "ariaLabel": "By how you use them: Split by the last time you opened each bookmark. Plain rules, no AI.",
+    "preview": "assets/videos/previews/video-3-preview.png",
+    "localPath": "assets/videos/mode-c-en.mp4"
+  }
+]

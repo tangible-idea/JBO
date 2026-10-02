@@ -1,0 +1,102 @@
+{
+  "bpm": 120,
+  "duration": 40,
+  "events": [
+    {
+      "t": 0.5,
+      "type": "bookmark arrival"
+    },
+    {
+      "t": 1,
+      "type": "bookmark arrival"
+    },
+    {
+      "t": 2,
+      "type": "bookmark arrival"
+    },
+    {
+      "t": 2.5,
+      "type": "bookmark arrival"
+    },
+    {
+      "t": 3,
+      "type": "bookmark arrival"
+    },
+    {
+      "t": 3.5,
+      "type": "bookmark arrival"
+    },
+    {
+      "t": 4,
+      "type": "bookmark arrival"
+    },
+    {
+      "t": 5.65,
+      "type": "scene handoff"
+    },
+    {
+      "t": 9.65,
+      "type": "scene handoff"
+    },
+    {
+      "t": 17.65,
+      "type": "scene handoff"
+    },
+    {
+      "t": 27.65,
+      "type": "scene handoff"
+    },
+    {
+      "t": 33.65,
+      "type": "scene handoff"
+    },
+    {
+      "t": 6,
+      "type": "scene impact"
+    },
+    {
+      "t": 10,
+      "type": "scene impact"
+    },
+    {
+      "t": 18,
+      "type": "scene impact"
+    },
+    {
+      "t": 28,
+      "type": "scene impact"
+    },
+    {
+      "t": 34,
+      "type": "scene impact"
+    },
+    {
+      "t": 12,
+      "type": "save click and confirmation"
+    },
+    {
+      "t": 14.5,
+      "type": "save click and confirmation"
+    },
+    {
+      "t": 17,
+      "type": "save click and confirmation"
+    },
+    {
+      "t": 18,
+      "type": "mode selection"
+    },
+    {
+      "t": 20.5,
+      "type": "mode selection"
+    },
+    {
+      "t": 23,
+      "type": "mode selection"
+    },
+    {
+      "t": 25.5,
+      "type": "mode selection"
+    }
+  ]
+}

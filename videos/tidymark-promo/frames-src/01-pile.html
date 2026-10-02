@@ -1,0 +1,74 @@
+<template>
+  <style>
+    /*@FONTS*/
+    #root { position: absolute; inset: 0; overflow: hidden; color: #18181a; font-family: 'Instrument Sans', sans-serif; }
+    .p1-bg { position: absolute; inset: 0; background-color: #f3f0e7;
+      background-image: radial-gradient(#dcd7c9 2px, transparent 2px); background-size: 36px 36px; }
+    .p1-count { position: absolute; left: 50%; top: 46px; margin-left: -190px; width: 380px; display: flex; align-items: center; gap: 14px;
+      padding: 10px 20px; background: #fffdf7; border: 3px solid #18181a; border-radius: 999px; box-shadow: 4px 4px 0 #18181a; }
+    .p1-count b { font: 800 34px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; min-width: 110px; }
+    .p1-count span { font: 700 15px/1.1 'JetBrains Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; color: #5c5850; }
+    .p1-head { position: absolute; left: 0; right: 0; top: 150px; text-align: center;
+      font: 800 112px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.035em; }
+    .p1-head .p1-w { display: inline-block; }
+    .p1-hl { display: inline-block; background: #c8f25a; border: 4px solid #18181a; box-shadow: 8px 8px 0 #18181a; padding: 0 22px 8px; border-radius: 16px; margin-left: 18px; }
+    .p1-chip { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 12px; white-space: nowrap;
+      padding: 14px 22px; background: #fffdf7; border: 3px solid #18181a; border-radius: 16px; box-shadow: 5px 5px 0 #18181a;
+      font: 600 28px/1 'Instrument Sans', sans-serif; letter-spacing: -0.01em; }
+    .p1-chip i { width: 18px; height: 18px; border-radius: 5px; border: 2px solid #18181a; background: var(--c); }
+  </style>
+
+  <div id="root" data-composition-id="01-pile" data-width="1920" data-height="1080">
+    <div id="p1-bg" class="p1-bg clip" data-start="0" data-duration="4.6" data-track-index="0"></div>
+    <div id="p1-chips"></div>
+    <div id="p1-count" class="p1-count"><b id="p1-num">0</b><span>bookmarks saved<br />for later</span></div>
+    <div class="p1-head"><span id="p1-w1" class="p1-w">You saved it</span><span id="p1-w2" class="p1-hl">for later.</span></div>
+  </div>
+
+  <script>
+    (() => {
+      // Shared with frames 2 and 3: the same twenty chips land in the same places.
+      const CHIPS = [
+        ["Weeknight lasagna", "#f5c451"], ["Lisbon in 3 days", "#c8f25a"], ["Running shoe review", "#a9d8ff"],
+        ["Untitled", "#dcd7c9"], ["Banana bread", "#f5c451"], ["Standing desks compared", "#cbb6ff"],
+        ["Toddler sleep guide", "#cbb6ff"], ["10K training plan", "#a9d8ff"], ["New Tab", "#dcd7c9"],
+        ["Kitchen tile ideas", "#cbb6ff"], ["Lisbon food map", "#c8f25a"], ["Tax return 2025", "#f5c451"],
+        ["Houseplant care", "#c8f25a"], ["Camping checklist", "#a9d8ff"], ["Read later: AI agents", "#cbb6ff"],
+        ["Sourdough starter", "#f5c451"], ["Wedding venues", "#cbb6ff"], ["Marathon sign-up", "#a9d8ff"],
+        ["Bike repair video", "#a9d8ff"], ["Cheap flights to Porto", "#c8f25a"],
+      ];
+      const spot = (i) => {
+        const a = i * 2.399963; // golden angle: an even, natural-looking heap
+        const r = Math.sqrt((i + 0.6) / CHIPS.length);
+        return { x: 960 + Math.cos(a) * r * 700 - 150, y: 620 + Math.sin(a) * r * 255 - 30, rot: ((i * 37) % 23) - 11 };
+      };
+      const root = document.getElementById("p1-chips");
+      const els = CHIPS.map(([label, color], i) => {
+        const el = document.createElement("div");
+        el.className = "p1-chip";
+        el.style.setProperty("--c", color);
+        el.innerHTML = "<i></i>" + label;
+        el.style.zIndex = String(i);
+        el.dataset.layoutAllowOverlap = "";
+        el.dataset.layoutAllowOcclusion = "";
+        root.appendChild(el);
+        return el;
+      });
+
+      const tl = gsap.timeline({ paused: true });
+      els.forEach((el, i) => {
+        const s = spot(i);
+        tl.fromTo(el, { x: s.x, y: -260 - (i % 4) * 90, rotation: s.rot * 3 },
+          { x: s.x, y: s.y, rotation: s.rot, duration: 0.85, ease: "bounce.out" }, 0.1 + i * 0.11);
+      });
+      tl.fromTo("#p1-count", { y: -40, scale: 0.85, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(2.2)" }, 0.1);
+      const counter = { v: 0 };
+      tl.fromTo(counter, { v: 0 }, { v: 1730, duration: 2.9, ease: "power2.out",
+        onUpdate: () => { document.getElementById("p1-num").textContent = Math.round(counter.v).toLocaleString("en-US"); } }, 0.3);
+      tl.fromTo("#p1-w1", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 2.45);
+      tl.fromTo("#p1-w2", { scale: 0.4, rotation: -10, opacity: 0 }, { scale: 1, rotation: -3, opacity: 1, duration: 0.6, ease: "back.out(3)" }, 2.85);
+      tl.to("#p1-w2", { rotation: 2, duration: 0.6, ease: "sine.inOut" }, 3.5);
+      window.__timelines["01-pile"] = tl;
+    })();
+  </script>
+</template>

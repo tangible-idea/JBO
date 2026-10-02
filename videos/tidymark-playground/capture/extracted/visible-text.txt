@@ -1,0 +1,130 @@
+[a] Tidymark
+[a] Save a page
+[a] Tidy everything
+[a] Add to Chrome
+[p] Bookmark organizer for Chrome
+[h1] You saved it
+[span] for later.
+[h1] Now where is it?
+[p] The recipe from last spring, the hotel you almost booked, the article you meant to finish. Tidymark reads each page and files it where it belongs, so you can find it again. Save the page you're on with one click, or sort years of loose bookmarks in one pass.
+[a] Add to Chrome
+[a] See the four ways to tidy
+[p] Works with the folders you already have. Nothing moves until you press Apply.
+[button] Weeknight lasagna
+[button] Running shoes review
+[button] 3 days in Lisbon
+[b] Easy weeknight lasagna
+[small] a food blog
+[p] Suggested folders
+[b] Dinners
+[span] Best
+[small] Recipes
+[b] Recipes
+[small] Bookmarks bar
+[b] Meal planning
+[small] Home
+[span] Save to “
+[span] Dinners
+[p] In the toolbar
+[h2] One click and it picks the folder.
+[p] Open the popup on any page. Tidymark reads the title, the address and the page description, then ranks your existing folders by how well they fit.
+[b] Your three best folders, with a confidence score
+[span] Tap one to save. The button tells you exactly where the bookmark will land.
+[b] It won't force a bad fit
+[span] When nothing scores high enough, it suggests a new folder, named after the site and placed next to the closest match.
+[b] No duplicates
+[span] Already saved that address? Tidymark moves the existing bookmark instead of making a second one.
+[b] Auto-save if you want it
+[span] Off by default. Turn it on and pages save themselves only when confidence clears your threshold.
+[p] Tidy studio
+[h2] Four ways to sort the pile.
+[p] Pick a scope: only the loose bookmarks sitting outside any folder, everything, or one folder. Then pick how you want them sorted.
+[figcaption] Into your folders
+[button] Pause tour
+[span] Into new folders
+[span] Name the categories you want. Tidymark builds the structure and files each bookmark under it.
+[span] Tidymark
+├ Recipes
+├ Travel
+└ Home & Garden
+[span] Into your folders
+[span] Keep the structure you have. Strays go to the best match among up to 100 folders you choose.
+[span] → Recipes / Baking
+→ Family / School
+[span] By how you use them
+[span] Split by the last time you opened each bookmark. Plain rules, no AI.
+[span] Active
+Occasional
+Someday
+Archive
+[span] Into projects
+[span] Finds bursts of four or more bookmarks saved within hours of each other and groups them by purpose.
+[span] Projects
+└ 2026-04 · Kitchen remodel
+[p] Mode C in detail
+[h2] Sorted by the day you last opened it.
+[p] Chrome remembers when you last used each bookmark. Tidymark turns that into four shelves. Anything saved in the last 14 days stays where it is.
+[p] Optionally add the last 90 days of browsing history for better accuracy. History stays in your browser.
+[b] Active
+[small] opened in the last 30 days
+[span] 358
+[b] Occasional
+[small] opened 30–180 days ago
+[span] 475
+[b] Someday
+[small] saved, never opened
+[span] 252
+[b] Archive
+[small] not opened in 180+ days
+[span] 353
+[p] Checkup
+[h2] Find what to delete, and what to put away.
+[b] Broken links
+[p] Pages that return 404 or 410, or whose domain is gone. Logins and temporary errors are left alone.
+[span] Delete
+[b] Duplicates
+[p] Same address, ignoring #, trailing slashes, www. and utm_ tags. Keeps the one that's filed or recently used.
+[span] Delete
+[b] Empty folders
+[p] Folders with nothing inside.
+[span] Delete
+[b] Stale folders
+[p] Not changed or opened in a period you pick, from 6 months to 5 years.
+[span] Move to Archive
+[p] Numbers are from an example library. Deleted bookmarks come back if you undo.
+[p] Interest report
+[h2] See what your bookmarks say about you.
+[p] Maybe it's 30% cooking, 20% travel plans and a surprising amount of houseplants. Tidymark reads every bookmark's title and description, maps out the topics you care about and how much of your library each takes up, then proposes a folder structure to match. One click sends that structure to mode A.
+[p] Before anything moves
+[h2] Nothing changes until you
+[em] apply
+[p] You get a move plan grouped by destination. Change any row, untick what you don't like. Low-confidence rows are flagged for review and left unticked. And the last tidy can always be undone.
+[span] One-bowl banana bread
+[span] → Recipes / Baking
+[span] Toddler sleep schedule by age
+[span] → Family / Kids
+[span] Standing desks compared
+[span] → Shopping / Home office
+[span] Untitled
+[span] Review · 41%
+[span] Apply
+[span] moves
+[span] Undo last tidy
+[h2] What leaves your browser.
+[p] Last updated
+[p] September 25, 2026
+[a] Read the full privacy policy →
+[dt] Where classification happens
+[dd] Tidymark sends pages to the Tidymark server for classification. It runs on Google Cloud Run in Seoul, South Korea. You can instead run your own server and point the extension at it in Settings; Chrome asks for your permission before the extension can reach a new address.
+[dt] What is sent
+[dd] For each bookmark or page being classified: its title, address, and page description (or text you have selected on the page). For folder matching, the names of your folders. To read descriptions and check links, the server visits the bookmarked addresses.
+[dt] The interest report
+[dd] When you run the interest report or project grouping, bookmark titles, addresses and descriptions are sent from the server to a large language model through the Poe API. Classification uses the TypeSafe API. Nothing goes to these services unless you start that feature.
+[dt] Browsing history
+[dd] Optional, and only asked for when you turn it on in the sort-by-usage mode. History is read inside your browser to decide how recently you used a page. It is never sent to any server.
+[dt] What is stored
+[dd] Your settings live in Chrome's extension storage. The Tidymark server writes nothing to disk: it keeps page titles and descriptions only in a short-lived memory cache so it doesn't fetch the same page twice, and forgets them when it restarts. Nothing is tied to you, because there are no accounts.
+[dt] What we don't do
+[dd] No accounts, no ads, no analytics, no selling or sharing of your data. Data is used only to organize your bookmarks.
+[span] Tidymark · a bookmark organizer for Chrome
+[span] For everyone who has ever saved something “for later”.

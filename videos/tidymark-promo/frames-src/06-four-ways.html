@@ -1,0 +1,67 @@
+<template>
+  <style>
+    /*@FONTS*/
+    #root { position: absolute; inset: 0; overflow: hidden; color: #18181a; font-family: 'Instrument Sans', sans-serif; }
+    .p6-bg { position: absolute; inset: 0; background: #f3f0e7; background-image: radial-gradient(#dcd7c9 2px, transparent 2px); background-size: 36px 36px; }
+    .p6-head { position: absolute; left: 96px; top: 52px; font: 800 74px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.04em; }
+    .p6-head em { font-style: normal; background: #c8f25a; border: 4px solid #18181a; border-radius: 14px; padding: 0 14px 6px; box-shadow: 6px 6px 0 #18181a; }
+    .p6-item { position: absolute; left: 96px; width: 420px; height: 142px; padding: 20px 22px 0 92px; border: 3px solid #dcd7c9; border-radius: 18px; background: #fffdf7;
+      transform-origin: 0 50%; }
+    .p6-item b { position: absolute; left: 22px; top: 24px; width: 52px; height: 52px; border-radius: 14px; border: 3px solid #18181a; background: var(--c);
+      font: 800 28px/46px 'JetBrains Mono', monospace; text-align: center; }
+    .p6-item strong { display: block; font: 800 32px/1.05 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em; }
+    .p6-item span { display: block; margin-top: 8px; font: 500 21px/1.3 'Instrument Sans', sans-serif; color: #3a3935; }
+    /* stage interior = the clips' host geometry: x 632–1816, y 172–838 (1184×666) */
+    .p6-stage { position: absolute; left: 628px; top: 168px; width: 1192px; height: 674px; border: 4px solid #18181a; border-radius: 22px; background: #f3f0e7;
+      box-shadow: 14px 14px 0 #c8f25a; overflow: hidden; }
+    .p6-stage .im { position: absolute; left: 0; top: 0; width: 1184px; height: 666px; background-size: 100% 100%; background-repeat: no-repeat; }
+    .p6-live { position: absolute; left: 1610px; top: 120px; height: 38px; padding: 0 14px; display: flex; align-items: center; gap: 8px; border-radius: 999px;
+      background: #18181a; color: #fffdf7; font: 700 16px/1 'JetBrains Mono', monospace; letter-spacing: 0.08em; }
+    .p6-live i { width: 11px; height: 11px; border-radius: 50%; background: #c8f25a; }
+  </style>
+
+  <div id="root" data-composition-id="06-four-ways" data-width="1920" data-height="1080">
+    <div id="p6-bg" class="p6-bg clip" data-start="0" data-duration="10" data-track-index="0"></div>
+    <div id="p6-head" class="p6-head">Four ways to sort <em>the pile</em></div>
+
+    <div id="p6-item-a" class="p6-item" style="--c:#c8f25a;top:168px"><b>A</b><strong>Into new folders</strong><span>Pick categories, get a fresh structure.</span></div>
+    <div id="p6-item-b" class="p6-item" style="--c:#a9d8ff;top:348px"><b>B</b><strong>Into your folders</strong><span>Keep your folders, file the strays.</span></div>
+    <div id="p6-item-c" class="p6-item" style="--c:#f5c451;top:528px"><b>C</b><strong>By usage</strong><span>Sorted by the last time you opened them.</span></div>
+    <div id="p6-item-d" class="p6-item" style="--c:#cbb6ff;top:708px"><b>D</b><strong>Into projects</strong><span>Bursts of saves become project folders.</span></div>
+
+    <div id="p6-stage" class="p6-stage"><div class="im" style="background-image:url('assets/img/mode-a-first.png')"></div></div>
+    <div id="p6-live" class="p6-live"><i></i>NOW SORTING</div>
+
+    <!-- The real explainer clips play one after another on the stage, skipping their first 0.2 s (the pile is already on screen). -->
+    <video id="p6-video-a" data-frame-video="approved" src="assets/video/mode-a-en.mp4" muted playsinline data-start="0.3" data-duration="2.2" data-media-start="0.2" data-track-index="5"
+      data-frame-video-x="632" data-frame-video-y="172" data-frame-video-width="1184" data-frame-video-height="666" data-frame-video-fit="cover"></video>
+    <video id="p6-video-b" data-frame-video="approved" src="assets/video/mode-b-en.mp4" muted playsinline data-start="2.5" data-duration="2.2" data-media-start="0.2" data-track-index="6"
+      data-frame-video-x="632" data-frame-video-y="172" data-frame-video-width="1184" data-frame-video-height="666" data-frame-video-fit="cover"></video>
+    <video id="p6-video-c" data-frame-video="approved" src="assets/video/mode-c-en.mp4" muted playsinline data-start="4.7" data-duration="2.2" data-media-start="0.2" data-track-index="7"
+      data-frame-video-x="632" data-frame-video-y="172" data-frame-video-width="1184" data-frame-video-height="666" data-frame-video-fit="cover"></video>
+    <video id="p6-video-d" data-frame-video="approved" src="assets/video/mode-d-en.mp4" muted playsinline data-start="6.9" data-duration="3.1" data-media-start="0.2" data-track-index="8"
+      data-frame-video-x="632" data-frame-video-y="172" data-frame-video-width="1184" data-frame-video-height="666" data-frame-video-fit="cover"></video>
+  </div>
+
+  <script>
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#p6-head", { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: "back.out(2)" }, 0);
+      tl.fromTo("#p6-stage", { y: 60, rotation: 2, opacity: 0 }, { y: 0, rotation: 0, opacity: 1, duration: 0.3, ease: "back.out(1.8)" }, 0);
+      ["a", "b", "c", "d"].forEach((k, i) => {
+        tl.fromTo(`#p6-item-${k}`, { x: -80, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "back.out(2)" }, 0.05 + i * 0.06);
+      });
+      tl.fromTo("#p6-live", { scale: 0 }, { scale: 1, duration: 0.25, ease: "back.out(3)" }, 0.3);
+      // The playlist highlights the mode on stage; the stage takes on that mode's colour.
+      const order = [["a", 0.3, "#c8f25a"], ["b", 2.5, "#a9d8ff"], ["c", 4.7, "#f5c451"], ["d", 6.9, "#cbb6ff"]];
+      order.forEach(([k, at, colour]) => {
+        tl.to(`#p6-item-${k}`, { scale: 1.06, borderColor: "#18181a", backgroundColor: colour, boxShadow: "8px 8px 0 #18181a", duration: 0.22, ease: "back.out(2.5)" }, at);
+        tl.to("#p6-stage", { boxShadow: `14px 14px 0 ${colour}`, duration: 0.2 }, at);
+        order.filter(([o]) => o !== k).forEach(([o]) => {
+          tl.to(`#p6-item-${o}`, { scale: 1, borderColor: "#dcd7c9", backgroundColor: "#fffdf7", boxShadow: "0px 0px 0 #18181a", duration: 0.2 }, at);
+        });
+      });
+      window.__timelines["06-four-ways"] = tl;
+    })();
+  </script>
+</template>

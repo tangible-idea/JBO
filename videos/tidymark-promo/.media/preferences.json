@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "preferences": {
+    "destination": {
+      "value": "youtube",
+      "confirmed_in": [
+        "tidymark-promo"
+      ],
+      "updated_at": "2026-10-02T15:13:32.274Z"
+    },
+    "aspect": {
+      "value": "1920x1080",
+      "confirmed_in": [
+        "tidymark-promo"
+      ],
+      "updated_at": "2026-10-02T15:13:39.593Z"
+    },
+    "language": {
+      "value": "en",
+      "confirmed_in": [
+        "tidymark-promo"
+      ],
+      "updated_at": "2026-10-02T15:13:39.630Z"
+    },
+    "flow": {
+      "value": "automation",
+      "confirmed_in": [
+        "tidymark-promo"
+      ],
+      "updated_at": "2026-10-02T15:13:39.668Z"
+    },
+    "storyboard": {
+      "value": "no",
+      "confirmed_in": [
+        "tidymark-promo"
+      ],
+      "updated_at": "2026-10-02T15:13:39.706Z"
+    },
+    "style_preset.product-launch-video": {
+      "value": "blockframe",
+      "confirmed_in": [
+        "tidymark-promo"
+      ],
+      "updated_at": "2026-10-02T15:14:51.877Z"
+    }
+  },
+  "sightings": {}
+}
