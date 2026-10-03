@@ -43,9 +43,13 @@ let settings = DEFAULT_SETTINGS;
 let existingBookmark;
 let mode = "existing";
 let busy = false;
+// While a suggestion is on its way the save button waits too, unless the user picks a folder themselves.
+let suggesting = false;
+let userPicked = false;
 
 const destinationPicker = createFolderPicker($("#destination-picker"), {
   onChange: () => {
+    userPicked = true;
     highlightRecommendation();
     updateAction();
   },
@@ -91,6 +95,12 @@ function setMode(nextMode) {
 function updateAction() {
   let label;
   let enabled = !busy && Boolean(activeTab?.url);
+  if (mode === "existing" && suggesting && !userPicked && !existingBookmark) {
+    elements.saveLabel.innerHTML = '<span class="skel-line skel-on-dark" style="width:150px"></span>';
+    elements.save.disabled = true;
+    elements.savedBadge.hidden = true;
+    return;
+  }
   if (mode === "existing") {
     const folder = destinationPicker.selected;
     if (!folder) {
@@ -316,8 +326,11 @@ async function save() {
 
 async function classify() {
   elements.classify.disabled = true;
-  elements.recommendations.innerHTML = '<div class="skeleton"></div><div class="skeleton short"></div>';
+  // Same shimmering shell as popup.html: three rows shaped like real suggestions.
+  elements.recommendations.innerHTML = '<div class="skel-rec"><i></i><span><b></b><em></em></span><u></u></div>'.repeat(3);
   elements.recommendations.setAttribute("aria-busy", "true");
+  suggesting = true;
+  updateAction();
   try {
     const pageContext = await getPageContext();
     const response = await fetch(`${settings.endpoint.replace(/\/$/, "")}/api/classify`, {
@@ -350,6 +363,7 @@ async function classify() {
     renderRecommendationMessage(t("추천을 받지 못했어요. {0}", error.message), { retry: true });
     setStatus(t("서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요."), "error");
   } finally {
+    suggesting = false;
     elements.classify.disabled = false;
     elements.recommendations.removeAttribute("aria-busy");
     updateAction();
@@ -428,4 +442,18 @@ $("#open-organizer").addEventListener("click", () => {
   chrome.tabs.create({ url: chrome.runtime.getURL("options.html#organize") });
 });
 document.body.dataset.mode = mode;
-initialize().catch((error) => setStatus(error.message, "error"));
+// Any placeholder still shimmering once startup is over (a page that can't be saved,
+// no folders, or an error) falls back to its plain text instead of spinning forever.
+function settleSkeletons() {
+  document.querySelectorAll(".folder-picker-title .skel-line").forEach((el) => el.replaceWith(t("폴더를 선택하세요")));
+  document.querySelectorAll("#page-host .skel-line").forEach((el) => el.remove());
+  document.querySelectorAll("#page-title .skel-line").forEach((el) => el.replaceWith(t("제목 없는 페이지")));
+  if (elements.recommendations.querySelector(".skel-rec") && !elements.recommendations.hasAttribute("aria-busy")) {
+    elements.recommendations.replaceChildren();
+  }
+  if (!elements.recommendations.querySelector(".skel-rec")) elements.recommendations.removeAttribute("aria-busy");
+}
+
+initialize()
+  .catch((error) => setStatus(error.message, "error"))
+  .finally(settleSkeletons);
