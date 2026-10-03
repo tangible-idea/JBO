@@ -1,0 +1,77 @@
+<template>
+  <style>
+    /*@FONTS*/
+    #root { position: absolute; inset: 0; overflow: hidden; word-break: keep-all; color: #18181a; font-family: 'Instrument Sans', 'Pretendard Variable', sans-serif; }
+    .p8-bg { position: absolute; inset: 0; background: #e3f2ff; background-image: radial-gradient(#a9d8ff 2px, transparent 2px); background-size: 40px 40px; }
+    .p8-head { position: absolute; left: 0; right: 0; top: 70px; text-align: center; font: 800 92px/1 'Bricolage Grotesque', 'Pretendard Variable', sans-serif; letter-spacing: -0.04em; }
+    .p8-head em { font-style: normal; background: #18181a; color: #c8f25a; border-radius: 16px; padding: 0 20px 8px; }
+    .p8-plan { position: absolute; left: 300px; top: 250px; width: 760px; height: 560px; background: #fffdf7; border: 4px solid #18181a; border-radius: 22px;
+      box-shadow: 12px 12px 0 #18181a; }
+    .p8-plan h4 { position: absolute; left: 34px; top: 26px; margin: 0; font: 800 36px/1 'Bricolage Grotesque', 'Pretendard Variable', sans-serif; letter-spacing: -0.02em; }
+    .p8-row { position: absolute; left: 0; top: 0; width: 690px; height: 82px; display: flex; align-items: center; gap: 14px; padding: 0 20px; z-index: 5;
+      background: #fffdf7; border: 3px solid #18181a; border-radius: 14px; box-shadow: 4px 4px 0 #18181a; font: 600 26px/1 'Instrument Sans', 'Pretendard Variable', sans-serif; white-space: nowrap; }
+    .p8-row i { width: 18px; height: 18px; border-radius: 5px; border: 2px solid #18181a; background: var(--c); }
+    .p8-row span { margin-left: auto; font: 700 18px/1 'JetBrains Mono', 'Pretendard Variable', monospace; color: #5c5850; }
+    .p8-btn { position: absolute; z-index: 6; height: 76px; padding: 0 34px; border: 4px solid #18181a; border-radius: 16px; box-shadow: 6px 6px 0 #18181a;
+      font: 800 34px/68px 'Bricolage Grotesque', 'Pretendard Variable', sans-serif; letter-spacing: -0.02em; }
+    .p8-apply { left: 334px; top: 690px; background: #18181a; color: #c8f25a; box-shadow: 6px 6px 0 #c8f25a; }
+    .p8-undo { left: 640px; top: 690px; background: #fffdf7; }
+    .p8-folder { position: absolute; width: 230px; height: 150px; z-index: 3; }
+    .p8-folder .t { position: absolute; left: 0; top: 0; width: 96px; height: 32px; background: var(--c); border: 4px solid #18181a; border-bottom: 0; border-radius: 12px 12px 0 0; }
+    .p8-folder .b { position: absolute; left: 0; top: 26px; width: 230px; height: 124px; background: var(--c); border: 4px solid #18181a; border-radius: 0 14px 14px 14px;
+      box-shadow: 6px 6px 0 #18181a; display: grid; place-items: center; font: 800 28px/1.05 'Bricolage Grotesque', 'Pretendard Variable', sans-serif; text-align: center; }
+    .p8-cursor { position: absolute; left: 0; top: 0; width: 54px; height: 54px; z-index: 30; }
+  </style>
+
+  <div id="root" data-composition-id="08-safe" data-width="1920" data-height="1080">
+    <div id="p8-bg" class="p8-bg clip" data-start="0" data-duration="3.6" data-track-index="0"></div>
+    <div id="p8-head" class="p8-head">적용하기 전엔 <em>그대로예요</em></div>
+    <div id="p8-plan" class="p8-plan"><h4>이동 예정표</h4></div>
+    <div id="p8-r1" class="p8-row" style="--c:#f5c451"><i></i>바나나 브레드<span>→ 베이킹</span></div>
+    <div id="p8-r2" class="p8-row" style="--c:#cbb6ff"><i></i>아이 수면 스케줄<span>→ 육아</span></div>
+    <div id="p8-r3" class="p8-row" style="--c:#a9d8ff"><i></i>스탠딩 책상 비교<span>→ 홈오피스</span></div>
+    <div id="p8-apply" class="p8-btn p8-apply">적용하기</div>
+    <div id="p8-undo" class="p8-btn p8-undo">↶ 되돌리기</div>
+    <div id="p8-f1" class="p8-folder" style="--c:#f5c451;left:1260px;top:250px"><div class="t"></div><div class="b">베이킹</div></div>
+    <div id="p8-f2" class="p8-folder" style="--c:#cbb6ff;left:1260px;top:445px"><div class="t"></div><div class="b">육아</div></div>
+    <div id="p8-f3" class="p8-folder" style="--c:#a9d8ff;left:1260px;top:640px"><div class="t"></div><div class="b">홈오피스</div></div>
+    <svg id="p8-cursor" class="p8-cursor" viewBox="0 0 54 54"><path d="M6 4 L6 44 L17 34 L25 51 L33 47 L25 31 L41 31 Z" fill="#fffdf7" stroke="#18181a" stroke-width="4" stroke-linejoin="round" /></svg>
+  </div>
+
+  <script>
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      const rows = [["#p8-r1", 336, 330, 1268, 300], ["#p8-r2", 336, 440, 1268, 495], ["#p8-r3", 336, 550, 1268, 690]];
+      tl.fromTo("#p8-plan", { y: 120, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.7)" }, 0);
+      tl.fromTo("#p8-head", { y: -40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "back.out(2)" }, 0.1);
+      rows.forEach(([el, x, y], i) => tl.fromTo(el, { x: x - 60, y, opacity: 0 }, { x, y, opacity: 1, duration: 0.3, ease: "back.out(2)" }, 0.15 + i * 0.08));
+      tl.fromTo(["#p8-apply", "#p8-undo"], { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(2.5)", stagger: 0.06 }, 0.35);
+      ["#p8-f1", "#p8-f2", "#p8-f3"].forEach((f, i) => tl.fromTo(f, { x: 120, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "back.out(2)" }, 0.4 + i * 0.07));
+      // Apply: click, rows fly into their folders
+      tl.fromTo("#p8-cursor", { x: 820, y: 960 }, { x: 430, y: 720, duration: 0.4, ease: "power3.inOut" }, 0.45);
+      tl.to("#p8-cursor", { scale: 0.8, duration: 0.07 }, 0.88);
+      tl.to("#p8-cursor", { scale: 1, duration: 0.1, ease: "back.out(3)" }, 0.95);
+      tl.to("#p8-apply", { y: 5, boxShadow: "1px 1px 0 #c8f25a", duration: 0.07 }, 0.88);
+      tl.to("#p8-apply", { y: 0, boxShadow: "6px 6px 0 #c8f25a", duration: 0.12 }, 0.96);
+      rows.forEach(([el, , , fx, fy], i) => {
+        tl.to(el, { x: fx, y: fy, scale: 0.32, rotation: i % 2 ? 8 : -8, duration: 0.42, ease: "power3.in" }, 1.0 + i * 0.08);
+        tl.to(el, { opacity: 0, duration: 0.05 }, 1.4 + i * 0.08);
+      });
+      ["#p8-f1", "#p8-f2", "#p8-f3"].forEach((f, i) => {
+        tl.to(f, { scaleX: 1.1, scaleY: 0.9, duration: 0.08 }, 1.42 + i * 0.08);
+        tl.to(f, { scaleX: 1, scaleY: 1, duration: 0.3, ease: "elastic.out(1, 0.4)" }, 1.5 + i * 0.08);
+      });
+      // Undo: click, everything rewinds to where it was
+      tl.to("#p8-cursor", { x: 730, y: 720, duration: 0.3, ease: "power3.inOut" }, 1.75);
+      tl.to("#p8-cursor", { scale: 0.8, duration: 0.07 }, 2.1);
+      tl.to("#p8-cursor", { scale: 1, duration: 0.1, ease: "back.out(3)" }, 2.17);
+      tl.to("#p8-undo", { y: 5, boxShadow: "1px 1px 0 #18181a", backgroundColor: "#c8f25a", duration: 0.07 }, 2.1);
+      tl.to("#p8-undo", { y: 0, boxShadow: "6px 6px 0 #18181a", duration: 0.12 }, 2.18);
+      rows.slice().reverse().forEach(([el, x, y], i) => {
+        tl.to(el, { opacity: 1, duration: 0.04 }, 2.22 + i * 0.07);
+        tl.to(el, { x, y, scale: 1, rotation: 0, duration: 0.45, ease: "back.out(1.6)" }, 2.22 + i * 0.07);
+      });
+      window.__timelines["08-safe"] = tl;
+    })();
+  </script>
+</template>

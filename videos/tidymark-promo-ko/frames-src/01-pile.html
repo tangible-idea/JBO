@@ -1,0 +1,74 @@
+<template>
+  <style>
+    /*@FONTS*/
+    #root { position: absolute; inset: 0; overflow: hidden; word-break: keep-all; color: #18181a; font-family: 'Instrument Sans', 'Pretendard Variable', sans-serif; }
+    .p1-bg { position: absolute; inset: 0; background-color: #f3f0e7;
+      background-image: radial-gradient(#dcd7c9 2px, transparent 2px); background-size: 36px 36px; }
+    .p1-count { position: absolute; left: 50%; top: 46px; margin-left: -190px; width: 380px; display: flex; align-items: center; gap: 14px;
+      padding: 10px 20px; background: #fffdf7; border: 3px solid #18181a; border-radius: 999px; box-shadow: 4px 4px 0 #18181a; }
+    .p1-count b { font: 800 34px/1 'Bricolage Grotesque', 'Pretendard Variable', sans-serif; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; min-width: 110px; }
+    .p1-count span { font: 700 15px/1.1 'JetBrains Mono', 'Pretendard Variable', monospace; letter-spacing: 0.08em; text-transform: uppercase; color: #5c5850; }
+    .p1-head { position: absolute; left: 0; right: 0; top: 150px; text-align: center;
+      font: 800 112px/1 'Bricolage Grotesque', 'Pretendard Variable', sans-serif; letter-spacing: -0.035em; }
+    .p1-head .p1-w { display: inline-block; }
+    .p1-hl { display: inline-block; background: #c8f25a; border: 4px solid #18181a; box-shadow: 8px 8px 0 #18181a; padding: 0 22px 8px; border-radius: 16px; margin-left: 18px; }
+    .p1-chip { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 12px; white-space: nowrap;
+      padding: 14px 22px; background: #fffdf7; border: 3px solid #18181a; border-radius: 16px; box-shadow: 5px 5px 0 #18181a;
+      font: 600 28px/1 'Instrument Sans', 'Pretendard Variable', sans-serif; letter-spacing: -0.01em; }
+    .p1-chip i { width: 18px; height: 18px; border-radius: 5px; border: 2px solid #18181a; background: var(--c); }
+  </style>
+
+  <div id="root" data-composition-id="01-pile" data-width="1920" data-height="1080">
+    <div id="p1-bg" class="p1-bg clip" data-start="0" data-duration="4.6" data-track-index="0"></div>
+    <div id="p1-chips"></div>
+    <div id="p1-count" class="p1-count"><b id="p1-num">0</b><span>나중에 보려고<br />저장한 북마크</span></div>
+    <div class="p1-head"><span id="p1-w1" class="p1-w">‘나중에 봐야지’ 하고</span><span id="p1-w2" class="p1-hl">저장했는데,</span></div>
+  </div>
+
+  <script>
+    (() => {
+      // Shared with frames 2 and 3: the same twenty chips land in the same places.
+      const CHIPS = [
+        ["라자냐 레시피", "#f5c451"], ["리스본 3일 일정", "#c8f25a"], ["러닝화 리뷰", "#a9d8ff"],
+        ["제목 없음", "#dcd7c9"], ["바나나 브레드", "#f5c451"], ["스탠딩 책상 비교", "#cbb6ff"],
+        ["아이 수면 스케줄", "#cbb6ff"], ["10K 훈련 계획", "#a9d8ff"], ["새 탭", "#dcd7c9"],
+        ["주방 타일 고르기", "#cbb6ff"], ["리스본 맛집 지도", "#c8f25a"], ["2025 연말정산", "#f5c451"],
+        ["반려식물 키우기", "#c8f25a"], ["캠핑 체크리스트", "#a9d8ff"], ["나중에 읽기: AI 에이전트", "#cbb6ff"],
+        ["사워도우 스타터", "#f5c451"], ["웨딩홀 비교", "#cbb6ff"], ["마라톤 접수", "#a9d8ff"],
+        ["자전거 수리 영상", "#a9d8ff"], ["포르투 항공권 특가", "#c8f25a"],
+      ];
+      const spot = (i) => {
+        const a = i * 2.399963; // golden angle: an even, natural-looking heap
+        const r = Math.sqrt((i + 0.6) / CHIPS.length);
+        return { x: 960 + Math.cos(a) * r * 700 - 150, y: 620 + Math.sin(a) * r * 255 - 30, rot: ((i * 37) % 23) - 11 };
+      };
+      const root = document.getElementById("p1-chips");
+      const els = CHIPS.map(([label, color], i) => {
+        const el = document.createElement("div");
+        el.className = "p1-chip";
+        el.style.setProperty("--c", color);
+        el.innerHTML = "<i></i>" + label;
+        el.style.zIndex = String(i);
+        el.dataset.layoutAllowOverlap = "";
+        el.dataset.layoutAllowOcclusion = "";
+        root.appendChild(el);
+        return el;
+      });
+
+      const tl = gsap.timeline({ paused: true });
+      els.forEach((el, i) => {
+        const s = spot(i);
+        tl.fromTo(el, { x: s.x, y: -260 - (i % 4) * 90, rotation: s.rot * 3 },
+          { x: s.x, y: s.y, rotation: s.rot, duration: 0.85, ease: "bounce.out" }, 0.1 + i * 0.11);
+      });
+      tl.fromTo("#p1-count", { y: -40, scale: 0.85, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.45, ease: "back.out(2.2)" }, 0.1);
+      const counter = { v: 0 };
+      tl.fromTo(counter, { v: 0 }, { v: 1730, duration: 2.9, ease: "power2.out",
+        onUpdate: () => { document.getElementById("p1-num").textContent = Math.round(counter.v).toLocaleString("en-US"); } }, 0.3);
+      tl.fromTo("#p1-w1", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 2.45);
+      tl.fromTo("#p1-w2", { scale: 0.4, rotation: -10, opacity: 0 }, { scale: 1, rotation: -3, opacity: 1, duration: 0.6, ease: "back.out(3)" }, 2.85);
+      tl.to("#p1-w2", { rotation: 2, duration: 0.6, ease: "sine.inOut" }, 3.5);
+      window.__timelines["01-pile"] = tl;
+    })();
+  </script>
+</template>

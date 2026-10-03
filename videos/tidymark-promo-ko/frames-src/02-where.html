@@ -1,0 +1,91 @@
+<template>
+  <style>
+    /*@FONTS*/
+    #root { position: absolute; inset: 0; overflow: hidden; word-break: keep-all; color: #18181a; font-family: 'Instrument Sans', 'Pretendard Variable', sans-serif; }
+    .p2-bg { position: absolute; inset: 0; background-color: #f3f0e7;
+      background-image: radial-gradient(#dcd7c9 2px, transparent 2px); background-size: 36px 36px; }
+    .p2-count { position: absolute; left: 50%; top: 46px; margin-left: -190px; width: 380px; display: flex; align-items: center; gap: 14px;
+      padding: 10px 20px; background: #fffdf7; border: 3px solid #18181a; border-radius: 999px; box-shadow: 4px 4px 0 #18181a; }
+    .p2-count b { font: 800 34px/1 'Bricolage Grotesque', 'Pretendard Variable', sans-serif; letter-spacing: -0.02em; min-width: 110px; }
+    .p2-count span { font: 700 15px/1.1 'JetBrains Mono', 'Pretendard Variable', monospace; letter-spacing: 0.08em; text-transform: uppercase; color: #5c5850; }
+    .p2-head { position: absolute; left: 0; right: 0; top: 140px; text-align: center; }
+    .p2-head b { display: inline-block; font: 800 150px/1 'Bricolage Grotesque', 'Pretendard Variable', sans-serif; letter-spacing: -0.04em;
+      background: #fffdf7; border: 4px solid #18181a; box-shadow: 10px 10px 0 #cbb6ff; padding: 6px 34px 18px; border-radius: 22px; }
+    .p2-chip { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 12px; white-space: nowrap;
+      padding: 14px 22px; background: #fffdf7; border: 3px solid #18181a; border-radius: 16px; box-shadow: 5px 5px 0 #18181a;
+      font: 600 28px/1 'Instrument Sans', 'Pretendard Variable', sans-serif; letter-spacing: -0.01em; }
+    .p2-chip i { width: 18px; height: 18px; border-radius: 5px; border: 2px solid #18181a; background: var(--c); }
+    .p2-lens { position: absolute; left: 0; top: 0; width: 150px; height: 150px; z-index: 50; }
+    .p2-q { position: absolute; left: 0; top: 0; z-index: 60; width: 64px; height: 64px; border-radius: 50%; background: #f5c451;
+      border: 3px solid #18181a; box-shadow: 4px 4px 0 #18181a; font: 800 44px/58px 'Bricolage Grotesque', 'Pretendard Variable', sans-serif; text-align: center; }
+  </style>
+
+  <div id="root" data-composition-id="02-where" data-width="1920" data-height="1080">
+    <div id="p2-bg" class="p2-bg clip" data-start="0" data-duration="2.6" data-track-index="0"></div>
+    <div id="p2-chips"></div>
+    <div class="p2-count"><b>1,730</b><span>나중에 보려고<br />저장한 북마크</span></div>
+    <svg id="p2-lens" class="p2-lens" viewBox="0 0 150 150">
+      <circle cx="60" cy="60" r="42" fill="rgba(169,216,255,0.35)" stroke="#18181a" stroke-width="10" />
+      <line x1="92" y1="92" x2="138" y2="138" stroke="#18181a" stroke-width="16" stroke-linecap="round" />
+    </svg>
+    <div id="p2-q1" class="p2-q" data-layout-allow-overlap data-layout-allow-occlusion>?</div>
+    <div id="p2-q2" class="p2-q" data-layout-allow-overlap data-layout-allow-occlusion>?</div>
+    <div id="p2-q3" class="p2-q" data-layout-allow-overlap data-layout-allow-occlusion>?</div>
+    <div class="p2-head"><b id="p2-head">어디 뒀더라?</b></div>
+  </div>
+
+  <script>
+    (() => {
+      const CHIPS = [
+        ["라자냐 레시피", "#f5c451"], ["리스본 3일 일정", "#c8f25a"], ["러닝화 리뷰", "#a9d8ff"],
+        ["제목 없음", "#dcd7c9"], ["바나나 브레드", "#f5c451"], ["스탠딩 책상 비교", "#cbb6ff"],
+        ["아이 수면 스케줄", "#cbb6ff"], ["10K 훈련 계획", "#a9d8ff"], ["새 탭", "#dcd7c9"],
+        ["주방 타일 고르기", "#cbb6ff"], ["리스본 맛집 지도", "#c8f25a"], ["2025 연말정산", "#f5c451"],
+        ["반려식물 키우기", "#c8f25a"], ["캠핑 체크리스트", "#a9d8ff"], ["나중에 읽기: AI 에이전트", "#cbb6ff"],
+        ["사워도우 스타터", "#f5c451"], ["웨딩홀 비교", "#cbb6ff"], ["마라톤 접수", "#a9d8ff"],
+        ["자전거 수리 영상", "#a9d8ff"], ["포르투 항공권 특가", "#c8f25a"],
+      ];
+      const spot = (i) => {
+        const a = i * 2.399963;
+        const r = Math.sqrt((i + 0.6) / CHIPS.length);
+        return { x: 960 + Math.cos(a) * r * 700 - 150, y: 620 + Math.sin(a) * r * 255 - 30, rot: ((i * 37) % 23) - 11 };
+      };
+      const root = document.getElementById("p2-chips");
+      const tl = gsap.timeline({ paused: true });
+      CHIPS.forEach(([label, color], i) => {
+        const el = document.createElement("div");
+        el.className = "p2-chip";
+        el.style.setProperty("--c", color);
+        el.style.zIndex = String(i);
+        el.innerHTML = "<i></i>" + label;
+        el.dataset.layoutAllowOverlap = "";
+        el.dataset.layoutAllowOcclusion = "";
+        root.appendChild(el);
+        const s = spot(i);
+        gsap.set(el, { x: s.x, y: s.y, rotation: s.rot });
+        // The heap fidgets: a nervous little wiggle, chip by chip.
+        tl.to(el, { rotation: s.rot + (i % 2 ? 6 : -6), duration: 0.12, ease: "sine.inOut" }, 0.15 + (i % 7) * 0.09);
+        tl.to(el, { rotation: s.rot, duration: 0.18, ease: "back.out(3)" }, 0.27 + (i % 7) * 0.09);
+      });
+
+      // The search lens darts around and finds nothing.
+      const stops = [[520, 520], [1180, 600], [760, 720], [1380, 560]];
+      gsap.set("#p2-lens", { x: 300, y: 820, rotation: -10 });
+      stops.forEach(([x, y], k) => {
+        tl.to("#p2-lens", { x: x - 60, y: y - 60, rotation: k % 2 ? 12 : -12, duration: 0.32, ease: "power3.inOut" }, 0.05 + k * 0.42);
+      });
+      ["#p2-q1", "#p2-q2", "#p2-q3"].forEach((q, k) => {
+        const [x, y] = stops[k + 1];
+        tl.fromTo(q, { x: x + 40, y: y - 120, scale: 0, opacity: 0 }, { x: x + 40, y: y - 120, scale: 1, opacity: 1, duration: 0.3, ease: "back.out(3)" }, 0.5 + k * 0.42);
+      });
+
+      tl.fromTo("#p2-head", { scale: 1.8, rotation: -14, opacity: 0 }, { scale: 1, rotation: -3, opacity: 1, duration: 0.42, ease: "back.out(2.6)" }, 0.55);
+      tl.to("#p2-head", { x: -14, duration: 0.05, ease: "none" }, 0.98);
+      tl.to("#p2-head", { x: 12, duration: 0.07, ease: "none" }, 1.03);
+      tl.to("#p2-head", { x: -6, duration: 0.07, ease: "none" }, 1.10);
+      tl.to("#p2-head", { x: 0, duration: 0.1, ease: "sine.out" }, 1.18);
+      tl.to("#p2-head", { rotation: 1.5, duration: 0.9, ease: "sine.inOut" }, 1.4);
+      window.__timelines["02-where"] = tl;
+    })();
+  </script>
+</template>

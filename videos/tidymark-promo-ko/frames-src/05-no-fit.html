@@ -1,0 +1,83 @@
+<template>
+  <style>
+    /*@FONTS*/
+    #root { position: absolute; inset: 0; overflow: hidden; word-break: keep-all; color: #18181a; font-family: 'Instrument Sans', 'Pretendard Variable', sans-serif; }
+    .p5-bg { position: absolute; inset: 0; background: #eef9cf; background-image: radial-gradient(#c8f25a 2px, transparent 2px); background-size: 40px 40px; }
+    .p5-eyebrow { position: absolute; left: 110px; top: 150px; font: 700 20px/1 'JetBrains Mono', 'Pretendard Variable', monospace; letter-spacing: 0.04em; color: #283a06; }
+    .p5-l1, .p5-l2 { position: absolute; left: 104px; font: 800 104px/0.98 'Bricolage Grotesque', 'Pretendard Variable', sans-serif; letter-spacing: -0.045em; }
+    .p5-l1 { top: 196px; }
+    .p5-l2 { top: 330px; }
+    .p5-l2 em { font-style: normal; background: #fffdf7; border: 4px solid #18181a; box-shadow: 8px 8px 0 #18181a; border-radius: 16px; padding: 0 18px 8px; }
+    .p5-pop { position: absolute; left: 1200px; top: 70px; width: 448px; height: 661px; overflow: hidden; border-radius: 18px;
+      border: 4px solid #18181a; box-shadow: 12px 12px 0 #18181a; transform-origin: 50% 0%; z-index: 10; }
+    .p5-pop .im { background-size: 100% 100%; background-repeat: no-repeat;  position: absolute; left: -687px; top: -70px; width: 1280px; height: 800px; }
+    .p5-scale { position: absolute; inset: 0; transform-origin: 0 0; }
+    .p5-cursor { position: absolute; left: 0; top: 0; width: 54px; height: 54px; z-index: 30; }
+    .p5-folder { position: absolute; left: 150px; top: 540px; width: 360px; height: 250px; z-index: 6; }
+    .p5-folder .p5-tab { position: absolute; left: 0; top: 0; width: 150px; height: 46px; background: #c8f25a; border: 4px solid #18181a; border-bottom: 0; border-radius: 14px 14px 0 0; }
+    .p5-folder .p5-body { position: absolute; left: 0; top: 38px; width: 360px; height: 212px; background: #c8f25a; border: 4px solid #18181a;
+      border-radius: 0 18px 18px 18px; box-shadow: 8px 8px 0 #18181a; display: grid; place-items: center; }
+    .p5-folder b { font: 800 52px/1 'Bricolage Grotesque', 'Pretendard Variable', sans-serif; letter-spacing: -0.03em; }
+    .p5-folder small { display: block; text-align: center; font: 700 17px/1 'JetBrains Mono', 'Pretendard Variable', monospace; letter-spacing: 0.02em; margin-top: 8px; color: #283a06; }
+    .p5-new { position: absolute; left: 380px; top: 512px; z-index: 7; padding: 8px 14px; background: #18181a; color: #c8f25a; border-radius: 999px;
+      font: 700 18px/1 'JetBrains Mono', 'Pretendard Variable', monospace; letter-spacing: 0.06em; }
+    .p5-spark { position: absolute; left: 0; top: 0; width: 40px; height: 40px; z-index: 8; }
+    .p5-fly { position: absolute; left: 0; top: 0; z-index: 25; display: flex; align-items: center; gap: 12px; white-space: nowrap; padding: 14px 22px;
+      background: #fffdf7; border: 3px solid #18181a; border-radius: 16px; box-shadow: 5px 5px 0 #18181a; font: 600 28px/1 'Instrument Sans', 'Pretendard Variable', sans-serif; }
+    .p5-fly i { width: 18px; height: 18px; border-radius: 5px; border: 2px solid #18181a; background: #c8f25a; }
+  </style>
+
+  <div id="root" data-composition-id="05-no-fit" data-width="1920" data-height="1080">
+    <div id="p5-bg" class="p5-bg clip" data-start="0" data-duration="4.2" data-track-index="0"></div>
+    <div id="p5-eyebrow" class="p5-eyebrow">억지로 넣지 않아요</div>
+    <div id="p5-l1" class="p5-l1">안 맞으면?</div>
+    <div id="p5-l2" class="p5-l2"><em>새 폴더로.</em></div>
+    <div id="p5-pop" class="p5-pop"><div class="p5-scale" style="transform:scale(1)"><div class="im" style="background-image:url('assets/img/screenshot-2.png')"></div></div></div>
+    <div id="p5-folder" class="p5-folder"><div class="p5-tab"></div><div class="p5-body"><div><b>리스본</b><small>여행 / 리스본</small></div></div></div>
+    <div id="p5-new" class="p5-new">+ 새 폴더</div>
+    <div id="p5-sparks"></div>
+    <div id="p5-fly" class="p5-fly"><i></i>리스본 3일 일정</div>
+    <svg id="p5-cursor" class="p5-cursor" viewBox="0 0 54 54"><path d="M6 4 L6 44 L17 34 L25 51 L33 47 L25 31 L41 31 Z" fill="#fffdf7" stroke="#18181a" stroke-width="4" stroke-linejoin="round" /></svg>
+  </div>
+
+  <script>
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#p5-pop", { y: 120, rotation: 4, opacity: 0 }, { y: 0, rotation: 0, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }, 0);
+      tl.fromTo("#p5-eyebrow", { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.35, ease: "power3.out" }, 0.15);
+      tl.fromTo("#p5-l1", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "back.out(2)" }, 0.35);
+      // the "Create a new folder →" button sits at x 725–907, y 435–464 of the screenshot
+      const bx = 1200 + (816 - 687), by = 70 + (450 - 70);
+      tl.fromTo("#p5-cursor", { x: 900, y: 950 }, { x: bx, y: by - 6, duration: 0.7, ease: "power3.inOut" }, 0.9);
+      tl.to("#p5-cursor", { scale: 0.8, duration: 0.07, ease: "power1.in" }, 1.75);
+      tl.to("#p5-cursor", { scale: 1, duration: 0.12, ease: "back.out(3)" }, 1.82);
+      tl.to("#p5-pop", { rotation: -1.5, duration: 0.08, ease: "power1.out" }, 1.76);
+      tl.to("#p5-pop", { rotation: 0, duration: 0.3, ease: "elastic.out(1, 0.5)" }, 1.84);
+      tl.fromTo("#p5-folder", { y: 160, scale: 0.3, rotation: -12, opacity: 0 }, { y: 0, scale: 1, rotation: 0, opacity: 1, duration: 0.55, ease: "back.out(2.4)" }, 1.95);
+      tl.fromTo("#p5-new", { scale: 0, rotation: 20 }, { scale: 1, rotation: 6, duration: 0.35, ease: "back.out(3)" }, 2.3);
+      tl.fromTo("#p5-l2", { scale: 0.4, rotation: -8, opacity: 0 }, { scale: 1, rotation: -2, opacity: 1, duration: 0.5, ease: "back.out(2.8)" }, 2.1);
+      // sparkles burst from the new folder
+      const sparks = document.getElementById("p5-sparks");
+      const colours = ["#f5c451", "#a9d8ff", "#cbb6ff", "#18181a", "#c8f25a", "#f5c451", "#a9d8ff", "#cbb6ff"];
+      colours.forEach((c, k) => {
+        const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        s.setAttribute("viewBox", "0 0 40 40");
+        s.setAttribute("class", "p5-spark");
+        s.innerHTML = `<path d="M20 2 L24 16 L38 20 L24 24 L20 38 L16 24 L2 20 L16 16 Z" fill="${c}" stroke="#18181a" stroke-width="2.5" stroke-linejoin="round"/>`;
+        sparks.appendChild(s);
+        const a = (k / colours.length) * Math.PI * 2;
+        tl.fromTo(s, { x: 310, y: 650, scale: 0, rotation: 0 },
+          { x: 310 + Math.cos(a) * 250, y: 650 + Math.sin(a) * 170, scale: 1.1, rotation: 180, duration: 0.6, ease: "power3.out" }, 2.2 + k * 0.02);
+        tl.to(s, { scale: 0, duration: 0.3, ease: "power2.in" }, 2.85 + k * 0.02);
+      });
+      // the itinerary hops into its new home
+      tl.fromTo("#p5-fly", { x: 1260, y: 160, scale: 0.6, opacity: 0 }, { x: 1260, y: 160, scale: 1, opacity: 1, duration: 0.2, ease: "back.out(2)" }, 2.75);
+      tl.to("#p5-fly", { x: 700, y: 40, duration: 0.3, ease: "power2.out" }, 2.95);
+      tl.to("#p5-fly", { x: 200, y: 640, scale: 0.35, rotation: 16, duration: 0.42, ease: "power2.in" }, 3.25);
+      tl.to("#p5-fly", { opacity: 0, duration: 0.08 }, 3.62);
+      tl.to("#p5-folder", { scaleX: 1.1, scaleY: 0.9, duration: 0.1, ease: "power2.out" }, 3.64);
+      tl.to("#p5-folder", { scaleX: 1, scaleY: 1, duration: 0.45, ease: "elastic.out(1, 0.4)" }, 3.74);
+      window.__timelines["05-no-fit"] = tl;
+    })();
+  </script>
+</template>

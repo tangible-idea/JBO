@@ -1,0 +1,73 @@
+<template>
+  <style>
+    @font-face{font-family:'Bricolage Grotesque';font-weight:500;font-style:normal;font-display:block;src:url('assets/fonts/captured-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInHWVyNJ.woff2') format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:'Bricolage Grotesque';font-weight:700;font-style:normal;font-display:block;src:url('assets/fonts/captured-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInHWVyNJ.woff2') format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:'Bricolage Grotesque';font-weight:800;font-style:normal;font-display:block;src:url('assets/fonts/captured-3y9K6as8bTXq_nANBjzKo3IeZx8z6up5BeSl9D4dj_x9PpZBMlGIInHWVyNJ.woff2') format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:'Instrument Sans';font-weight:400;font-style:normal;font-display:block;src:url('assets/fonts/captured-pxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2') format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:'Instrument Sans';font-weight:500;font-style:normal;font-display:block;src:url('assets/fonts/captured-pxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2') format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:'Instrument Sans';font-weight:600;font-style:normal;font-display:block;src:url('assets/fonts/captured-pxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2') format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:'Instrument Sans';font-weight:700;font-style:normal;font-display:block;src:url('assets/fonts/captured-pxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2') format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:'JetBrains Mono';font-weight:500;font-style:normal;font-display:block;src:url('assets/fonts/captured-tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxDcwgknk-4.woff2') format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:'JetBrains Mono';font-weight:700;font-style:normal;font-display:block;src:url('assets/fonts/captured-tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxDcwgknk-4.woff2') format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;}
+@font-face{font-family:'Pretendard Variable';font-weight:45 920;font-style:normal;font-display:block;src:url('assets/fonts/PretendardVariable.woff2') format('woff2');}
+
+    #root { position: absolute; inset: 0; overflow: hidden; word-break: keep-all; color: #18181a; font-family: 'Instrument Sans', 'Pretendard Variable', sans-serif; }
+    .p6-bg { position: absolute; inset: 0; background: #f3f0e7; background-image: radial-gradient(#dcd7c9 2px, transparent 2px); background-size: 36px 36px; }
+    .p6-head { position: absolute; left: 96px; top: 52px; font: 800 74px/1 'Bricolage Grotesque', 'Pretendard Variable', sans-serif; letter-spacing: -0.04em; }
+    .p6-head em { font-style: normal; background: #c8f25a; border: 4px solid #18181a; border-radius: 14px; padding: 0 14px 6px; box-shadow: 6px 6px 0 #18181a; }
+    .p6-item { position: absolute; left: 96px; width: 420px; height: 142px; padding: 20px 22px 0 92px; border: 3px solid #dcd7c9; border-radius: 18px; background: #fffdf7;
+      transform-origin: 0 50%; }
+    .p6-item b { position: absolute; left: 22px; top: 24px; width: 52px; height: 52px; border-radius: 14px; border: 3px solid #18181a; background: var(--c);
+      font: 800 28px/46px 'JetBrains Mono', 'Pretendard Variable', monospace; text-align: center; }
+    .p6-item strong { display: block; font: 800 32px/1.05 'Bricolage Grotesque', 'Pretendard Variable', sans-serif; letter-spacing: -0.02em; }
+    .p6-item span { display: block; margin-top: 8px; font: 500 21px/1.3 'Instrument Sans', 'Pretendard Variable', sans-serif; color: #3a3935; }
+    /* stage interior = the clips' host geometry: x 632–1816, y 172–838 (1184×666) */
+    .p6-stage { position: absolute; left: 628px; top: 168px; width: 1192px; height: 674px; border: 4px solid #18181a; border-radius: 22px; background: #f3f0e7;
+      box-shadow: 14px 14px 0 #c8f25a; overflow: hidden; }
+    .p6-stage .im { position: absolute; left: 0; top: 0; width: 1184px; height: 666px; background-size: 100% 100%; background-repeat: no-repeat; }
+    .p6-live { position: absolute; left: 1610px; top: 120px; height: 38px; padding: 0 14px; display: flex; align-items: center; gap: 8px; border-radius: 999px;
+      background: #18181a; color: #fffdf7; font: 700 16px/1 'JetBrains Mono', 'Pretendard Variable', monospace; letter-spacing: 0.08em; }
+    .p6-live i { width: 11px; height: 11px; border-radius: 50%; background: #c8f25a; }
+  </style>
+
+  <div id="root" data-composition-id="06-four-ways" data-width="1920" data-height="1080" data-duration="10.5">
+    <div id="p6-bg" class="p6-bg clip" data-start="0" data-duration="10.5" data-track-index="0"></div>
+    <div id="p6-head" class="p6-head">네 가지로 <em>정리해요</em></div>
+
+    <div id="p6-item-a" class="p6-item" style="--c:#c8f25a;top:168px"><b>A</b><strong>새 폴더로</strong><span>카테고리만 정하면 새 구조로 나눠 담아요.</span></div>
+    <div id="p6-item-b" class="p6-item" style="--c:#a9d8ff;top:348px"><b>B</b><strong>기존 폴더로</strong><span>지금 폴더는 그대로, 흩어진 것만 제자리로.</span></div>
+    <div id="p6-item-c" class="p6-item" style="--c:#f5c451;top:528px"><b>C</b><strong>쓰임새로</strong><span>마지막으로 연 날짜로 나눠요.</span></div>
+    <div id="p6-item-d" class="p6-item" style="--c:#cbb6ff;top:708px"><b>D</b><strong>프로젝트로</strong><span>몰아서 저장한 걸 목적별로 묶어요.</span></div>
+
+    <div id="p6-stage" class="p6-stage"><div class="im" style="background-image:url('assets/img/mode-a-first.png')"></div></div>
+    <div id="p6-live" class="p6-live"><i></i>정리 중</div>
+
+    <!-- The real explainer clips play one after another on the stage, skipping their first 0.2 s (the pile is already on screen). -->
+    <!-- approved frame video hoisted by assemble-index -->
+    <!-- approved frame video hoisted by assemble-index -->
+    <!-- approved frame video hoisted by assemble-index -->
+    <!-- approved frame video hoisted by assemble-index -->
+  </div>
+
+  <script>
+    (() => {
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#p6-head", { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: "back.out(2)" }, 0);
+      tl.fromTo("#p6-stage", { y: 60, rotation: 2, opacity: 0 }, { y: 0, rotation: 0, opacity: 1, duration: 0.3, ease: "back.out(1.8)" }, 0);
+      ["a", "b", "c", "d"].forEach((k, i) => {
+        tl.fromTo(`#p6-item-${k}`, { x: -80, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3, ease: "back.out(2)" }, 0.05 + i * 0.06);
+      });
+      tl.fromTo("#p6-live", { scale: 0 }, { scale: 1, duration: 0.25, ease: "back.out(3)" }, 0.3);
+      // The playlist highlights the mode on stage; the stage takes on that mode's colour.
+      const order = [["a", 0.3, "#c8f25a"], ["b", 2.5, "#a9d8ff"], ["c", 4.7, "#f5c451"], ["d", 6.9, "#cbb6ff"]];
+      order.forEach(([k, at, colour]) => {
+        tl.to(`#p6-item-${k}`, { scale: 1.06, borderColor: "#18181a", backgroundColor: colour, boxShadow: "8px 8px 0 #18181a", duration: 0.22, ease: "back.out(2.5)" }, at);
+        tl.to("#p6-stage", { boxShadow: `14px 14px 0 ${colour}`, duration: 0.2 }, at);
+        order.filter(([o]) => o !== k).forEach(([o]) => {
+          tl.to(`#p6-item-${o}`, { scale: 1, borderColor: "#dcd7c9", backgroundColor: "#fffdf7", boxShadow: "0px 0px 0 #18181a", duration: 0.2 }, at);
+        });
+      });
+      window.__timelines["06-four-ways"] = tl;
+    })();
+  </script>
+</template>

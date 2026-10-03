@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js" integrity="sha384-sG0Hv1tP1lZCk9KQmrIbY/XNwi+OY84GQqhMscbnsoBFqAz8KNCil1kvfL3Hbbk2" crossorigin="anonymous"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #000;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #FFFDF7;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="42.6"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div
+        id="el-01-pile"
+        class="scene"
+        data-composition-id="01-pile"
+        data-composition-src="compositions/frames/01-pile.html"
+        data-start="0"
+        data-duration="4.6"
+        data-track-index="0"
+      ></div>
+
+      <div
+        id="el-02-where"
+        class="scene"
+        data-composition-id="02-where"
+        data-composition-src="compositions/frames/02-where.html"
+        data-start="4.6"
+        data-duration="2.6"
+        data-track-index="1"
+      ></div>
+
+      <div
+        id="el-03-star"
+        class="scene"
+        data-composition-id="03-star"
+        data-composition-src="compositions/frames/03-star.html"
+        data-start="7.199999999999999"
+        data-duration="4.1"
+        data-track-index="0"
+      ></div>
+
+      <div
+        id="el-04-one-click"
+        class="scene"
+        data-composition-id="04-one-click"
+        data-composition-src="compositions/frames/04-one-click.html"
+        data-start="10.799999999999999"
+        data-duration="5.9"
+        data-track-index="1"
+      ></div>
+
+      <div
+        id="el-05-no-fit"
+        class="scene"
+        data-composition-id="05-no-fit"
+        data-composition-src="compositions/frames/05-no-fit.html"
+        data-start="16.2"
+        data-duration="4.8"
+        data-track-index="0"
+      ></div>
+
+      <div
+        id="el-06-four-ways"
+        class="scene"
+        data-composition-id="06-four-ways"
+        data-composition-src="compositions/frames/06-four-ways.html"
+        data-start="20.4"
+        data-duration="10.5"
+        data-track-index="1"
+      ></div>
+
+      <div
+        id="el-07-checkup"
+        class="scene"
+        data-composition-id="07-checkup"
+        data-composition-src="compositions/frames/07-checkup.html"
+        data-start="30.4"
+        data-duration="4.4"
+        data-track-index="0"
+      ></div>
+
+      <div
+        id="el-08-safe"
+        class="scene"
+        data-composition-id="08-safe"
+        data-composition-src="compositions/frames/08-safe.html"
+        data-start="34.8"
+        data-duration="4.1"
+        data-track-index="1"
+      ></div>
+
+      <div
+        id="el-09-cta"
+        class="scene"
+        data-composition-id="09-cta"
+        data-composition-src="compositions/frames/09-cta.html"
+        data-start="38.4"
+        data-duration="4.2"
+        data-track-index="0"
+      ></div>
+
+      <video id="p6-video-a" src="assets/video/mode-a-ko.mp4" data-media-start="0.2" muted playsinline
+        class="clip"
+        style="position:absolute;left:632px;top:172px;width:1184px;height:666px;object-fit:cover"
+        data-start="20.7"
+        data-duration="2.2"
+        data-track-index="6005"
+      ></video>
+
+      <video id="p6-video-b" src="assets/video/mode-b-ko.mp4" data-media-start="0.2" muted playsinline
+        class="clip"
+        style="position:absolute;left:632px;top:172px;width:1184px;height:666px;object-fit:cover"
+        data-start="22.9"
+        data-duration="2.2"
+        data-track-index="6006"
+      ></video>
+
+      <video id="p6-video-c" src="assets/video/mode-c-ko.mp4" data-media-start="0.2" muted playsinline
+        class="clip"
+        style="position:absolute;left:632px;top:172px;width:1184px;height:666px;object-fit:cover"
+        data-start="25.1"
+        data-duration="2.2"
+        data-track-index="6007"
+      ></video>
+
+      <video id="p6-video-d" src="assets/video/mode-d-ko.mp4" data-media-start="0.2" muted playsinline
+        class="clip"
+        style="position:absolute;left:632px;top:172px;width:1184px;height:666px;object-fit:cover"
+        data-start="27.3"
+        data-duration="3.1"
+        data-track-index="6008"
+      ></video>
+
+      <!-- BGM -->
+      <audio
+        id="el-bgm"
+        src="assets/audio/soundtrack.wav"
+        data-start="0"
+        data-duration="42.6"
+        data-track-index="11"
+        data-volume="1"
+      ></audio>
+
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+      // ── frame transitions (injected by transitions.mjs) ──
+      (function () { var tl = window.__timelines["main"];
+        tl.to("#el-03-star", { opacity: 0, duration: 0.5, ease: "power2.inOut" }, 10.8);
+        tl.fromTo("#el-04-one-click", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.inOut" }, 10.8);
+        tl.to("#el-04-one-click", { opacity: 0, duration: 0.5, ease: "power2.inOut" }, 16.2);
+        tl.fromTo("#el-05-no-fit", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.inOut" }, 16.2);
+        tl.to("#el-05-no-fit", { filter: "blur(10px)", scale: 1.03, opacity: 0, duration: 0.6, ease: "power2.inOut" }, 20.4);
+        tl.fromTo("#el-06-four-ways", { filter: "blur(10px)", scale: 0.97, opacity: 0 }, { filter: "blur(0px)", scale: 1, opacity: 1, duration: 0.6, ease: "power2.inOut" }, 20.4);
+        tl.to("#el-06-four-ways", { opacity: 0, duration: 0.5, ease: "power2.inOut" }, 30.4);
+        tl.fromTo("#el-07-checkup", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.inOut" }, 30.4);
+        tl.to("#el-08-safe", { opacity: 0, duration: 0.5, ease: "power2.inOut" }, 38.4);
+        tl.fromTo("#el-09-cta", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.inOut" }, 38.4);
+        tl.to({}, { duration: 42.6 }, 0); // full-span anchor — main.duration() == composition total (Studio master duration)
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<title>Tidymark</title>
+<ellipse cx="72" cy="116" rx="30" ry="5" fill="#18181a" opacity=".18"/>
+<g stroke="#9a9588" stroke-width="7" stroke-linecap="round"><line x1="8" y1="52" x2="26" y2="52"/><line x1="4" y1="68" x2="20" y2="68"/><line x1="12" y1="84" x2="26" y2="84"/></g>
+<polygon points="83.1,21.0 89.6,49.9 117.8,59.4 92.2,74.5 91.9,104.2 69.6,84.5 41.3,93.4 53.1,66.2 35.9,42.0 65.5,44.8" fill="#18181a" stroke="#18181a" stroke-width="20" stroke-linejoin="round"/>
+<polygon points="83.1,21.0 89.6,49.9 117.8,59.4 92.2,74.5 91.9,104.2 69.6,84.5 41.3,93.4 53.1,66.2 35.9,42.0 65.5,44.8" fill="#c8f25a" stroke="#c8f25a" stroke-width="8" stroke-linejoin="round"/>
+</svg>
