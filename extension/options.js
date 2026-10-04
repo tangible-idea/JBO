@@ -9,7 +9,7 @@ import {
   parseCategories,
   toPlanItem,
 } from "./options-utils.js";
-import { buildFolderTree, flattenFolderTree } from "./popup-utils.js";
+import { buildFolderTree, flattenFolderTree, markSelfCreated } from "./popup-utils.js";
 import {
   DAY,
   PROJECTS_FOLDER,
@@ -76,6 +76,7 @@ const el = {
   applySummary: $("#apply-summary"),
   autoClassify: $("#auto-classify"),
   autoSave: $("#auto-save"),
+  quickSaveAssist: $("#quick-save-assist"),
   batchProgress: $("#batch-progress"),
   batchStatus: $("#batch-status"),
   cancel: $("#cancel-batch"),
@@ -995,6 +996,7 @@ async function renderUndoBanner() {
 async function recreate(node) {
   const { title, url, parentId, index } = node;
   try {
+    await markSelfCreated(url);
     return await chrome.bookmarks.create({ parentId, index, title, ...(url ? { url } : {}) });
   } catch {
     // The index may no longer exist; fall back to the end of the folder.
@@ -1870,6 +1872,7 @@ async function saveEndpoint() {
 async function saveBehavior() {
   settings.autoClassify = el.autoClassify.checked;
   settings.autoSave = el.autoSave.checked;
+  chrome.storage.sync.set({ quickSaveAssist: el.quickSaveAssist.checked });
   settings.confidenceThreshold = Number(el.threshold.value);
   await chrome.storage.sync.set({
     autoClassify: settings.autoClassify,
@@ -1931,6 +1934,7 @@ async function initialize() {
   el.endpoint.value = settings.endpoint;
   el.autoClassify.checked = settings.autoClassify;
   el.autoSave.checked = settings.autoSave;
+  chrome.storage.sync.get({ quickSaveAssist: true }).then(({ quickSaveAssist }) => { el.quickSaveAssist.checked = quickSaveAssist; });
   el.threshold.value = settings.confidenceThreshold;
   $("#folder-language").value = settings.folderLanguage === "en" ? "en" : "ko";
   renderThreshold();
@@ -2163,6 +2167,7 @@ $("#save-mobile").addEventListener("click", async () => {
 });
 el.autoClassify.addEventListener("change", saveBehavior);
 el.autoSave.addEventListener("change", saveBehavior);
+el.quickSaveAssist.addEventListener("change", saveBehavior);
 el.threshold.addEventListener("input", renderThreshold);
 el.threshold.addEventListener("change", saveBehavior);
 

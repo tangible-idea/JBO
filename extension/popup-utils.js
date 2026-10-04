@@ -73,3 +73,14 @@ export function filterFolderTree(tree, query) {
   }
   return result;
 }
+
+// Mirrors quick-save.js: bookmarks Tidymark creates itself are marked for a few
+// seconds so the service worker doesn't treat them as a Cmd+D save.
+export async function markSelfCreated(url) {
+  if (!url || !globalThis.chrome?.storage?.session) return;
+  const { selfCreated: marks = {} } = await chrome.storage.session.get("selfCreated");
+  const now = Date.now();
+  for (const [key, until] of Object.entries(marks)) if (until < now) delete marks[key];
+  marks[url] = now + 10_000;
+  await chrome.storage.session.set({ selfCreated: marks });
+}

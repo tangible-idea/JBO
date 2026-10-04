@@ -1,3 +1,5 @@
+importScripts("quick-save.js");
+
 async function processMobileSaves() {
   const { mobileEndpoint, mobileToken } = await chrome.storage.local.get(["mobileEndpoint", "mobileToken"]);
   if (!mobileEndpoint || !mobileToken) return;
@@ -12,7 +14,10 @@ async function processMobileSaves() {
       if (!folders[0] || folders[0].url) continue;
       const existing = (await chrome.bookmarks.search({ url: item.url }))[0];
       if (existing) await chrome.bookmarks.move(existing.id, { parentId: item.folderId });
-      else await chrome.bookmarks.create({ parentId: item.folderId, title: item.title, url: item.url });
+      else {
+        await markSelfCreated(item.url);
+        await chrome.bookmarks.create({ parentId: item.folderId, title: item.title, url: item.url });
+      }
       await fetch(`${base}/api/mobile/saves/${item.id}/ack`, { method: "POST", headers });
     } catch (error) {
       console.warn("Mobile bookmark save failed", error);

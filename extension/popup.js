@@ -4,6 +4,7 @@ import {
   buildFolderTree,
   flattenFolderTree,
   shouldSuggestNewFolder,
+  markSelfCreated,
   suggestFolderName,
 } from "./popup-utils.js";
 
@@ -45,6 +46,8 @@ let mode = "existing";
 let busy = false;
 // While a suggestion is on its way the save button waits too, unless the user picks a folder themselves.
 let suggesting = false;
+// Opened right after Cmd+D: the bookmark Chrome just made, to be filed in one click.
+let quickSave = null;
 let userPicked = false;
 
 const destinationPicker = createFolderPicker($("#destination-picker"), {
@@ -95,7 +98,7 @@ function setMode(nextMode) {
 function updateAction() {
   let label;
   let enabled = !busy && Boolean(activeTab?.url);
-  if (mode === "existing" && suggesting && !userPicked && !existingBookmark) {
+  if (mode === "existing" && suggesting && !userPicked && (!existingBookmark || quickSave)) {
     elements.saveLabel.innerHTML = '<span class="skel-line skel-on-dark" style="width:150px"></span>';
     elements.save.disabled = true;
     elements.savedBadge.hidden = true;
@@ -270,6 +273,7 @@ async function upsertBookmark(parentId) {
   if (existingBookmark) {
     existingBookmark = await chrome.bookmarks.move(existingBookmark.id, { parentId });
   } else {
+    await markSelfCreated(activeTab.url);
     existingBookmark = await chrome.bookmarks.create({
       parentId,
       title: activeTab.title || activeTab.url,
@@ -345,7 +349,7 @@ async function classify() {
     if (!response.ok) throw new Error(result.error || t("서버 오류 ({0})", response.status));
     // 확신이 낮으면 기존 폴더를 미리 고르지 않아, 저장 버튼이 약한 추천으로 이어지지 않게 합니다.
     const noMatch = shouldSuggestNewFolder(result, settings.confidenceThreshold);
-    if (result.recommendation && !existingBookmark && !noMatch) destinationPicker.setValue(result.recommendation.id);
+    if (result.recommendation && (!existingBookmark || quickSave) && !noMatch) destinationPicker.setValue(result.recommendation.id);
     renderRecommendations(result);
     prepareNewFolder(noMatch ? result : null);
     if (result.truncatedFolderCount > 0) {
@@ -388,9 +392,30 @@ function renderPage() {
   }
 }
 
+// The Cmd+D bookmark the service worker just saw, if it is fresh; read once.
+async function takeJustBookmarked() {
+  try {
+    const { justBookmarked } = await chrome.storage.session.get("justBookmarked");
+    await chrome.storage.session.remove("justBookmarked");
+    await chrome.action.setBadgeText({ text: "" });
+    if (!justBookmarked || Date.now() - justBookmarked.at > 60_000) return null;
+    const [node] = await chrome.bookmarks.get(justBookmarked.id);
+    return node?.url ? node : null;
+  } catch {
+    return null;
+  }
+}
+
 async function initialize() {
   settings = { ...DEFAULT_SETTINGS, ...(await chrome.storage.sync.get(DEFAULT_SETTINGS)) };
   [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  quickSave = await takeJustBookmarked();
+  if (quickSave && (!activeTab?.url || activeTab.url === quickSave.url)) {
+    // Opened by the service worker, the popup may not see the tab's URL; the bookmark has it.
+    activeTab = { ...(activeTab || {}), title: activeTab?.title || quickSave.title, url: quickSave.url };
+  } else {
+    quickSave = null;
+  }
   if (!activeTab?.url || !/^(https?|file|ftp):/.test(activeTab.url)) {
     elements.pageTitle.textContent = t("이 페이지는 저장할 수 없어요");
     elements.pageHost.textContent = t("일반 웹페이지에서 다시 열어 주세요.");
@@ -405,7 +430,8 @@ async function initialize() {
   if (existingBookmark) {
     destinationPicker.setValue(existingBookmark.parentId);
     const current = folders.find((folder) => folder.id === existingBookmark.parentId);
-    setStatus(current ? t("이미 ‘{0}’에 저장된 페이지예요.", current.path) : t("이미 저장된 페이지예요."));
+    if (quickSave) setStatus(t("방금 저장한 북마크예요. 알맞은 폴더로 옮길까요?"));
+    else setStatus(current ? t("이미 ‘{0}’에 저장된 페이지예요.", current.path) : t("이미 저장된 페이지예요."));
   } else if (folders[0]) {
     destinationPicker.setValue(folders[0].id);
   }
